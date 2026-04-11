@@ -1,0 +1,2 @@
+"""Document storage adapters."""
+
