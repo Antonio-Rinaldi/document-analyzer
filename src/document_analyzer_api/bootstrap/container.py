@@ -1,3 +1,22 @@
+"""Detailed module documentation for `src/document_analyzer_api/bootstrap/container.py`.
+
+File role:
+- Located in the bootstrap/composition layer.
+- Defines logic and symbols for `container.py` within Document Analyzer V1.
+
+Purpose:
+- Supports a focused concern in the Document Analyzer codebase.
+
+Exported symbols overview:
+- Classes: AppContainer.
+- Functions: none.
+
+Operational context:
+- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+  `documentation/REFINED_PROJECT_CONVENTIONS.md`.
+- Contracts in this module are verified by the project test suite.
+"""
+
 from dataclasses import dataclass
 
 from ..application.services.base_chunk_builder_service import BaseChunkBuilderService
@@ -49,10 +68,22 @@ from ..infrastructure.storage.s3_document_storage import S3DocumentStorage
 from ..infrastructure.storage.s3_output_storage import S3OutputStorage
 from ..infrastructure.text_generation.local_text_generation_client import LocalTextGenerationClient
 from ..infrastructure.text_generation.ollama_text_generation_client import OllamaTextGenerationClient
+from ..observability.traced_services import (
+    TracedChatService,
+    TracedDocumentGenerationService,
+    TracedDocumentProcessingPipelineService,
+    TracedRetrievalService,
+)
 
 
 @dataclass(slots=True)
 class AppContainer:
+    """Detailed class documentation for `AppContainer`.
+    
+    This component belongs to `src/document_analyzer_api/bootstrap/container.py` and encapsulates one cohesive responsibility in the
+    Document Analyzer architecture. It is designed for dependency-injected composition,
+    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    """
     settings: Settings
     health_service: HealthService
     ingestion_service: DocumentIngestionService
@@ -68,6 +99,20 @@ class AppContainer:
 
     @classmethod
     def from_settings(cls, settings: Settings) -> "AppContainer":
+        """Detailed synchronous function documentation for `from_settings`.
+        
+        This callable is implemented in `src/document_analyzer_api/bootstrap/container.py` and contributes to the module workflow
+        through deterministic input/output behavior and explicit collaboration contracts.
+        
+            Behavior:
+                Executes the callable contract for this module responsibility.
+        
+            Args:
+                settings: Typed runtime settings used to configure behavior and integrations.
+        
+            Returns:
+                Value defined by `from_settings` contract and consumed by downstream callers.
+        """
         retrieval_backends = (
             LocalVectorRetrievalBackend(root_path=settings.storage_root_path),
             LocalGraphRetrievalBackend(root_path=settings.storage_root_path),
@@ -194,16 +239,18 @@ class AppContainer:
             retrieval_backends = (vector_backend, graph_backend, hybrid_backend)
 
         chunking_service = ChunkingService(summarizer=retrying_summarizer)
-        retrieval_service = RetrievalService(
+        retrieval_service_core = RetrievalService(
             vector_backend=retrieval_backends[0],
             graph_backend=retrieval_backends[1],
             hybrid_backend=retrieval_backends[2],
         )
+        retrieval_service = TracedRetrievalService(retrieval_service_core)
         document_query_service = DocumentQueryService(metadata_repository=metadata_repository)
-        generation_service = DocumentGenerationService(
+        generation_service_core = DocumentGenerationService(
             retrieval_service=retrieval_service,
             text_generation_client=text_generation_client,
         )
+        generation_service = TracedDocumentGenerationService(generation_service_core)
         audio_service = AudioService(generation_service=generation_service, tts_provider=tts_provider)
         image_service = ImageService(generation_service=generation_service, image_provider=image_provider)
         summary_service = DocumentSummaryService(
@@ -211,13 +258,14 @@ class AppContainer:
             output_storage=output_storage,
             document_creator=document_creator,
         )
-        chat_service = ChatService(
+        chat_service_core = ChatService(
             repository=chat_repository,
             generation_service=generation_service,
             chat_ttl_seconds=settings.chat_history_ttl_seconds,
             max_messages_before_compaction=settings.chat_compaction_max_messages,
         )
-        processing_pipeline = DocumentProcessingPipelineService(
+        chat_service = TracedChatService(chat_service_core)
+        processing_pipeline_core = DocumentProcessingPipelineService(
             parser=parser,
             base_chunk_builder=base_chunk_builder_service,
             chunking_service=chunking_service,
@@ -226,6 +274,7 @@ class AppContainer:
             metadata_repository=metadata_repository,
             temp_ttl_seconds=settings.temp_chunk_ttl_seconds,
         )
+        processing_pipeline = TracedDocumentProcessingPipelineService(processing_pipeline_core)
 
         return cls(
             settings=settings,

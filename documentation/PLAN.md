@@ -26,6 +26,8 @@ Deliver a production-grade internal Document Analyzer V1 with:
 - [x] M11: MarkItDown format integration for ingestion and summary output.
 - [x] M12: Runtime capability discoverability and spec alignment.
 - [x] M13: Detailed OpenAPI contract documentation.
+- [x] M14: Project-wide module pydoc + tracing isolation via decorators.
+- [x] M15: Detailed symbol-level pydoc refinement + Jaeger local tracing stack.
 
 ## 2) Phase-by-Phase Plan
 
@@ -64,6 +66,12 @@ Deliver a production-grade internal Document Analyzer V1 with:
 - Phase 13 completed (2026-04-14): detailed OpenAPI specification added at
   `documentation/openapi/openapi.v1.yaml`, covering all exposed endpoints, request/response payloads, modality-specific
   behaviors (NDJSON stream, JSON payloads, audio binary), and RFC 7807 error contracts.
+- Phase 14 completed (2026-04-14): tracing calls were removed from business logic and moved to decorator/wrapper
+  instrumentation components, and module-level pydoc documentation was added across all Python files in `src/` and
+  `tests/`.
+- Phase 15 completed (2026-04-14): module/class/function docstrings were refined with more specific detailed content,
+  tracing runtime configuration gained OTLP export options, and Docker Compose now includes Jaeger all-in-one for
+  local trace visualization.
 
 ## Phase 1 - Foundation
 

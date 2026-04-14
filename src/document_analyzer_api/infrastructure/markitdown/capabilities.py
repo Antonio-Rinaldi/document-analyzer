@@ -1,3 +1,22 @@
+"""Detailed module documentation for `src/document_analyzer_api/infrastructure/markitdown/capabilities.py`.
+
+File role:
+- Located in the infrastructure adapter layer.
+- Defines logic and symbols for `capabilities.py` within Document Analyzer V1.
+
+Purpose:
+- Implements concrete adapters for persistence, providers, parsing, and retrieval backends.
+
+Exported symbols overview:
+- Classes: none.
+- Functions: discover_supported_input_extensions.
+
+Operational context:
+- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+  `documentation/REFINED_PROJECT_CONVENTIONS.md`.
+- Contracts in this module are verified by the project test suite.
+"""
+
 from __future__ import annotations
 
 from markitdown import MarkItDown
@@ -38,7 +57,20 @@ DEFAULT_SUPPORTED_INPUT_EXTENSIONS: tuple[str, ...] = (
 
 
 def discover_supported_input_extensions() -> tuple[str, ...]:
-    """Discover file extensions from built-in converter metadata."""
+    """Detailed synchronous function documentation for `discover_supported_input_extensions`.
+    
+    This callable is implemented in `src/document_analyzer_api/infrastructure/markitdown/capabilities.py` and contributes to the module workflow
+    through deterministic input/output behavior and explicit collaboration contracts.
+    
+        Behavior:
+            Executes the callable contract for this module responsibility.
+    
+        Args:
+            None.
+    
+        Returns:
+            Value defined by `discover_supported_input_extensions` contract and consumed by downstream callers.
+    """
     discovered: set[str] = set()
     md = MarkItDown(enable_plugins=False)
     for registration in getattr(md, "_converters", []):

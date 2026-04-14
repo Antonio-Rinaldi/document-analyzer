@@ -329,6 +329,8 @@ Both configurable via environment variables.
 - Structured logging (JSON logs).
 - Metrics via Prometheus.
 - Tracing via OpenTelemetry.
+- Tracing must be applied via decorator/wrapper instrumentation around components, not embedded in business logic.
+- Local docker-compose stack should expose Jaeger UI for trace inspection.
 - Expose metrics endpoint at `GET /api/v1/metrics` in Prometheus text format.
 - Keep observability adapter interfaces clean for future backend swaps.
 

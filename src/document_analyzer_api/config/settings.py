@@ -1,8 +1,42 @@
+"""Detailed module documentation for `src/document_analyzer_api/config/settings.py`.
+
+File role:
+- Located in the project layer.
+- Defines logic and symbols for `settings.py` within Document Analyzer V1.
+
+Purpose:
+- Defines typed runtime configuration loaded from environment variables with validation guards.
+
+Exported symbols overview:
+- Classes: Settings.
+- Functions: _env_int, _env_float, _env_bool.
+
+Operational context:
+- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+  `documentation/REFINED_PROJECT_CONVENTIONS.md`.
+- Contracts in this module are verified by the project test suite.
+"""
+
 import os
 from dataclasses import dataclass
 
 
 def _env_int(name: str, default: int) -> int:
+    """Detailed synchronous function documentation for `_env_int`.
+    
+    This callable is implemented in `src/document_analyzer_api/config/settings.py` and contributes to the module workflow
+    through deterministic input/output behavior and explicit collaboration contracts.
+    
+        Behavior:
+            Executes the callable contract for this module responsibility.
+    
+        Args:
+            name: Environment variable or entity name, depending on callable context.
+            default: Fallback value used when the primary source is not available.
+    
+        Returns:
+            Value defined by `_env_int` contract and consumed by downstream callers.
+    """
     raw = os.getenv(name)
     if raw is None:
         return default
@@ -10,14 +44,57 @@ def _env_int(name: str, default: int) -> int:
 
 
 def _env_float(name: str, default: float) -> float:
+    """Detailed synchronous function documentation for `_env_float`.
+    
+    This callable is implemented in `src/document_analyzer_api/config/settings.py` and contributes to the module workflow
+    through deterministic input/output behavior and explicit collaboration contracts.
+    
+        Behavior:
+            Executes the callable contract for this module responsibility.
+    
+        Args:
+            name: Environment variable or entity name, depending on callable context.
+            default: Fallback value used when the primary source is not available.
+    
+        Returns:
+            Value defined by `_env_float` contract and consumed by downstream callers.
+    """
     raw = os.getenv(name)
     if raw is None:
         return default
     return float(raw)
 
 
+def _env_bool(name: str, default: bool) -> bool:
+    """Detailed synchronous function documentation for `_env_bool`.
+    
+    This callable is implemented in `src/document_analyzer_api/config/settings.py` and contributes to the module workflow
+    through deterministic input/output behavior and explicit collaboration contracts.
+    
+        Behavior:
+            Executes the callable contract for this module responsibility.
+    
+        Args:
+            name: Environment variable or entity name, depending on callable context.
+            default: Fallback value used when the primary source is not available.
+    
+        Returns:
+            Value defined by `_env_bool` contract and consumed by downstream callers.
+    """
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() in {"1", "true", "yes", "on"}
+
+
 @dataclass(slots=True)
 class Settings:
+    """Detailed class documentation for `Settings`.
+    
+    This runtime configuration model belongs to `src/document_analyzer_api/config/settings.py` and encapsulates one cohesive responsibility in the
+    Document Analyzer architecture. It is designed for dependency-injected composition,
+    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    """
     adapter_mode: str = os.getenv("ADAPTER_MODE", "local")
     mongodb_uri: str = os.getenv("MONGODB_URI", "mongodb://mongodb:27017")
     mongodb_database: str = os.getenv("MONGODB_DATABASE", "document_analyzer")
@@ -56,11 +133,43 @@ class Settings:
     provider_retry_count: int = _env_int("PROVIDER_RETRY_COUNT", 2)
     provider_timeout_seconds: float = _env_float("PROVIDER_TIMEOUT_SECONDS", 2.0)
     provider_backoff_seconds: float = _env_float("PROVIDER_BACKOFF_SECONDS", 0.05)
+    tracing_enabled: bool = _env_bool("TRACING_ENABLED", True)
+    tracing_service_name: str = os.getenv("TRACING_SERVICE_NAME", "document-analyzer-api")
+    tracing_otlp_endpoint: str = os.getenv("TRACING_OTLP_ENDPOINT", "jaeger:4317")
+    tracing_sample_ratio: float = _env_float("TRACING_SAMPLE_RATIO", 1.0)
 
     def is_real_mode(self) -> bool:
+        """Detailed synchronous function documentation for `is_real_mode`.
+        
+        This callable is implemented in `src/document_analyzer_api/config/settings.py` and contributes to the module workflow
+        through deterministic input/output behavior and explicit collaboration contracts.
+        
+            Behavior:
+                Executes the callable contract for this module responsibility.
+        
+            Args:
+                None.
+        
+            Returns:
+                Value defined by `is_real_mode` contract and consumed by downstream callers.
+        """
         return self.adapter_mode == "real"
 
     def validate_runtime(self) -> None:
+        """Detailed synchronous function documentation for `validate_runtime`.
+        
+        This callable is implemented in `src/document_analyzer_api/config/settings.py` and contributes to the module workflow
+        through deterministic input/output behavior and explicit collaboration contracts.
+        
+            Behavior:
+                Validates inputs and raises explicit failures for invalid states.
+        
+            Args:
+                None.
+        
+            Returns:
+                Value defined by `validate_runtime` contract and consumed by downstream callers.
+        """
         if self.adapter_mode not in {"local", "real"}:
             raise ValueError("ADAPTER_MODE must be 'local' or 'real'")
 
@@ -70,6 +179,8 @@ class Settings:
             raise ValueError("PROVIDER_TIMEOUT_SECONDS must be > 0")
         if self.provider_backoff_seconds < 0:
             raise ValueError("PROVIDER_BACKOFF_SECONDS must be >= 0")
+        if self.tracing_sample_ratio < 0 or self.tracing_sample_ratio > 1:
+            raise ValueError("TRACING_SAMPLE_RATIO must be between 0 and 1")
 
         if not self.is_real_mode():
             return

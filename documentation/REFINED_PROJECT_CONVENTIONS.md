@@ -77,6 +77,9 @@ Rules:
   - parse/chunk/embed/persist
   - retrieval
   - generation/chat
+- Keep tracing isolated from business logic classes: use decorator/wrapper components around services instead of
+  calling tracing primitives directly inside use-case methods.
+- In local docker-compose profile, expose Jaeger for trace visualization and troubleshooting.
 
 ## 8) Configuration
 

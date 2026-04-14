@@ -117,6 +117,11 @@ python -m document_analyzer_api.main
 docker compose up --build
 ```
 
+Tracing UI (Jaeger):
+
+- `http://localhost:16686`
+- OTLP gRPC ingest endpoint: `jaeger:4317` inside compose network
+
 ## Real Mode
 
 Real mode switches adapters to real dependencies (`ADAPTER_MODE=real`):
@@ -126,6 +131,7 @@ Real mode switches adapters to real dependencies (`ADAPTER_MODE=real`):
 - MinIO/S3 (raw files + outputs)
 - Ollama (embeddings, generation, image)
 - `../llm-tts-api` for TTS
+- Jaeger (`jaegertracing/all-in-one`) for trace inspection
 
 Useful starting point:
 

@@ -1,3 +1,22 @@
+"""Detailed module documentation for `tests/unit/test_document_processing_pipeline_service.py`.
+
+File role:
+- Located in the project layer.
+- Defines logic and symbols for `test_document_processing_pipeline_service.py` within Document Analyzer V1.
+
+Purpose:
+- Supports a focused concern in the Document Analyzer codebase.
+
+Exported symbols overview:
+- Classes: none.
+- Functions: test_processing_pipeline_commits_to_both_repositories.
+
+Operational context:
+- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+  `documentation/REFINED_PROJECT_CONVENTIONS.md`.
+- Contracts in this module are verified by the project test suite.
+"""
+
 import asyncio
 import json
 from pathlib import Path
@@ -16,6 +35,20 @@ from document_analyzer_api.infrastructure.persistence.local_document_metadata_re
 
 
 def test_processing_pipeline_commits_to_both_repositories(tmp_path: Path) -> None:
+    """Detailed synchronous function documentation for `test_processing_pipeline_commits_to_both_repositories`.
+    
+    This callable is implemented in `tests/unit/test_document_processing_pipeline_service.py` and contributes to the module workflow
+    through deterministic input/output behavior and explicit collaboration contracts.
+    
+        Behavior:
+            Executes the callable contract for this module responsibility.
+    
+        Args:
+            tmp_path: Input parameter for `test_processing_pipeline_commits_to_both_repositories`.
+    
+        Returns:
+            Value defined by `test_processing_pipeline_commits_to_both_repositories` contract and consumed by downstream callers.
+    """
     pipeline = DocumentProcessingPipelineService(
         parser=SimpleEpubParser(),
         base_chunk_builder=BaseChunkBuilderService(),
