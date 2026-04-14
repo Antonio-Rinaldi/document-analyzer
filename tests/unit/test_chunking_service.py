@@ -1,20 +1,18 @@
-"""Detailed module documentation for `tests/unit/test_chunking_service.py`.
+"""Module `tests/unit/test_chunking_service.py`.
 
-File role:
-- Located in the project layer.
-- Defines logic and symbols for `test_chunking_service.py` within Document Analyzer V1.
+This module belongs to the project support layer of Document Analyzer.
 
 Purpose:
-- Supports a focused concern in the Document Analyzer codebase.
+- Implements a focused responsibility in the Document Analyzer codebase.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: none.
 - Functions: _sample_base_chunk, test_chunking_service_meaningful_keeps_text, test_chunking_service_contextual_summary_adds_source_excerpt.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 import asyncio
@@ -25,19 +23,19 @@ from document_analyzer_api.infrastructure.chunking.deterministic_summarizer impo
 
 
 def _sample_base_chunk() -> BaseChunk:
-    """Detailed synchronous function documentation for `_sample_base_chunk`.
+    """Synchronous execution path for `_sample_base_chunk`.
     
-    This callable is implemented in `tests/unit/test_chunking_service.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/unit/test_chunking_service.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (BaseChunk) to satisfy the callable contract.
     
         Args:
             None.
     
         Returns:
-            Value defined by `_sample_base_chunk` contract and consumed by downstream callers.
+            A value compatible with `BaseChunk`.
     """
     return BaseChunk(
         chunk_id="ch1:0",
@@ -49,19 +47,19 @@ def _sample_base_chunk() -> BaseChunk:
 
 
 def test_chunking_service_meaningful_keeps_text() -> None:
-    """Detailed synchronous function documentation for `test_chunking_service_meaningful_keeps_text`.
+    """Synchronous execution path for `test_chunking_service_meaningful_keeps_text`.
     
-    This callable is implemented in `tests/unit/test_chunking_service.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/unit/test_chunking_service.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (ChunkingConfig, ChunkingService, DeterministicSummarizer, _sample_base_chunk) to satisfy the callable contract.
     
         Args:
             None.
     
         Returns:
-            Value defined by `test_chunking_service_meaningful_keeps_text` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     service = ChunkingService(summarizer=DeterministicSummarizer())
     chunk = _sample_base_chunk()
@@ -78,19 +76,19 @@ def test_chunking_service_meaningful_keeps_text() -> None:
 
 
 def test_chunking_service_contextual_summary_adds_source_excerpt() -> None:
-    """Detailed synchronous function documentation for `test_chunking_service_contextual_summary_adds_source_excerpt`.
+    """Synchronous execution path for `test_chunking_service_contextual_summary_adds_source_excerpt`.
     
-    This callable is implemented in `tests/unit/test_chunking_service.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/unit/test_chunking_service.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (ChunkingConfig, ChunkingService, DeterministicSummarizer, _sample_base_chunk) to satisfy the callable contract.
     
         Args:
             None.
     
         Returns:
-            Value defined by `test_chunking_service_contextual_summary_adds_source_excerpt` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     service = ChunkingService(summarizer=DeterministicSummarizer())
     chunk = _sample_base_chunk()

@@ -1,20 +1,18 @@
-"""Detailed module documentation for `tests/unit/test_base_chunk_builder_service.py`.
+"""Module `tests/unit/test_base_chunk_builder_service.py`.
 
-File role:
-- Located in the project layer.
-- Defines logic and symbols for `test_base_chunk_builder_service.py` within Document Analyzer V1.
+This module belongs to the project support layer of Document Analyzer.
 
 Purpose:
-- Supports a focused concern in the Document Analyzer codebase.
+- Implements a focused responsibility in the Document Analyzer codebase.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: none.
 - Functions: test_build_chunks_paragraph_granularity, test_build_chunks_chapter_granularity, test_build_chunks_sub_paragraph_tokens.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 from document_analyzer_api.application.services.base_chunk_builder_service import BaseChunkBuilderService
@@ -28,19 +26,19 @@ from document_analyzer_api.domain.models.chunking import (
 
 
 def test_build_chunks_paragraph_granularity() -> None:
-    """Detailed synchronous function documentation for `test_build_chunks_paragraph_granularity`.
+    """Synchronous execution path for `test_build_chunks_paragraph_granularity`.
     
-    This callable is implemented in `tests/unit/test_base_chunk_builder_service.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/unit/test_base_chunk_builder_service.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (BaseChunkBuilderService, ChunkingConfig, ParsedDocument, ParsedSection) to satisfy the callable contract.
     
         Args:
             None.
     
         Returns:
-            Value defined by `test_build_chunks_paragraph_granularity` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     document = ParsedDocument(
         document_name="book.epub",
@@ -65,19 +63,19 @@ def test_build_chunks_paragraph_granularity() -> None:
 
 
 def test_build_chunks_chapter_granularity() -> None:
-    """Detailed synchronous function documentation for `test_build_chunks_chapter_granularity`.
+    """Synchronous execution path for `test_build_chunks_chapter_granularity`.
     
-    This callable is implemented in `tests/unit/test_base_chunk_builder_service.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/unit/test_base_chunk_builder_service.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (BaseChunkBuilderService, ChunkingConfig, ParsedDocument, ParsedSection) to satisfy the callable contract.
     
         Args:
             None.
     
         Returns:
-            Value defined by `test_build_chunks_chapter_granularity` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     document = ParsedDocument(
         document_name="book.epub",
@@ -95,19 +93,19 @@ def test_build_chunks_chapter_granularity() -> None:
 
 
 def test_build_chunks_sub_paragraph_tokens() -> None:
-    """Detailed synchronous function documentation for `test_build_chunks_sub_paragraph_tokens`.
+    """Synchronous execution path for `test_build_chunks_sub_paragraph_tokens`.
     
-    This callable is implemented in `tests/unit/test_base_chunk_builder_service.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/unit/test_base_chunk_builder_service.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (BaseChunkBuilderService, ChunkingConfig, ParsedDocument, ParsedSection) to satisfy the callable contract.
     
         Args:
             None.
     
         Returns:
-            Value defined by `test_build_chunks_sub_paragraph_tokens` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     text = "one two three four five six seven eight nine ten"
     document = ParsedDocument(

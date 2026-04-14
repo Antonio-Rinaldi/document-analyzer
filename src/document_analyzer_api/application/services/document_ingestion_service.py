@@ -1,20 +1,18 @@
-"""Detailed module documentation for `src/document_analyzer_api/application/services/document_ingestion_service.py`.
+"""Module `src/document_analyzer_api/application/services/document_ingestion_service.py`.
 
-File role:
-- Located in the application service layer.
-- Defines logic and symbols for `document_ingestion_service.py` within Document Analyzer V1.
+This module belongs to the application service layer of Document Analyzer.
 
 Purpose:
-- Implements use-case orchestration across domain ports and infrastructure adapters.
+- Coordinates use-case workflows over domain ports and adapters.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: IngestionStatus, IngestionResult, DocumentIngestionService.
 - Functions: none.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 import hashlib
@@ -28,11 +26,13 @@ from .document_processing_pipeline_service import DocumentProcessingPipelineServ
 
 
 class IngestionStatus(str, Enum):
-    """Detailed class documentation for `IngestionStatus`.
+    """IngestionStatus component.
     
-    This component belongs to `src/document_analyzer_api/application/services/document_ingestion_service.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/application/services/document_ingestion_service.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     processed = "processed"
     already_processed = "already_processed"
@@ -43,11 +43,13 @@ class IngestionStatus(str, Enum):
 
 @dataclass(slots=True)
 class IngestionResult:
-    """Detailed class documentation for `IngestionResult`.
+    """IngestionResult component.
     
-    This component belongs to `src/document_analyzer_api/application/services/document_ingestion_service.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/application/services/document_ingestion_service.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: name, status, document_id, error.
     """
     name: str
     status: IngestionStatus
@@ -56,29 +58,31 @@ class IngestionResult:
 
     @property
     def ok(self) -> bool:
-        """Detailed synchronous function documentation for `ok`.
+        """Synchronous execution path for `ok`.
         
-        This callable is implemented in `src/document_analyzer_api/application/services/document_ingestion_service.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/application/services/document_ingestion_service.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Executes the callable contract for this module concern.
         
             Args:
                 None.
         
             Returns:
-                Value defined by `ok` contract and consumed by downstream callers.
+                A value compatible with `bool`.
         """
         return self.status in {IngestionStatus.processed, IngestionStatus.already_processed}
 
 
 class DocumentIngestionService:
-    """Detailed class documentation for `DocumentIngestionService`.
+    """DocumentIngestionService application service.
     
-    This application service belongs to `src/document_analyzer_api/application/services/document_ingestion_service.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/application/services/document_ingestion_service.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     def __init__(
         self,
@@ -86,21 +90,21 @@ class DocumentIngestionService:
         pipeline: DocumentProcessingPipelineService,
         supported_extensions: tuple[str, ...],
     ) -> None:
-        """Detailed synchronous function documentation for `__init__`.
+        """Synchronous execution path for `__init__`.
         
-        This callable is implemented in `src/document_analyzer_api/application/services/document_ingestion_service.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/application/services/document_ingestion_service.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (lower, tuple) to satisfy the callable contract.
         
             Args:
-                storage: Input parameter for `__init__`.
-                pipeline: Input parameter for `__init__`.
-                supported_extensions: Input parameter for `__init__`.
+                storage: Input parameter accepted by `__init__`.
+                pipeline: Input parameter accepted by `__init__`.
+                supported_extensions: Input parameter accepted by `__init__`.
         
             Returns:
-                Value defined by `__init__` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         self._storage = storage
         self._pipeline = pipeline
@@ -108,19 +112,19 @@ class DocumentIngestionService:
 
     @property
     def supported_extensions(self) -> tuple[str, ...]:
-        """Detailed synchronous function documentation for `supported_extensions`.
+        """Synchronous execution path for `supported_extensions`.
         
-        This callable is implemented in `src/document_analyzer_api/application/services/document_ingestion_service.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/application/services/document_ingestion_service.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Executes the callable contract for this module concern.
         
             Args:
                 None.
         
             Returns:
-                Value defined by `supported_extensions` contract and consumed by downstream callers.
+                A value compatible with `tuple[str, ...]`.
         """
         return self._supported_extensions
 
@@ -129,20 +133,20 @@ class DocumentIngestionService:
         files: list[UploadedFileData],
         chunking_config: ChunkingConfig,
     ) -> list[IngestionResult]:
-        """Detailed asynchronous function documentation for `ingest_files`.
+        """Asynchronous execution path for `ingest_files`.
         
-        This callable is implemented in `src/document_analyzer_api/application/services/document_ingestion_service.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/application/services/document_ingestion_service.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (IngestionResult, _ingest_one, append, str) to satisfy the callable contract.
         
             Args:
-                files: Input parameter for `ingest_files`.
-                chunking_config: Input parameter for `ingest_files`.
+                files: Input parameter accepted by `ingest_files`.
+                chunking_config: Input parameter accepted by `ingest_files`.
         
             Returns:
-                Value defined by `ingest_files` contract and consumed by downstream callers.
+                A value compatible with `list[IngestionResult]`.
         """
         results: list[IngestionResult] = []
         for item in files:
@@ -154,20 +158,20 @@ class DocumentIngestionService:
         return results
 
     async def _ingest_one(self, file_data: UploadedFileData, chunking_config: ChunkingConfig) -> IngestionResult:
-        """Detailed asynchronous function documentation for `_ingest_one`.
+        """Asynchronous execution path for `_ingest_one`.
         
-        This callable is implemented in `src/document_analyzer_api/application/services/document_ingestion_service.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/application/services/document_ingestion_service.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (IngestionResult, Path, has_done_marker, hexdigest) to satisfy the callable contract.
         
             Args:
-                file_data: Input parameter for `_ingest_one`.
-                chunking_config: Input parameter for `_ingest_one`.
+                file_data: Input parameter accepted by `_ingest_one`.
+                chunking_config: Input parameter accepted by `_ingest_one`.
         
             Returns:
-                Value defined by `_ingest_one` contract and consumed by downstream callers.
+                A value compatible with `IngestionResult`.
         """
         extension = Path(file_data.name).suffix.lower()
         if extension not in self._supported_extensions:

@@ -1,19 +1,17 @@
-"""Detailed module documentation for `src/document_analyzer_api/api/routes/__init__.py`.
+"""Module `src/document_analyzer_api/api/routes/__init__.py`.
 
-File role:
-- Located in the API routing layer.
-- Defines logic and symbols for `__init__.py` within Document Analyzer V1.
+This module belongs to the API routing layer of Document Analyzer.
 
 Purpose:
-- Implements HTTP endpoint handlers and translates transport payloads into service calls.
+- Adapts HTTP input/output contracts to application-service calls.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: none.
 - Functions: none.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 

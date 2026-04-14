@@ -1,20 +1,18 @@
-"""Detailed module documentation for `src/document_analyzer_api/config/settings.py`.
+"""Module `src/document_analyzer_api/config/settings.py`.
 
-File role:
-- Located in the project layer.
-- Defines logic and symbols for `settings.py` within Document Analyzer V1.
+This module belongs to the project support layer of Document Analyzer.
 
 Purpose:
-- Defines typed runtime configuration loaded from environment variables with validation guards.
+- Defines typed runtime settings loaded from environment variables and validated at startup.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: Settings.
 - Functions: _env_int, _env_float, _env_bool.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 import os
@@ -22,20 +20,20 @@ from dataclasses import dataclass
 
 
 def _env_int(name: str, default: int) -> int:
-    """Detailed synchronous function documentation for `_env_int`.
+    """Synchronous execution path for `_env_int`.
     
-    This callable is implemented in `src/document_analyzer_api/config/settings.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `src/document_analyzer_api/config/settings.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (getenv, int) to satisfy the callable contract.
     
         Args:
-            name: Environment variable or entity name, depending on callable context.
-            default: Fallback value used when the primary source is not available.
+            name: Identifier/environment key consumed by this callable.
+            default: Fallback value used when primary input is absent.
     
         Returns:
-            Value defined by `_env_int` contract and consumed by downstream callers.
+            A value compatible with `int`.
     """
     raw = os.getenv(name)
     if raw is None:
@@ -44,20 +42,20 @@ def _env_int(name: str, default: int) -> int:
 
 
 def _env_float(name: str, default: float) -> float:
-    """Detailed synchronous function documentation for `_env_float`.
+    """Synchronous execution path for `_env_float`.
     
-    This callable is implemented in `src/document_analyzer_api/config/settings.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `src/document_analyzer_api/config/settings.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (float, getenv) to satisfy the callable contract.
     
         Args:
-            name: Environment variable or entity name, depending on callable context.
-            default: Fallback value used when the primary source is not available.
+            name: Identifier/environment key consumed by this callable.
+            default: Fallback value used when primary input is absent.
     
         Returns:
-            Value defined by `_env_float` contract and consumed by downstream callers.
+            A value compatible with `float`.
     """
     raw = os.getenv(name)
     if raw is None:
@@ -66,20 +64,20 @@ def _env_float(name: str, default: float) -> float:
 
 
 def _env_bool(name: str, default: bool) -> bool:
-    """Detailed synchronous function documentation for `_env_bool`.
+    """Synchronous execution path for `_env_bool`.
     
-    This callable is implemented in `src/document_analyzer_api/config/settings.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `src/document_analyzer_api/config/settings.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (getenv, lower, strip) to satisfy the callable contract.
     
         Args:
-            name: Environment variable or entity name, depending on callable context.
-            default: Fallback value used when the primary source is not available.
+            name: Identifier/environment key consumed by this callable.
+            default: Fallback value used when primary input is absent.
     
         Returns:
-            Value defined by `_env_bool` contract and consumed by downstream callers.
+            A value compatible with `bool`.
     """
     raw = os.getenv(name)
     if raw is None:
@@ -89,11 +87,13 @@ def _env_bool(name: str, default: bool) -> bool:
 
 @dataclass(slots=True)
 class Settings:
-    """Detailed class documentation for `Settings`.
+    """Settings runtime settings model.
     
-    This runtime configuration model belongs to `src/document_analyzer_api/config/settings.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/config/settings.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: adapter_mode, mongodb_uri, mongodb_database, mongodb_vector_index_name, neo4j_uri, neo4j_user, neo4j_password, s3_endpoint.
     """
     adapter_mode: str = os.getenv("ADAPTER_MODE", "local")
     mongodb_uri: str = os.getenv("MONGODB_URI", "mongodb://mongodb:27017")
@@ -139,36 +139,36 @@ class Settings:
     tracing_sample_ratio: float = _env_float("TRACING_SAMPLE_RATIO", 1.0)
 
     def is_real_mode(self) -> bool:
-        """Detailed synchronous function documentation for `is_real_mode`.
+        """Synchronous execution path for `is_real_mode`.
         
-        This callable is implemented in `src/document_analyzer_api/config/settings.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/config/settings.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Executes the callable contract for this module concern.
         
             Args:
                 None.
         
             Returns:
-                Value defined by `is_real_mode` contract and consumed by downstream callers.
+                A value compatible with `bool`.
         """
         return self.adapter_mode == "real"
 
     def validate_runtime(self) -> None:
-        """Detailed synchronous function documentation for `validate_runtime`.
+        """Synchronous execution path for `validate_runtime`.
         
-        This callable is implemented in `src/document_analyzer_api/config/settings.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/config/settings.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Validates inputs and raises explicit failures for invalid states.
+                Validates inputs and raises explicit failures when invariants are violated.
         
             Args:
                 None.
         
             Returns:
-                Value defined by `validate_runtime` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         if self.adapter_mode not in {"local", "real"}:
             raise ValueError("ADAPTER_MODE must be 'local' or 'real'")

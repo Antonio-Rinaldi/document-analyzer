@@ -1,20 +1,18 @@
-"""Detailed module documentation for `src/document_analyzer_api/infrastructure/chunking/ollama_summarizer.py`.
+"""Module `src/document_analyzer_api/infrastructure/chunking/ollama_summarizer.py`.
 
-File role:
-- Located in the infrastructure adapter layer.
-- Defines logic and symbols for `ollama_summarizer.py` within Document Analyzer V1.
+This module belongs to the infrastructure adapter layer of Document Analyzer.
 
 Purpose:
-- Implements concrete adapters for persistence, providers, parsing, and retrieval backends.
+- Implements concrete integrations for storage, retrieval, parsing, and providers.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: OllamaSummarizer.
 - Functions: none.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 from __future__ import annotations
@@ -25,47 +23,49 @@ from ...domain.ports.text_summarizer import TextSummarizerPort
 
 
 class OllamaSummarizer(TextSummarizerPort):
-    """Detailed class documentation for `OllamaSummarizer`.
+    """OllamaSummarizer component.
     
-    This component belongs to `src/document_analyzer_api/infrastructure/chunking/ollama_summarizer.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/infrastructure/chunking/ollama_summarizer.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     def __init__(self, base_url: str, model: str) -> None:
-        """Detailed synchronous function documentation for `__init__`.
+        """Synchronous execution path for `__init__`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/chunking/ollama_summarizer.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/chunking/ollama_summarizer.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (rstrip) to satisfy the callable contract.
         
             Args:
-                base_url: Input parameter for `__init__`.
-                model: Input parameter for `__init__`.
+                base_url: Input parameter accepted by `__init__`.
+                model: Input parameter accepted by `__init__`.
         
             Returns:
-                Value defined by `__init__` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         self._base_url = base_url.rstrip("/")
         self._model = model
 
     async def summarize(self, target_text: str, context_text: str, prompt: str) -> str:
-        """Detailed asynchronous function documentation for `summarize`.
+        """Asynchronous execution path for `summarize`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/chunking/ollama_summarizer.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/chunking/ollama_summarizer.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (AsyncClient, get, json, post) to satisfy the callable contract.
         
             Args:
-                target_text: Input parameter for `summarize`.
-                context_text: Input parameter for `summarize`.
-                prompt: Input parameter for `summarize`.
+                target_text: Input parameter accepted by `summarize`.
+                context_text: Input parameter accepted by `summarize`.
+                prompt: Input parameter accepted by `summarize`.
         
             Returns:
-                Value defined by `summarize` contract and consumed by downstream callers.
+                A value compatible with `str`.
         """
         final_prompt = (
             f"{prompt}\n\n"

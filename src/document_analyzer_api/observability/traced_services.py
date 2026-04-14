@@ -1,20 +1,18 @@
-"""Detailed module documentation for `src/document_analyzer_api/observability/traced_services.py`.
+"""Module `src/document_analyzer_api/observability/traced_services.py`.
 
-File role:
-- Located in the observability layer.
-- Defines logic and symbols for `traced_services.py` within Document Analyzer V1.
+This module belongs to the observability layer of Document Analyzer.
 
 Purpose:
-- Supports a focused concern in the Document Analyzer codebase.
+- Implements metrics, tracing, and request-level telemetry support.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: TracedDocumentProcessingPipelineService, TracedRetrievalService, TracedDocumentGenerationService, TracedChatService.
 - Functions: none.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 from __future__ import annotations
@@ -29,27 +27,29 @@ from .tracing import traced_async
 
 
 class TracedDocumentProcessingPipelineService(DocumentProcessingPipelineService):
-    """Detailed class documentation for `TracedDocumentProcessingPipelineService`.
+    """TracedDocumentProcessingPipelineService application service.
     
-    This application service belongs to `src/document_analyzer_api/observability/traced_services.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/observability/traced_services.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
 
     def __init__(self, inner: DocumentProcessingPipelineService) -> None:
-        """Detailed synchronous function documentation for `__init__`.
+        """Synchronous execution path for `__init__`.
         
-        This callable is implemented in `src/document_analyzer_api/observability/traced_services.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/observability/traced_services.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Executes the callable contract for this module concern.
         
             Args:
-                inner: Input parameter for `__init__`.
+                inner: Input parameter accepted by `__init__`.
         
             Returns:
-                Value defined by `__init__` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         self._inner = inner
 
@@ -61,47 +61,49 @@ class TracedDocumentProcessingPipelineService(DocumentProcessingPipelineService)
         },
     )
     async def process(self, file_name: str, content: bytes, chunking_config: ChunkingConfig) -> str:
-        """Detailed asynchronous function documentation for `process`.
+        """Asynchronous execution path for `process`.
         
-        This callable is implemented in `src/document_analyzer_api/observability/traced_services.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/observability/traced_services.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (process, traced_async) to satisfy the callable contract.
         
             Args:
-                file_name: Input parameter for `process`.
-                content: Raw payload bytes or text handled by the callable.
-                chunking_config: Input parameter for `process`.
+                file_name: Input parameter accepted by `process`.
+                content: Raw payload bytes/text processed or transformed by this callable.
+                chunking_config: Input parameter accepted by `process`.
         
             Returns:
-                Value defined by `process` contract and consumed by downstream callers.
+                A value compatible with `str`.
         """
         return await self._inner.process(file_name, content, chunking_config)
 
 
 class TracedRetrievalService(RetrievalService):
-    """Detailed class documentation for `TracedRetrievalService`.
+    """TracedRetrievalService application service.
     
-    This application service belongs to `src/document_analyzer_api/observability/traced_services.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/observability/traced_services.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
 
     def __init__(self, inner: RetrievalService) -> None:
-        """Detailed synchronous function documentation for `__init__`.
+        """Synchronous execution path for `__init__`.
         
-        This callable is implemented in `src/document_analyzer_api/observability/traced_services.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/observability/traced_services.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Executes the callable contract for this module concern.
         
             Args:
-                inner: Input parameter for `__init__`.
+                inner: Input parameter accepted by `__init__`.
         
             Returns:
-                Value defined by `__init__` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         self._inner = inner
 
@@ -113,45 +115,47 @@ class TracedRetrievalService(RetrievalService):
         },
     )
     async def retrieve(self, request: RetrievalRequest) -> RetrievalResult:
-        """Detailed asynchronous function documentation for `retrieve`.
+        """Asynchronous execution path for `retrieve`.
         
-        This callable is implemented in `src/document_analyzer_api/observability/traced_services.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/observability/traced_services.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes retrieval strategy selection and returns matching evidence chunks.
+                Executes retrieval strategy selection and returns ranked evidence chunks.
         
             Args:
-                request: Incoming request object carrying path/query/body/context information.
+                request: Incoming HTTP request carrying route/query/body/context data.
         
             Returns:
-                Value defined by `retrieve` contract and consumed by downstream callers.
+                A value compatible with `RetrievalResult`.
         """
         return await self._inner.retrieve(request)
 
 
 class TracedDocumentGenerationService(DocumentGenerationService):
-    """Detailed class documentation for `TracedDocumentGenerationService`.
+    """TracedDocumentGenerationService application service.
     
-    This application service belongs to `src/document_analyzer_api/observability/traced_services.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/observability/traced_services.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
 
     def __init__(self, inner: DocumentGenerationService) -> None:
-        """Detailed synchronous function documentation for `__init__`.
+        """Synchronous execution path for `__init__`.
         
-        This callable is implemented in `src/document_analyzer_api/observability/traced_services.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/observability/traced_services.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Executes the callable contract for this module concern.
         
             Args:
-                inner: Input parameter for `__init__`.
+                inner: Input parameter accepted by `__init__`.
         
             Returns:
-                Value defined by `__init__` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         self._inner = inner
 
@@ -175,27 +179,27 @@ class TracedDocumentGenerationService(DocumentGenerationService):
         hybrid_alpha: float,
         include_sources: bool,
     ) -> tuple[str, list[dict]]:
-        """Detailed asynchronous function documentation for `generate`.
+        """Asynchronous execution path for `generate`.
         
-        This callable is implemented in `src/document_analyzer_api/observability/traced_services.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/observability/traced_services.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Generates derived output from retrieved context and provided options.
+                Generates derived output from context, prompts, and generation options.
         
             Args:
-                question: User question or prompt text to process.
-                document_ids: Optional subset of document identifiers to scope the operation.
-                keywords: Optional keyword list used by retrieval behavior.
-                keywords_mode: Retrieval keyword strategy selector.
+                question: User prompt processed by retrieval and generation workflows.
+                document_ids: Optional subset of documents used to scope the operation.
+                keywords: Optional keyword list used for retrieval metadata/filtering/boosting.
+                keywords_mode: Keyword strategy selector (`metadata_only`, `filter`, `rank_boost`).
                 retrieval_mode: Retrieval backend mode (`vector`, `graph`, or `hybrid`).
-                top_k: Maximum number of retrieved items considered in downstream steps.
-                min_score: Minimum score threshold used to accept retrieval hits.
-                hybrid_alpha: Fusion weight used when hybrid retrieval mode is selected.
-                include_sources: Flag controlling citation/source emission in responses.
+                top_k: Maximum number of retrieval hits retained for context assembly.
+                min_score: Minimum score threshold used to discard low-confidence hits.
+                hybrid_alpha: Fusion weight for hybrid retrieval blending.
+                include_sources: Flag controlling citation extraction in response payloads.
         
             Returns:
-                Value defined by `generate` contract and consumed by downstream callers.
+                A value compatible with `tuple[str, list[dict]]`.
         """
         return await self._inner.generate(
             question=question,
@@ -211,61 +215,63 @@ class TracedDocumentGenerationService(DocumentGenerationService):
 
 
 class TracedChatService(ChatService):
-    """Detailed class documentation for `TracedChatService`.
+    """TracedChatService application service.
     
-    This application service belongs to `src/document_analyzer_api/observability/traced_services.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/observability/traced_services.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
 
     def __init__(self, inner: ChatService) -> None:
-        """Detailed synchronous function documentation for `__init__`.
+        """Synchronous execution path for `__init__`.
         
-        This callable is implemented in `src/document_analyzer_api/observability/traced_services.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/observability/traced_services.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Executes the callable contract for this module concern.
         
             Args:
-                inner: Input parameter for `__init__`.
+                inner: Input parameter accepted by `__init__`.
         
             Returns:
-                Value defined by `__init__` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         self._inner = inner
 
     async def create_session(self) -> str:
-        """Detailed asynchronous function documentation for `create_session`.
+        """Asynchronous execution path for `create_session`.
         
-        This callable is implemented in `src/document_analyzer_api/observability/traced_services.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/observability/traced_services.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Creates a new resource and returns identifiers or resulting payloads.
+                Creates a resource and returns identifiers or materialized result payloads.
         
             Args:
                 None.
         
             Returns:
-                Value defined by `create_session` contract and consumed by downstream callers.
+                A value compatible with `str`.
         """
         return await self._inner.create_session()
 
     async def delete_session(self, session_id: str) -> bool:
-        """Detailed asynchronous function documentation for `delete_session`.
+        """Asynchronous execution path for `delete_session`.
         
-        This callable is implemented in `src/document_analyzer_api/observability/traced_services.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/observability/traced_services.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Deletes a resource and reports whether deletion succeeded.
+                Deletes a target resource and reports outcome deterministically.
         
             Args:
                 session_id: Server-side chat session identifier.
         
             Returns:
-                Value defined by `delete_session` contract and consumed by downstream callers.
+                A value compatible with `bool`.
         """
         return await self._inner.delete_session(session_id)
 
@@ -290,29 +296,29 @@ class TracedChatService(ChatService):
         include_sources: bool,
         compact_context: bool,
     ) -> tuple[str, list[dict]]:
-        """Detailed asynchronous function documentation for `chat`.
+        """Asynchronous execution path for `chat`.
         
-        This callable is implemented in `src/document_analyzer_api/observability/traced_services.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/observability/traced_services.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes stateful chat logic using persisted session context.
+                Runs stateful chat logic with persisted context and new user input.
         
             Args:
                 session_id: Server-side chat session identifier.
-                question: User question or prompt text to process.
-                document_ids: Optional subset of document identifiers to scope the operation.
-                keywords: Optional keyword list used by retrieval behavior.
-                keywords_mode: Retrieval keyword strategy selector.
+                question: User prompt processed by retrieval and generation workflows.
+                document_ids: Optional subset of documents used to scope the operation.
+                keywords: Optional keyword list used for retrieval metadata/filtering/boosting.
+                keywords_mode: Keyword strategy selector (`metadata_only`, `filter`, `rank_boost`).
                 retrieval_mode: Retrieval backend mode (`vector`, `graph`, or `hybrid`).
-                top_k: Maximum number of retrieved items considered in downstream steps.
-                min_score: Minimum score threshold used to accept retrieval hits.
-                hybrid_alpha: Fusion weight used when hybrid retrieval mode is selected.
-                include_sources: Flag controlling citation/source emission in responses.
-                compact_context: Flag requesting immediate chat context compaction.
+                top_k: Maximum number of retrieval hits retained for context assembly.
+                min_score: Minimum score threshold used to discard low-confidence hits.
+                hybrid_alpha: Fusion weight for hybrid retrieval blending.
+                include_sources: Flag controlling citation extraction in response payloads.
+                compact_context: Flag requesting immediate context compaction in chat flows.
         
             Returns:
-                Value defined by `chat` contract and consumed by downstream callers.
+                A value compatible with `tuple[str, list[dict]]`.
         """
         return await self._inner.chat(
             session_id=session_id,

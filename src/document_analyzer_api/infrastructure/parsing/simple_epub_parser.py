@@ -1,20 +1,18 @@
-"""Detailed module documentation for `src/document_analyzer_api/infrastructure/parsing/simple_epub_parser.py`.
+"""Module `src/document_analyzer_api/infrastructure/parsing/simple_epub_parser.py`.
 
-File role:
-- Located in the infrastructure adapter layer.
-- Defines logic and symbols for `simple_epub_parser.py` within Document Analyzer V1.
+This module belongs to the infrastructure adapter layer of Document Analyzer.
 
 Purpose:
-- Implements concrete adapters for persistence, providers, parsing, and retrieval backends.
+- Implements concrete integrations for storage, retrieval, parsing, and providers.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: SimpleEpubParser.
 - Functions: none.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 import re
@@ -27,27 +25,29 @@ from ...domain.ports.document_parser import DocumentParserPort
 
 
 class SimpleEpubParser(DocumentParserPort):
-    """Detailed class documentation for `SimpleEpubParser`.
+    """SimpleEpubParser component.
     
-    This component belongs to `src/document_analyzer_api/infrastructure/parsing/simple_epub_parser.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/infrastructure/parsing/simple_epub_parser.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     async def parse(self, document_name: str, content: bytes) -> ParsedDocument:
-        """Detailed asynchronous function documentation for `parse`.
+        """Asynchronous execution path for `parse`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/parsing/simple_epub_parser.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/parsing/simple_epub_parser.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Parses incoming payloads into structured objects used by downstream flows.
+                Parses incoming payloads and converts them to structured internal objects.
         
             Args:
-                document_name: Input parameter for `parse`.
-                content: Raw payload bytes or text handled by the callable.
+                document_name: Input parameter accepted by `parse`.
+                content: Raw payload bytes/text processed or transformed by this callable.
         
             Returns:
-                Value defined by `parse` contract and consumed by downstream callers.
+                A value compatible with `ParsedDocument`.
         """
         sections = self._parse_from_zip(content)
         if not sections:
@@ -59,19 +59,19 @@ class SimpleEpubParser(DocumentParserPort):
         return ParsedDocument(document_name=document_name, sections=sections)
 
     def _parse_from_zip(self, content: bytes) -> list[ParsedSection]:
-        """Detailed synchronous function documentation for `_parse_from_zip`.
+        """Synchronous execution path for `_parse_from_zip`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/parsing/simple_epub_parser.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/parsing/simple_epub_parser.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (BytesIO, ParsedSection, Path, ZipFile) to satisfy the callable contract.
         
             Args:
-                content: Raw payload bytes or text handled by the callable.
+                content: Raw payload bytes/text processed or transformed by this callable.
         
             Returns:
-                Value defined by `_parse_from_zip` contract and consumed by downstream callers.
+                A value compatible with `list[ParsedSection]`.
         """
         sections: list[ParsedSection] = []
         try:
@@ -99,19 +99,19 @@ class SimpleEpubParser(DocumentParserPort):
         return sections
 
     def _extract_text(self, html: str) -> str:
-        """Detailed synchronous function documentation for `_extract_text`.
+        """Synchronous execution path for `_extract_text`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/parsing/simple_epub_parser.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/parsing/simple_epub_parser.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (join, split, sub) to satisfy the callable contract.
         
             Args:
-                html: Input parameter for `_extract_text`.
+                html: Input parameter accepted by `_extract_text`.
         
             Returns:
-                Value defined by `_extract_text` contract and consumed by downstream callers.
+                A value compatible with `str`.
         """
         no_scripts = re.sub(r"<script.*?>.*?</script>", " ", html, flags=re.IGNORECASE | re.DOTALL)
         no_styles = re.sub(r"<style.*?>.*?</style>", " ", no_scripts, flags=re.IGNORECASE | re.DOTALL)

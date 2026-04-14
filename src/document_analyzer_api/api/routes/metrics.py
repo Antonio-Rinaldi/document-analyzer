@@ -1,20 +1,18 @@
-"""Detailed module documentation for `src/document_analyzer_api/api/routes/metrics.py`.
+"""Module `src/document_analyzer_api/api/routes/metrics.py`.
 
-File role:
-- Located in the API routing layer.
-- Defines logic and symbols for `metrics.py` within Document Analyzer V1.
+This module belongs to the API routing layer of Document Analyzer.
 
 Purpose:
-- Implements HTTP endpoint handlers and translates transport payloads into service calls.
+- Adapts HTTP input/output contracts to application-service calls.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: none.
 - Functions: metrics.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 from fastapi import APIRouter
@@ -27,19 +25,19 @@ router = APIRouter(tags=["metrics"])
 
 @router.get("/metrics")
 async def metrics() -> PlainTextResponse:
-    """Detailed asynchronous function documentation for `metrics`.
+    """Asynchronous execution path for `metrics`.
     
-    This callable is implemented in `src/document_analyzer_api/api/routes/metrics.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `src/document_analyzer_api/api/routes/metrics.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (PlainTextResponse, get, render_prometheus_metrics) to satisfy the callable contract.
     
         Args:
             None.
     
         Returns:
-            Value defined by `metrics` contract and consumed by downstream callers.
+            A value compatible with `PlainTextResponse`.
     """
     return PlainTextResponse(render_prometheus_metrics(), media_type="text/plain; version=0.0.4")
 

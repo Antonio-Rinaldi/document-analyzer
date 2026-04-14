@@ -1,19 +1,17 @@
-"""Detailed module documentation for `src/document_analyzer_api/domain/models/__init__.py`.
+"""Module `src/document_analyzer_api/domain/models/__init__.py`.
 
-File role:
-- Located in the domain model layer.
-- Defines logic and symbols for `__init__.py` within Document Analyzer V1.
+This module belongs to the domain model layer of Document Analyzer.
 
 Purpose:
-- Declares domain-level structures exchanged by services and adapters.
+- Declares domain objects exchanged across business workflows.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: none.
 - Functions: none.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 

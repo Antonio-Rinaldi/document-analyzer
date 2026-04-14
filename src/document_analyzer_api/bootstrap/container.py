@@ -1,20 +1,18 @@
-"""Detailed module documentation for `src/document_analyzer_api/bootstrap/container.py`.
+"""Module `src/document_analyzer_api/bootstrap/container.py`.
 
-File role:
-- Located in the bootstrap/composition layer.
-- Defines logic and symbols for `container.py` within Document Analyzer V1.
+This module belongs to the composition/bootstrap layer of Document Analyzer.
 
 Purpose:
-- Supports a focused concern in the Document Analyzer codebase.
+- Composes runtime dependencies for both local and real adapter modes.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: AppContainer.
 - Functions: none.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 from dataclasses import dataclass
@@ -78,11 +76,13 @@ from ..observability.traced_services import (
 
 @dataclass(slots=True)
 class AppContainer:
-    """Detailed class documentation for `AppContainer`.
+    """AppContainer component.
     
-    This component belongs to `src/document_analyzer_api/bootstrap/container.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/bootstrap/container.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: settings, health_service, ingestion_service, document_query_service, retrieval_service, generation_service, summary_service, chat_service.
     """
     settings: Settings
     health_service: HealthService
@@ -99,19 +99,19 @@ class AppContainer:
 
     @classmethod
     def from_settings(cls, settings: Settings) -> "AppContainer":
-        """Detailed synchronous function documentation for `from_settings`.
+        """Synchronous execution path for `from_settings`.
         
-        This callable is implemented in `src/document_analyzer_api/bootstrap/container.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/bootstrap/container.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (AudioService, BaseChunkBuilderService, ChatService, ChunkingService) to satisfy the callable contract.
         
             Args:
-                settings: Typed runtime settings used to configure behavior and integrations.
+                settings: Typed runtime configuration controlling integrations and defaults.
         
             Returns:
-                Value defined by `from_settings` contract and consumed by downstream callers.
+                A value compatible with `'AppContainer'`.
         """
         retrieval_backends = (
             LocalVectorRetrievalBackend(root_path=settings.storage_root_path),

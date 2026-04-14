@@ -1,47 +1,47 @@
-"""Detailed module documentation for `src/document_analyzer_api/infrastructure/modalities/local_image_provider.py`.
+"""Module `src/document_analyzer_api/infrastructure/modalities/local_image_provider.py`.
 
-File role:
-- Located in the infrastructure adapter layer.
-- Defines logic and symbols for `local_image_provider.py` within Document Analyzer V1.
+This module belongs to the infrastructure adapter layer of Document Analyzer.
 
 Purpose:
-- Implements concrete adapters for persistence, providers, parsing, and retrieval backends.
+- Implements concrete integrations for storage, retrieval, parsing, and providers.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: LocalImageProvider.
 - Functions: none.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 import base64
 
 
 class LocalImageProvider:
-    """Detailed class documentation for `LocalImageProvider`.
+    """LocalImageProvider provider adapter.
     
-    This provider adapter belongs to `src/document_analyzer_api/infrastructure/modalities/local_image_provider.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/infrastructure/modalities/local_image_provider.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     def generate_from_text(self, text: str) -> dict:
         # 1x1 PNG (transparent) placeholder for local modality integration.
-        """Detailed synchronous function documentation for `generate_from_text`.
+        """Synchronous execution path for `generate_from_text`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/modalities/local_image_provider.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/modalities/local_image_provider.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Generates derived output from retrieved context and provided options.
+                Generates derived output from context, prompts, and generation options.
         
             Args:
-                text: Input parameter for `generate_from_text`.
+                text: Input parameter accepted by `generate_from_text`.
         
             Returns:
-                Value defined by `generate_from_text` contract and consumed by downstream callers.
+                A value compatible with `dict`.
         """
         one_pixel_png = (
             b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01"

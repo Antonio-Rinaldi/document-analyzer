@@ -1,20 +1,18 @@
-"""Detailed module documentation for `tests/integration/test_documents_endpoints.py`.
+"""Module `tests/integration/test_documents_endpoints.py`.
 
-File role:
-- Located in the project layer.
-- Defines logic and symbols for `test_documents_endpoints.py` within Document Analyzer V1.
+This module belongs to the project support layer of Document Analyzer.
 
 Purpose:
-- Supports a focused concern in the Document Analyzer codebase.
+- Implements a focused responsibility in the Document Analyzer codebase.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: none.
 - Functions: _make_app, test_list_documents_default_pagination, test_list_documents_invalid_offset_problem_details, test_documents_capabilities_returns_supported_formats, test_ingest_documents_processed_then_already_processed, test_ingest_documents_conflict_same_name_different_hash, test_ingest_documents_mixed_status_returns_207, test_ingest_documents_invalid_chunking_json, test_ingest_documents_contextual_summary_custom_prompt_is_accepted, test_list_documents_returns_processed_item, test_ingest_documents_contextual_summary_prompt_with_wrong_strategy_fails, test_documents_summary_returns_local_url, test_documents_generate_non_stream_returns_answer_and_citations, test_documents_generate_stream_returns_ollama_style_lines, test_chat_session_lifecycle_and_non_stream_chat, test_chat_with_unknown_session_returns_validation_error, test_chat_stream_with_compact_context_flag, test_generate_audio_returns_wav_stream, test_generate_image_returns_integrated_payload, test_chat_audio_returns_binary_stream.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 from pathlib import Path
@@ -27,37 +25,37 @@ from document_analyzer_api.main import create_app
 
 
 def _make_app(tmp_path: Path) -> FastAPI:
-    """Detailed synchronous function documentation for `_make_app`.
+    """Synchronous execution path for `_make_app`.
     
-    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (Settings, create_app, str) to satisfy the callable contract.
     
         Args:
-            tmp_path: Input parameter for `_make_app`.
+            tmp_path: Input parameter accepted by `_make_app`.
     
         Returns:
-            Value defined by `_make_app` contract and consumed by downstream callers.
+            A value compatible with `FastAPI`.
     """
     return create_app(Settings(storage_root_path=str(tmp_path)))
 
 
 def test_list_documents_default_pagination(tmp_path: Path) -> None:
-    """Detailed synchronous function documentation for `test_list_documents_default_pagination`.
+    """Synchronous execution path for `test_list_documents_default_pagination`.
     
-    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (TestClient, _make_app, get, json) to satisfy the callable contract.
     
         Args:
-            tmp_path: Input parameter for `test_list_documents_default_pagination`.
+            tmp_path: Input parameter accepted by `test_list_documents_default_pagination`.
     
         Returns:
-            Value defined by `test_list_documents_default_pagination` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     app = _make_app(tmp_path)
     with TestClient(app) as client:
@@ -72,19 +70,19 @@ def test_list_documents_default_pagination(tmp_path: Path) -> None:
 
 
 def test_list_documents_invalid_offset_problem_details(tmp_path: Path) -> None:
-    """Detailed synchronous function documentation for `test_list_documents_invalid_offset_problem_details`.
+    """Synchronous execution path for `test_list_documents_invalid_offset_problem_details`.
     
-    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (TestClient, _make_app, get, json) to satisfy the callable contract.
     
         Args:
-            tmp_path: Input parameter for `test_list_documents_invalid_offset_problem_details`.
+            tmp_path: Input parameter accepted by `test_list_documents_invalid_offset_problem_details`.
     
         Returns:
-            Value defined by `test_list_documents_invalid_offset_problem_details` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     app = _make_app(tmp_path)
     with TestClient(app) as client:
@@ -97,19 +95,19 @@ def test_list_documents_invalid_offset_problem_details(tmp_path: Path) -> None:
 
 
 def test_documents_capabilities_returns_supported_formats(tmp_path: Path) -> None:
-    """Detailed synchronous function documentation for `test_documents_capabilities_returns_supported_formats`.
+    """Synchronous execution path for `test_documents_capabilities_returns_supported_formats`.
     
-    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (TestClient, _make_app, get, json) to satisfy the callable contract.
     
         Args:
-            tmp_path: Input parameter for `test_documents_capabilities_returns_supported_formats`.
+            tmp_path: Input parameter accepted by `test_documents_capabilities_returns_supported_formats`.
     
         Returns:
-            Value defined by `test_documents_capabilities_returns_supported_formats` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     app = _make_app(tmp_path)
     with TestClient(app) as client:
@@ -123,19 +121,19 @@ def test_documents_capabilities_returns_supported_formats(tmp_path: Path) -> Non
 
 
 def test_ingest_documents_processed_then_already_processed(tmp_path: Path) -> None:
-    """Detailed synchronous function documentation for `test_ingest_documents_processed_then_already_processed`.
+    """Synchronous execution path for `test_ingest_documents_processed_then_already_processed`.
     
-    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (TestClient, _make_app, json, post) to satisfy the callable contract.
     
         Args:
-            tmp_path: Input parameter for `test_ingest_documents_processed_then_already_processed`.
+            tmp_path: Input parameter accepted by `test_ingest_documents_processed_then_already_processed`.
     
         Returns:
-            Value defined by `test_ingest_documents_processed_then_already_processed` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     app = _make_app(tmp_path)
     files = [("files", ("book.txt", b"dummy-content", "text/plain"))]
@@ -152,19 +150,19 @@ def test_ingest_documents_processed_then_already_processed(tmp_path: Path) -> No
 
 
 def test_ingest_documents_conflict_same_name_different_hash(tmp_path: Path) -> None:
-    """Detailed synchronous function documentation for `test_ingest_documents_conflict_same_name_different_hash`.
+    """Synchronous execution path for `test_ingest_documents_conflict_same_name_different_hash`.
     
-    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (TestClient, _make_app, json, post) to satisfy the callable contract.
     
         Args:
-            tmp_path: Input parameter for `test_ingest_documents_conflict_same_name_different_hash`.
+            tmp_path: Input parameter accepted by `test_ingest_documents_conflict_same_name_different_hash`.
     
         Returns:
-            Value defined by `test_ingest_documents_conflict_same_name_different_hash` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     app = _make_app(tmp_path)
     files_v1 = [("files", ("book.txt", b"version-one", "text/plain"))]
@@ -182,19 +180,19 @@ def test_ingest_documents_conflict_same_name_different_hash(tmp_path: Path) -> N
 
 
 def test_ingest_documents_mixed_status_returns_207(tmp_path: Path) -> None:
-    """Detailed synchronous function documentation for `test_ingest_documents_mixed_status_returns_207`.
+    """Synchronous execution path for `test_ingest_documents_mixed_status_returns_207`.
     
-    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (TestClient, _make_app, json, post) to satisfy the callable contract.
     
         Args:
-            tmp_path: Input parameter for `test_ingest_documents_mixed_status_returns_207`.
+            tmp_path: Input parameter accepted by `test_ingest_documents_mixed_status_returns_207`.
     
         Returns:
-            Value defined by `test_ingest_documents_mixed_status_returns_207` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     app = _make_app(tmp_path)
     files = [
@@ -212,19 +210,19 @@ def test_ingest_documents_mixed_status_returns_207(tmp_path: Path) -> None:
 
 
 def test_ingest_documents_invalid_chunking_json(tmp_path: Path) -> None:
-    """Detailed synchronous function documentation for `test_ingest_documents_invalid_chunking_json`.
+    """Synchronous execution path for `test_ingest_documents_invalid_chunking_json`.
     
-    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (TestClient, _make_app, json, post) to satisfy the callable contract.
     
         Args:
-            tmp_path: Input parameter for `test_ingest_documents_invalid_chunking_json`.
+            tmp_path: Input parameter accepted by `test_ingest_documents_invalid_chunking_json`.
     
         Returns:
-            Value defined by `test_ingest_documents_invalid_chunking_json` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     app = _make_app(tmp_path)
     files = [("files", ("book.txt", b"dummy-content", "text/plain"))]
@@ -240,19 +238,19 @@ def test_ingest_documents_invalid_chunking_json(tmp_path: Path) -> None:
 
 
 def test_ingest_documents_contextual_summary_custom_prompt_is_accepted(tmp_path: Path) -> None:
-    """Detailed synchronous function documentation for `test_ingest_documents_contextual_summary_custom_prompt_is_accepted`.
+    """Synchronous execution path for `test_ingest_documents_contextual_summary_custom_prompt_is_accepted`.
     
-    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (TestClient, _make_app, json, post) to satisfy the callable contract.
     
         Args:
-            tmp_path: Input parameter for `test_ingest_documents_contextual_summary_custom_prompt_is_accepted`.
+            tmp_path: Input parameter accepted by `test_ingest_documents_contextual_summary_custom_prompt_is_accepted`.
     
         Returns:
-            Value defined by `test_ingest_documents_contextual_summary_custom_prompt_is_accepted` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     app = _make_app(tmp_path)
     files = [("files", ("book.txt", b"dummy-content", "text/plain"))]
@@ -269,19 +267,19 @@ def test_ingest_documents_contextual_summary_custom_prompt_is_accepted(tmp_path:
 
 
 def test_list_documents_returns_processed_item(tmp_path: Path) -> None:
-    """Detailed synchronous function documentation for `test_list_documents_returns_processed_item`.
+    """Synchronous execution path for `test_list_documents_returns_processed_item`.
     
-    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (TestClient, _make_app, get, json) to satisfy the callable contract.
     
         Args:
-            tmp_path: Input parameter for `test_list_documents_returns_processed_item`.
+            tmp_path: Input parameter accepted by `test_list_documents_returns_processed_item`.
     
         Returns:
-            Value defined by `test_list_documents_returns_processed_item` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     app = _make_app(tmp_path)
     files = [("files", ("book.txt", b"chapter one\n\nchapter two", "text/plain"))]
@@ -299,19 +297,19 @@ def test_list_documents_returns_processed_item(tmp_path: Path) -> None:
 
 
 def test_ingest_documents_contextual_summary_prompt_with_wrong_strategy_fails(tmp_path: Path) -> None:
-    """Detailed synchronous function documentation for `test_ingest_documents_contextual_summary_prompt_with_wrong_strategy_fails`.
+    """Synchronous execution path for `test_ingest_documents_contextual_summary_prompt_with_wrong_strategy_fails`.
     
-    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (TestClient, _make_app, json, post) to satisfy the callable contract.
     
         Args:
-            tmp_path: Input parameter for `test_ingest_documents_contextual_summary_prompt_with_wrong_strategy_fails`.
+            tmp_path: Input parameter accepted by `test_ingest_documents_contextual_summary_prompt_with_wrong_strategy_fails`.
     
         Returns:
-            Value defined by `test_ingest_documents_contextual_summary_prompt_with_wrong_strategy_fails` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     app = _make_app(tmp_path)
     files = [("files", ("book.txt", b"dummy-content", "text/plain"))]
@@ -328,19 +326,19 @@ def test_ingest_documents_contextual_summary_prompt_with_wrong_strategy_fails(tm
 
 
 def test_documents_summary_returns_local_url(tmp_path: Path) -> None:
-    """Detailed synchronous function documentation for `test_documents_summary_returns_local_url`.
+    """Synchronous execution path for `test_documents_summary_returns_local_url`.
     
-    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (TestClient, _make_app, json, post) to satisfy the callable contract.
     
         Args:
-            tmp_path: Input parameter for `test_documents_summary_returns_local_url`.
+            tmp_path: Input parameter accepted by `test_documents_summary_returns_local_url`.
     
         Returns:
-            Value defined by `test_documents_summary_returns_local_url` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     app = _make_app(tmp_path)
     files = [("files", ("book.txt", b"chapter one\n\nchapter two", "text/plain"))]
@@ -356,19 +354,19 @@ def test_documents_summary_returns_local_url(tmp_path: Path) -> None:
 
 
 def test_documents_generate_non_stream_returns_answer_and_citations(tmp_path: Path) -> None:
-    """Detailed synchronous function documentation for `test_documents_generate_non_stream_returns_answer_and_citations`.
+    """Synchronous execution path for `test_documents_generate_non_stream_returns_answer_and_citations`.
     
-    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (TestClient, _make_app, json, post) to satisfy the callable contract.
     
         Args:
-            tmp_path: Input parameter for `test_documents_generate_non_stream_returns_answer_and_citations`.
+            tmp_path: Input parameter accepted by `test_documents_generate_non_stream_returns_answer_and_citations`.
     
         Returns:
-            Value defined by `test_documents_generate_non_stream_returns_answer_and_citations` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     app = _make_app(tmp_path)
     files = [(
@@ -396,19 +394,19 @@ def test_documents_generate_non_stream_returns_answer_and_citations(tmp_path: Pa
 
 
 def test_documents_generate_stream_returns_ollama_style_lines(tmp_path: Path) -> None:
-    """Detailed synchronous function documentation for `test_documents_generate_stream_returns_ollama_style_lines`.
+    """Synchronous execution path for `test_documents_generate_stream_returns_ollama_style_lines`.
     
-    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (TestClient, _make_app, any, post) to satisfy the callable contract.
     
         Args:
-            tmp_path: Input parameter for `test_documents_generate_stream_returns_ollama_style_lines`.
+            tmp_path: Input parameter accepted by `test_documents_generate_stream_returns_ollama_style_lines`.
     
         Returns:
-            Value defined by `test_documents_generate_stream_returns_ollama_style_lines` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     app = _make_app(tmp_path)
     files = [("files", ("book.txt", b"No overlap text.", "text/plain"))]
@@ -431,19 +429,19 @@ def test_documents_generate_stream_returns_ollama_style_lines(tmp_path: Path) ->
 
 
 def test_chat_session_lifecycle_and_non_stream_chat(tmp_path: Path) -> None:
-    """Detailed synchronous function documentation for `test_chat_session_lifecycle_and_non_stream_chat`.
+    """Synchronous execution path for `test_chat_session_lifecycle_and_non_stream_chat`.
     
-    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (TestClient, _make_app, delete, json) to satisfy the callable contract.
     
         Args:
-            tmp_path: Input parameter for `test_chat_session_lifecycle_and_non_stream_chat`.
+            tmp_path: Input parameter accepted by `test_chat_session_lifecycle_and_non_stream_chat`.
     
         Returns:
-            Value defined by `test_chat_session_lifecycle_and_non_stream_chat` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     app = _make_app(tmp_path)
     files = [(
@@ -477,19 +475,19 @@ def test_chat_session_lifecycle_and_non_stream_chat(tmp_path: Path) -> None:
 
 
 def test_chat_with_unknown_session_returns_validation_error(tmp_path: Path) -> None:
-    """Detailed synchronous function documentation for `test_chat_with_unknown_session_returns_validation_error`.
+    """Synchronous execution path for `test_chat_with_unknown_session_returns_validation_error`.
     
-    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (TestClient, _make_app, json, post) to satisfy the callable contract.
     
         Args:
-            tmp_path: Input parameter for `test_chat_with_unknown_session_returns_validation_error`.
+            tmp_path: Input parameter accepted by `test_chat_with_unknown_session_returns_validation_error`.
     
         Returns:
-            Value defined by `test_chat_with_unknown_session_returns_validation_error` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     app = _make_app(tmp_path)
 
@@ -508,19 +506,19 @@ def test_chat_with_unknown_session_returns_validation_error(tmp_path: Path) -> N
 
 
 def test_chat_stream_with_compact_context_flag(tmp_path: Path) -> None:
-    """Detailed synchronous function documentation for `test_chat_stream_with_compact_context_flag`.
+    """Synchronous execution path for `test_chat_stream_with_compact_context_flag`.
     
-    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (TestClient, _make_app, any, json) to satisfy the callable contract.
     
         Args:
-            tmp_path: Input parameter for `test_chat_stream_with_compact_context_flag`.
+            tmp_path: Input parameter accepted by `test_chat_stream_with_compact_context_flag`.
     
         Returns:
-            Value defined by `test_chat_stream_with_compact_context_flag` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     app = _make_app(tmp_path)
     files = [("files", ("book.txt", b"Castle dragon hero story.", "text/plain"))]
@@ -547,19 +545,19 @@ def test_chat_stream_with_compact_context_flag(tmp_path: Path) -> None:
 
 
 def test_generate_audio_returns_wav_stream(tmp_path: Path) -> None:
-    """Detailed synchronous function documentation for `test_generate_audio_returns_wav_stream`.
+    """Synchronous execution path for `test_generate_audio_returns_wav_stream`.
     
-    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (TestClient, _make_app, len, post) to satisfy the callable contract.
     
         Args:
-            tmp_path: Input parameter for `test_generate_audio_returns_wav_stream`.
+            tmp_path: Input parameter accepted by `test_generate_audio_returns_wav_stream`.
     
         Returns:
-            Value defined by `test_generate_audio_returns_wav_stream` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     app = _make_app(tmp_path)
     files = [("files", ("book.txt", b"Hero fights dragon in castle.", "text/plain"))]
@@ -582,19 +580,19 @@ def test_generate_audio_returns_wav_stream(tmp_path: Path) -> None:
 
 
 def test_generate_image_returns_integrated_payload(tmp_path: Path) -> None:
-    """Detailed synchronous function documentation for `test_generate_image_returns_integrated_payload`.
+    """Synchronous execution path for `test_generate_image_returns_integrated_payload`.
     
-    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (TestClient, _make_app, json, post) to satisfy the callable contract.
     
         Args:
-            tmp_path: Input parameter for `test_generate_image_returns_integrated_payload`.
+            tmp_path: Input parameter accepted by `test_generate_image_returns_integrated_payload`.
     
         Returns:
-            Value defined by `test_generate_image_returns_integrated_payload` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     app = _make_app(tmp_path)
     files = [("files", ("book.txt", b"Hero fights dragon in castle.", "text/plain"))]
@@ -619,19 +617,19 @@ def test_generate_image_returns_integrated_payload(tmp_path: Path) -> None:
 
 
 def test_chat_audio_returns_binary_stream(tmp_path: Path) -> None:
-    """Detailed synchronous function documentation for `test_chat_audio_returns_binary_stream`.
+    """Synchronous execution path for `test_chat_audio_returns_binary_stream`.
     
-    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/integration/test_documents_endpoints.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (TestClient, _make_app, json, len) to satisfy the callable contract.
     
         Args:
-            tmp_path: Input parameter for `test_chat_audio_returns_binary_stream`.
+            tmp_path: Input parameter accepted by `test_chat_audio_returns_binary_stream`.
     
         Returns:
-            Value defined by `test_chat_audio_returns_binary_stream` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     app = _make_app(tmp_path)
     files = [("files", ("book.txt", b"Hero fights dragon in castle.", "text/plain"))]

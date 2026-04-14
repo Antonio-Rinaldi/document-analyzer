@@ -1,20 +1,18 @@
-"""Detailed module documentation for `tests/unit/test_provider_wrappers.py`.
+"""Module `tests/unit/test_provider_wrappers.py`.
 
-File role:
-- Located in the project layer.
-- Defines logic and symbols for `test_provider_wrappers.py` within Document Analyzer V1.
+This module belongs to the project support layer of Document Analyzer.
 
 Purpose:
-- Supports a focused concern in the Document Analyzer codebase.
+- Implements a focused responsibility in the Document Analyzer codebase.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: FlakyEmbeddingClient, FlakySummarizer, SlowSummarizer.
 - Functions: test_retry_embedding_client_retries_and_succeeds, test_retry_summarizer_retries_and_succeeds, test_retry_summarizer_times_out.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 import asyncio
@@ -23,43 +21,45 @@ from document_analyzer_api.infrastructure.resilience.provider_wrappers import Re
 
 
 class FlakyEmbeddingClient:
-    """Detailed class documentation for `FlakyEmbeddingClient`.
+    """FlakyEmbeddingClient component.
     
-    This component belongs to `tests/unit/test_provider_wrappers.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `tests/unit/test_provider_wrappers.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     def __init__(self) -> None:
-        """Detailed synchronous function documentation for `__init__`.
+        """Synchronous execution path for `__init__`.
         
-        This callable is implemented in `tests/unit/test_provider_wrappers.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `tests/unit/test_provider_wrappers.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Executes the callable contract for this module concern.
         
             Args:
                 None.
         
             Returns:
-                Value defined by `__init__` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         self.calls = 0
 
     async def embed_texts(self, texts: list[str]) -> list[list[float]]:
-        """Detailed asynchronous function documentation for `embed_texts`.
+        """Asynchronous execution path for `embed_texts`.
         
-        This callable is implemented in `tests/unit/test_provider_wrappers.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `tests/unit/test_provider_wrappers.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (RuntimeError) to satisfy the callable contract.
         
             Args:
-                texts: Input parameter for `embed_texts`.
+                texts: Input parameter accepted by `embed_texts`.
         
             Returns:
-                Value defined by `embed_texts` contract and consumed by downstream callers.
+                A value compatible with `list[list[float]]`.
         """
         self.calls += 1
         if self.calls < 2:
@@ -68,45 +68,47 @@ class FlakyEmbeddingClient:
 
 
 class FlakySummarizer:
-    """Detailed class documentation for `FlakySummarizer`.
+    """FlakySummarizer component.
     
-    This component belongs to `tests/unit/test_provider_wrappers.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `tests/unit/test_provider_wrappers.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     def __init__(self) -> None:
-        """Detailed synchronous function documentation for `__init__`.
+        """Synchronous execution path for `__init__`.
         
-        This callable is implemented in `tests/unit/test_provider_wrappers.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `tests/unit/test_provider_wrappers.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Executes the callable contract for this module concern.
         
             Args:
                 None.
         
             Returns:
-                Value defined by `__init__` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         self.calls = 0
 
     async def summarize(self, target_text: str, context_text: str, prompt: str) -> str:
-        """Detailed asynchronous function documentation for `summarize`.
+        """Asynchronous execution path for `summarize`.
         
-        This callable is implemented in `tests/unit/test_provider_wrappers.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `tests/unit/test_provider_wrappers.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (RuntimeError) to satisfy the callable contract.
         
             Args:
-                target_text: Input parameter for `summarize`.
-                context_text: Input parameter for `summarize`.
-                prompt: Input parameter for `summarize`.
+                target_text: Input parameter accepted by `summarize`.
+                context_text: Input parameter accepted by `summarize`.
+                prompt: Input parameter accepted by `summarize`.
         
             Returns:
-                Value defined by `summarize` contract and consumed by downstream callers.
+                A value compatible with `str`.
         """
         self.calls += 1
         if self.calls < 2:
@@ -115,47 +117,49 @@ class FlakySummarizer:
 
 
 class SlowSummarizer:
-    """Detailed class documentation for `SlowSummarizer`.
+    """SlowSummarizer component.
     
-    This component belongs to `tests/unit/test_provider_wrappers.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `tests/unit/test_provider_wrappers.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     async def summarize(self, target_text: str, context_text: str, prompt: str) -> str:
-        """Detailed asynchronous function documentation for `summarize`.
+        """Asynchronous execution path for `summarize`.
         
-        This callable is implemented in `tests/unit/test_provider_wrappers.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `tests/unit/test_provider_wrappers.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (sleep) to satisfy the callable contract.
         
             Args:
-                target_text: Input parameter for `summarize`.
-                context_text: Input parameter for `summarize`.
-                prompt: Input parameter for `summarize`.
+                target_text: Input parameter accepted by `summarize`.
+                context_text: Input parameter accepted by `summarize`.
+                prompt: Input parameter accepted by `summarize`.
         
             Returns:
-                Value defined by `summarize` contract and consumed by downstream callers.
+                A value compatible with `str`.
         """
         await asyncio.sleep(0.05)
         return target_text
 
 
 def test_retry_embedding_client_retries_and_succeeds() -> None:
-    """Detailed synchronous function documentation for `test_retry_embedding_client_retries_and_succeeds`.
+    """Synchronous execution path for `test_retry_embedding_client_retries_and_succeeds`.
     
-    This callable is implemented in `tests/unit/test_provider_wrappers.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/unit/test_provider_wrappers.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (FlakyEmbeddingClient, RetryEmbeddingClient, embed_texts, run) to satisfy the callable contract.
     
         Args:
             None.
     
         Returns:
-            Value defined by `test_retry_embedding_client_retries_and_succeeds` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     flaky = FlakyEmbeddingClient()
     client = RetryEmbeddingClient(flaky, retries=2, timeout_seconds=1.0, backoff_seconds=0.0)
@@ -167,19 +171,19 @@ def test_retry_embedding_client_retries_and_succeeds() -> None:
 
 
 def test_retry_summarizer_retries_and_succeeds() -> None:
-    """Detailed synchronous function documentation for `test_retry_summarizer_retries_and_succeeds`.
+    """Synchronous execution path for `test_retry_summarizer_retries_and_succeeds`.
     
-    This callable is implemented in `tests/unit/test_provider_wrappers.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/unit/test_provider_wrappers.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (FlakySummarizer, RetrySummarizer, run, startswith) to satisfy the callable contract.
     
         Args:
             None.
     
         Returns:
-            Value defined by `test_retry_summarizer_retries_and_succeeds` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     flaky = FlakySummarizer()
     summarizer = RetrySummarizer(flaky, retries=2, timeout_seconds=1.0, backoff_seconds=0.0)
@@ -191,19 +195,19 @@ def test_retry_summarizer_retries_and_succeeds() -> None:
 
 
 def test_retry_summarizer_times_out() -> None:
-    """Detailed synchronous function documentation for `test_retry_summarizer_times_out`.
+    """Synchronous execution path for `test_retry_summarizer_times_out`.
     
-    This callable is implemented in `tests/unit/test_provider_wrappers.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/unit/test_provider_wrappers.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (RetrySummarizer, SlowSummarizer, run, summarize) to satisfy the callable contract.
     
         Args:
             None.
     
         Returns:
-            Value defined by `test_retry_summarizer_times_out` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     summarizer = RetrySummarizer(SlowSummarizer(), retries=0, timeout_seconds=0.001, backoff_seconds=0.0)
 

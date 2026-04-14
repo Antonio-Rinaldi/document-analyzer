@@ -1,20 +1,18 @@
-"""Detailed module documentation for `src/document_analyzer_api/infrastructure/embeddings/deterministic_embedding_client.py`.
+"""Module `src/document_analyzer_api/infrastructure/embeddings/deterministic_embedding_client.py`.
 
-File role:
-- Located in the infrastructure adapter layer.
-- Defines logic and symbols for `deterministic_embedding_client.py` within Document Analyzer V1.
+This module belongs to the infrastructure adapter layer of Document Analyzer.
 
 Purpose:
-- Implements concrete adapters for persistence, providers, parsing, and retrieval backends.
+- Implements concrete integrations for storage, retrieval, parsing, and providers.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: DeterministicEmbeddingClient.
 - Functions: none.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 import hashlib
@@ -23,26 +21,28 @@ from ...domain.ports.embedding_client import EmbeddingClientPort
 
 
 class DeterministicEmbeddingClient(EmbeddingClientPort):
-    """Detailed class documentation for `DeterministicEmbeddingClient`.
+    """DeterministicEmbeddingClient component.
     
-    This component belongs to `src/document_analyzer_api/infrastructure/embeddings/deterministic_embedding_client.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/infrastructure/embeddings/deterministic_embedding_client.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     async def embed_texts(self, texts: list[str]) -> list[list[float]]:
-        """Detailed asynchronous function documentation for `embed_texts`.
+        """Asynchronous execution path for `embed_texts`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/embeddings/deterministic_embedding_client.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/embeddings/deterministic_embedding_client.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (append, digest, encode, sha256) to satisfy the callable contract.
         
             Args:
-                texts: Input parameter for `embed_texts`.
+                texts: Input parameter accepted by `embed_texts`.
         
             Returns:
-                Value defined by `embed_texts` contract and consumed by downstream callers.
+                A value compatible with `list[list[float]]`.
         """
         vectors: list[list[float]] = []
         for text in texts:

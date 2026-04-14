@@ -1,20 +1,18 @@
-"""Detailed module documentation for `src/document_analyzer_api/application/services/chunking_service.py`.
+"""Module `src/document_analyzer_api/application/services/chunking_service.py`.
 
-File role:
-- Located in the application service layer.
-- Defines logic and symbols for `chunking_service.py` within Document Analyzer V1.
+This module belongs to the application service layer of Document Analyzer.
 
 Purpose:
-- Implements use-case orchestration across domain ports and infrastructure adapters.
+- Coordinates use-case workflows over domain ports and adapters.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: ChunkingService.
 - Functions: none.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 from ...domain.models.chunking import BaseChunk, ChunkingConfig, ChunkingStrategyName, FinalChunk
@@ -22,44 +20,46 @@ from ...domain.ports.text_summarizer import TextSummarizerPort
 
 
 class ChunkingService:
-    """Detailed class documentation for `ChunkingService`.
+    """ChunkingService application service.
     
-    This application service belongs to `src/document_analyzer_api/application/services/chunking_service.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/application/services/chunking_service.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     def __init__(self, summarizer: TextSummarizerPort) -> None:
-        """Detailed synchronous function documentation for `__init__`.
+        """Synchronous execution path for `__init__`.
         
-        This callable is implemented in `src/document_analyzer_api/application/services/chunking_service.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/application/services/chunking_service.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Executes the callable contract for this module concern.
         
             Args:
-                summarizer: Input parameter for `__init__`.
+                summarizer: Input parameter accepted by `__init__`.
         
             Returns:
-                Value defined by `__init__` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         self._summarizer = summarizer
 
     async def apply_strategy(self, base_chunks: list[BaseChunk], config: ChunkingConfig) -> list[FinalChunk]:
-        """Detailed asynchronous function documentation for `apply_strategy`.
+        """Asynchronous execution path for `apply_strategy`.
         
-        This callable is implemented in `src/document_analyzer_api/application/services/chunking_service.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/application/services/chunking_service.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (FinalChunk, append, summarize) to satisfy the callable contract.
         
             Args:
-                base_chunks: Input parameter for `apply_strategy`.
-                config: Input parameter for `apply_strategy`.
+                base_chunks: Input parameter accepted by `apply_strategy`.
+                config: Input parameter accepted by `apply_strategy`.
         
             Returns:
-                Value defined by `apply_strategy` contract and consumed by downstream callers.
+                A value compatible with `list[FinalChunk]`.
         """
         if config.strategy == ChunkingStrategyName.meaningful:
             return [

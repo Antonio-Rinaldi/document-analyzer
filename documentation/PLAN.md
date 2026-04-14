@@ -28,6 +28,9 @@ Deliver a production-grade internal Document Analyzer V1 with:
 - [x] M13: Detailed OpenAPI contract documentation.
 - [x] M14: Project-wide module pydoc + tracing isolation via decorators.
 - [x] M15: Detailed symbol-level pydoc refinement + Jaeger local tracing stack.
+- [x] M16: Narrative, method-specific technical docstrings (non-template style).
+- [x] M17: Full-project manual-quality narrative docstring pass.
+- [x] M18: Narrative docstring pass stabilization (non-template, self-safe tooling).
 
 ## 2) Phase-by-Phase Plan
 
@@ -72,6 +75,14 @@ Deliver a production-grade internal Document Analyzer V1 with:
 - Phase 15 completed (2026-04-14): module/class/function docstrings were refined with more specific detailed content,
   tracing runtime configuration gained OTLP export options, and Docker Compose now includes Jaeger all-in-one for
   local trace visualization.
+- Phase 16 completed (2026-04-14): docstring generation was upgraded from template-like text to narrative,
+  method-specific technical descriptions with module purpose mapping, parameter semantics, behavior summaries, and
+  return-contract hints derived from function annotations and AST call patterns.
+- Phase 17 completed (2026-04-14): a full-project pass was executed across all Python files to enforce narrative,
+  technical, non-template documentation at module/class/function level with syntax validation and full test-suite
+  confirmation.
+- Phase 18 completed (2026-04-14): docstring pass tooling was stabilized to avoid self-rewrite regressions and to keep
+  narrative, non-template wording consistent across repeated full-repository runs.
 
 ## Phase 1 - Foundation
 

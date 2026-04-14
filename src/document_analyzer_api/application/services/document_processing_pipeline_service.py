@@ -1,20 +1,18 @@
-"""Detailed module documentation for `src/document_analyzer_api/application/services/document_processing_pipeline_service.py`.
+"""Module `src/document_analyzer_api/application/services/document_processing_pipeline_service.py`.
 
-File role:
-- Located in the application service layer.
-- Defines logic and symbols for `document_processing_pipeline_service.py` within Document Analyzer V1.
+This module belongs to the application service layer of Document Analyzer.
 
 Purpose:
-- Implements use-case orchestration across domain ports and infrastructure adapters.
+- Coordinates use-case workflows over domain ports and adapters.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: DocumentProcessingPipelineService.
 - Functions: none.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 import uuid
@@ -30,11 +28,13 @@ from .chunking_service import ChunkingService
 
 
 class DocumentProcessingPipelineService:
-    """Detailed class documentation for `DocumentProcessingPipelineService`.
+    """DocumentProcessingPipelineService application service.
     
-    This application service belongs to `src/document_analyzer_api/application/services/document_processing_pipeline_service.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/application/services/document_processing_pipeline_service.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     def __init__(
         self,
@@ -47,25 +47,25 @@ class DocumentProcessingPipelineService:
         metadata_repository: DocumentMetadataRepositoryPort,
         temp_ttl_seconds: int,
     ) -> None:
-        """Detailed synchronous function documentation for `__init__`.
+        """Synchronous execution path for `__init__`.
         
-        This callable is implemented in `src/document_analyzer_api/application/services/document_processing_pipeline_service.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/application/services/document_processing_pipeline_service.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Executes the callable contract for this module concern.
         
             Args:
-                parser: Input parameter for `__init__`.
-                base_chunk_builder: Input parameter for `__init__`.
-                chunking_service: Input parameter for `__init__`.
-                embedding_client: Input parameter for `__init__`.
-                repositories: Input parameter for `__init__`.
-                metadata_repository: Input parameter for `__init__`.
-                temp_ttl_seconds: Input parameter for `__init__`.
+                parser: Input parameter accepted by `__init__`.
+                base_chunk_builder: Input parameter accepted by `__init__`.
+                chunking_service: Input parameter accepted by `__init__`.
+                embedding_client: Input parameter accepted by `__init__`.
+                repositories: Input parameter accepted by `__init__`.
+                metadata_repository: Input parameter accepted by `__init__`.
+                temp_ttl_seconds: Input parameter accepted by `__init__`.
         
             Returns:
-                Value defined by `__init__` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         self._parser = parser
         self._base_chunk_builder = base_chunk_builder
@@ -76,21 +76,21 @@ class DocumentProcessingPipelineService:
         self._temp_ttl_seconds = temp_ttl_seconds
 
     async def process(self, file_name: str, content: bytes, chunking_config: ChunkingConfig) -> str:
-        """Detailed asynchronous function documentation for `process`.
+        """Asynchronous execution path for `process`.
         
-        This callable is implemented in `src/document_analyzer_api/application/services/document_processing_pipeline_service.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/application/services/document_processing_pipeline_service.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (DocumentMetadata, PersistedChunk, append, apply_strategy) to satisfy the callable contract.
         
             Args:
-                file_name: Input parameter for `process`.
-                content: Raw payload bytes or text handled by the callable.
-                chunking_config: Input parameter for `process`.
+                file_name: Input parameter accepted by `process`.
+                content: Raw payload bytes/text processed or transformed by this callable.
+                chunking_config: Input parameter accepted by `process`.
         
             Returns:
-                Value defined by `process` contract and consumed by downstream callers.
+                A value compatible with `str`.
         """
         document_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, file_name))
         parsed = await self._parser.parse(document_name=file_name, content=content)

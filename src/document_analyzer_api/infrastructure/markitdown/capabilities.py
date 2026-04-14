@@ -1,20 +1,18 @@
-"""Detailed module documentation for `src/document_analyzer_api/infrastructure/markitdown/capabilities.py`.
+"""Module `src/document_analyzer_api/infrastructure/markitdown/capabilities.py`.
 
-File role:
-- Located in the infrastructure adapter layer.
-- Defines logic and symbols for `capabilities.py` within Document Analyzer V1.
+This module belongs to the infrastructure adapter layer of Document Analyzer.
 
 Purpose:
-- Implements concrete adapters for persistence, providers, parsing, and retrieval backends.
+- Implements concrete integrations for storage, retrieval, parsing, and providers.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: none.
 - Functions: discover_supported_input_extensions.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 from __future__ import annotations
@@ -57,19 +55,19 @@ DEFAULT_SUPPORTED_INPUT_EXTENSIONS: tuple[str, ...] = (
 
 
 def discover_supported_input_extensions() -> tuple[str, ...]:
-    """Detailed synchronous function documentation for `discover_supported_input_extensions`.
+    """Synchronous execution path for `discover_supported_input_extensions`.
     
-    This callable is implemented in `src/document_analyzer_api/infrastructure/markitdown/capabilities.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `src/document_analyzer_api/infrastructure/markitdown/capabilities.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (MarkItDown, add, getattr, lower) to satisfy the callable contract.
     
         Args:
             None.
     
         Returns:
-            Value defined by `discover_supported_input_extensions` contract and consumed by downstream callers.
+            A value compatible with `tuple[str, ...]`.
     """
     discovered: set[str] = set()
     md = MarkItDown(enable_plugins=False)

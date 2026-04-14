@@ -1,20 +1,18 @@
-"""Detailed module documentation for `src/document_analyzer_api/infrastructure/storage/local_output_storage.py`.
+"""Module `src/document_analyzer_api/infrastructure/storage/local_output_storage.py`.
 
-File role:
-- Located in the infrastructure adapter layer.
-- Defines logic and symbols for `local_output_storage.py` within Document Analyzer V1.
+This module belongs to the infrastructure adapter layer of Document Analyzer.
 
 Purpose:
-- Implements concrete adapters for persistence, providers, parsing, and retrieval backends.
+- Implements concrete integrations for storage, retrieval, parsing, and providers.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: LocalOutputStorage.
 - Functions: none.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 import asyncio
@@ -22,62 +20,64 @@ from pathlib import Path
 
 
 class LocalOutputStorage:
-    """Detailed class documentation for `LocalOutputStorage`.
+    """LocalOutputStorage component.
     
-    This component belongs to `src/document_analyzer_api/infrastructure/storage/local_output_storage.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/infrastructure/storage/local_output_storage.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     def __init__(self, root_path: str) -> None:
-        """Detailed synchronous function documentation for `__init__`.
+        """Synchronous execution path for `__init__`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/storage/local_output_storage.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/storage/local_output_storage.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (Path) to satisfy the callable contract.
         
             Args:
-                root_path: Input parameter for `__init__`.
+                root_path: Input parameter accepted by `__init__`.
         
             Returns:
-                Value defined by `__init__` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         self._root = Path(root_path) / "output"
 
     async def write_output(self, filename: str, content: bytes, content_type: str | None = None) -> str:
-        """Detailed asynchronous function documentation for `write_output`.
+        """Asynchronous execution path for `write_output`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/storage/local_output_storage.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/storage/local_output_storage.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (mkdir, to_thread, write_bytes) to satisfy the callable contract.
         
             Args:
-                filename: Input parameter for `write_output`.
-                content: Raw payload bytes or text handled by the callable.
-                content_type: Input parameter for `write_output`.
+                filename: Input parameter accepted by `write_output`.
+                content: Raw payload bytes/text processed or transformed by this callable.
+                content_type: Input parameter accepted by `write_output`.
         
             Returns:
-                Value defined by `write_output` contract and consumed by downstream callers.
+                A value compatible with `str`.
         """
         path = self._root / filename
 
         def _write() -> None:
-            """Detailed synchronous function documentation for `_write`.
+            """Synchronous execution path for `_write`.
             
-            This callable is implemented in `src/document_analyzer_api/infrastructure/storage/local_output_storage.py` and contributes to the module workflow
-            through deterministic input/output behavior and explicit collaboration contracts.
+            This callable is implemented in `src/document_analyzer_api/infrastructure/storage/local_output_storage.py` and contributes to module-level behavior
+            with explicit and testable execution semantics.
             
                 Behavior:
-                    Executes the callable contract for this module responsibility.
+                    Coordinates helper calls (mkdir, write_bytes) to satisfy the callable contract.
             
                 Args:
                     None.
             
                 Returns:
-                    Value defined by `_write` contract and consumed by downstream callers.
+                    A value compatible with `None`.
             """
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(content)

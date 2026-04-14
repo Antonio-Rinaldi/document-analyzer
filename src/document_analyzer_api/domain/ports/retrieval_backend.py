@@ -1,20 +1,18 @@
-"""Detailed module documentation for `src/document_analyzer_api/domain/ports/retrieval_backend.py`.
+"""Module `src/document_analyzer_api/domain/ports/retrieval_backend.py`.
 
-File role:
-- Located in the domain port layer.
-- Defines logic and symbols for `retrieval_backend.py` within Document Analyzer V1.
+This module belongs to the domain abstraction layer of Document Analyzer.
 
 Purpose:
-- Declares abstract contracts implemented by infrastructure adapters.
+- Declares protocol contracts implemented by infrastructure adapters.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: RetrievalBackendPort.
 - Functions: none.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 from typing import Protocol
@@ -23,26 +21,28 @@ from ..models.retrieval import RetrievalHit, RetrievalRequest
 
 
 class RetrievalBackendPort(Protocol):
-    """Detailed class documentation for `RetrievalBackendPort`.
+    """RetrievalBackendPort component.
     
-    This component belongs to `src/document_analyzer_api/domain/ports/retrieval_backend.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/domain/ports/retrieval_backend.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     async def retrieve(self, request: RetrievalRequest) -> list[RetrievalHit]:
-        """Detailed asynchronous function documentation for `retrieve`.
+        """Asynchronous execution path for `retrieve`.
         
-        This callable is implemented in `src/document_analyzer_api/domain/ports/retrieval_backend.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/domain/ports/retrieval_backend.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes retrieval strategy selection and returns matching evidence chunks.
+                Executes retrieval strategy selection and returns ranked evidence chunks.
         
             Args:
-                request: Incoming request object carrying path/query/body/context information.
+                request: Incoming HTTP request carrying route/query/body/context data.
         
             Returns:
-                Value defined by `retrieve` contract and consumed by downstream callers.
+                A value compatible with `list[RetrievalHit]`.
         """
         ...
 

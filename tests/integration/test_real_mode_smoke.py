@@ -1,20 +1,18 @@
-"""Detailed module documentation for `tests/integration/test_real_mode_smoke.py`.
+"""Module `tests/integration/test_real_mode_smoke.py`.
 
-File role:
-- Located in the project layer.
-- Defines logic and symbols for `test_real_mode_smoke.py` within Document Analyzer V1.
+This module belongs to the project support layer of Document Analyzer.
 
 Purpose:
-- Supports a focused concern in the Document Analyzer codebase.
+- Implements a focused responsibility in the Document Analyzer codebase.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: none.
 - Functions: _real_settings, test_real_mode_health_smoke, test_real_mode_end_to_end_flow.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 import os
@@ -30,19 +28,19 @@ RUN_REAL_E2E = os.getenv("RUN_REAL_E2E") == "1"
 
 
 def _real_settings() -> Settings:
-    """Detailed synchronous function documentation for `_real_settings`.
+    """Synchronous execution path for `_real_settings`.
     
-    This callable is implemented in `tests/integration/test_real_mode_smoke.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/integration/test_real_mode_smoke.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (Settings, getenv) to satisfy the callable contract.
     
         Args:
             None.
     
         Returns:
-            Value defined by `_real_settings` contract and consumed by downstream callers.
+            A value compatible with `Settings`.
     """
     return Settings(
         adapter_mode="real",
@@ -70,19 +68,19 @@ def _real_settings() -> Settings:
 @pytest.mark.real_e2e
 @pytest.mark.skipif(not RUN_REAL_E2E, reason="Set RUN_REAL_E2E=1 to run real-mode smoke tests")
 def test_real_mode_health_smoke() -> None:
-    """Detailed synchronous function documentation for `test_real_mode_health_smoke`.
+    """Synchronous execution path for `test_real_mode_health_smoke`.
     
-    This callable is implemented in `tests/integration/test_real_mode_smoke.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/integration/test_real_mode_smoke.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (TestClient, _real_settings, create_app, get) to satisfy the callable contract.
     
         Args:
             None.
     
         Returns:
-            Value defined by `test_real_mode_health_smoke` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     app = create_app(_real_settings())
     with TestClient(app) as client:
@@ -94,19 +92,19 @@ def test_real_mode_health_smoke() -> None:
 @pytest.mark.real_e2e
 @pytest.mark.skipif(not RUN_REAL_E2E, reason="Set RUN_REAL_E2E=1 to run real-mode smoke tests")
 def test_real_mode_end_to_end_flow() -> None:
-    """Detailed synchronous function documentation for `test_real_mode_end_to_end_flow`.
+    """Synchronous execution path for `test_real_mode_end_to_end_flow`.
     
-    This callable is implemented in `tests/integration/test_real_mode_smoke.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/integration/test_real_mode_smoke.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (TestClient, _real_settings, create_app, delete) to satisfy the callable contract.
     
         Args:
             None.
     
         Returns:
-            Value defined by `test_real_mode_end_to_end_flow` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     app = create_app(_real_settings())
     files = [("files", ("real_mode_book.txt", b"Hero enters the castle and defeats the dragon.", "text/plain"))]

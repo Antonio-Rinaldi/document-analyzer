@@ -1,20 +1,18 @@
-"""Detailed module documentation for `src/document_analyzer_api/api/errors.py`.
+"""Module `src/document_analyzer_api/api/errors.py`.
 
-File role:
-- Located in the project layer.
-- Defines logic and symbols for `errors.py` within Document Analyzer V1.
+This module belongs to the API error mapping layer of Document Analyzer.
 
 Purpose:
-- Maps domain and validation failures into RFC 7807 Problem Details responses.
+- Maps internal failures to RFC 7807 problem responses returned by the HTTP API.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: DomainError, ValidationProblem.
 - Functions: register_exception_handlers.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 from __future__ import annotations
@@ -27,11 +25,13 @@ from .schemas.problem import ProblemDetails
 
 
 class DomainError(Exception):
-    """Detailed class documentation for `DomainError`.
+    """DomainError error model.
     
-    This component belongs to `src/document_analyzer_api/api/errors.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/api/errors.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     def __init__(
         self,
@@ -43,24 +43,24 @@ class DomainError(Exception):
         problem_type: str = "urn:problem:domain-error",
         details: dict | list | None = None,
     ) -> None:
-        """Detailed synchronous function documentation for `__init__`.
+        """Synchronous execution path for `__init__`.
         
-        This callable is implemented in `src/document_analyzer_api/api/errors.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/api/errors.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (__init__, super) to satisfy the callable contract.
         
             Args:
-                status: HTTP-like status code or status indicator for downstream handling.
-                title: Short problem or object title used for structured responses.
-                detail: Human-readable error detail or descriptive message payload.
-                error_code: Stable machine-readable code used by clients for error branching.
-                problem_type: Problem type identifier compatible with RFC 7807 semantics.
-                details: Optional structured metadata attached to an operation or error response.
+                status: Status value/code used for downstream branching and response mapping.
+                title: Input parameter accepted by `__init__`.
+                detail: Human-readable detail text (often for problem/error payloads).
+                error_code: Stable machine-readable code for client-side error handling.
+                problem_type: Problem type identifier following RFC 7807 semantics.
+                details: Optional structured metadata attached to operation or error outcomes.
         
             Returns:
-                Value defined by `__init__` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         super().__init__(detail)
         self.status = status
@@ -72,27 +72,29 @@ class DomainError(Exception):
 
 
 class ValidationProblem(DomainError):
-    """Detailed class documentation for `ValidationProblem`.
+    """ValidationProblem component.
     
-    This component belongs to `src/document_analyzer_api/api/errors.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/api/errors.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     def __init__(self, detail: str, details: dict | list | None = None) -> None:
-        """Detailed synchronous function documentation for `__init__`.
+        """Synchronous execution path for `__init__`.
         
-        This callable is implemented in `src/document_analyzer_api/api/errors.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/api/errors.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (__init__, super) to satisfy the callable contract.
         
             Args:
-                detail: Human-readable error detail or descriptive message payload.
-                details: Optional structured metadata attached to an operation or error response.
+                detail: Human-readable detail text (often for problem/error payloads).
+                details: Optional structured metadata attached to operation or error outcomes.
         
             Returns:
-                Value defined by `__init__` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         super().__init__(
             status=400,
@@ -105,37 +107,37 @@ class ValidationProblem(DomainError):
 
 
 def register_exception_handlers(app: FastAPI) -> None:
-    """Detailed synchronous function documentation for `register_exception_handlers`.
+    """Synchronous execution path for `register_exception_handlers`.
     
-    This callable is implemented in `src/document_analyzer_api/api/errors.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `src/document_analyzer_api/api/errors.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (JSONResponse, ProblemDetails, errors, exception_handler) to satisfy the callable contract.
     
         Args:
-            app: FastAPI application instance used for registration or runtime access.
+            app: FastAPI application instance used for registration or lifecycle wiring.
     
         Returns:
-            Value defined by `register_exception_handlers` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
 
     @app.exception_handler(DomainError)
     async def domain_error_handler(_: Request, exc: DomainError) -> JSONResponse:
-        """Detailed asynchronous function documentation for `domain_error_handler`.
+        """Asynchronous execution path for `domain_error_handler`.
         
-        This callable is implemented in `src/document_analyzer_api/api/errors.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/api/errors.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (JSONResponse, ProblemDetails, exception_handler, model_dump) to satisfy the callable contract.
         
             Args:
-                _: Input parameter for `domain_error_handler`.
-                exc: Raised exception instance being mapped or processed.
+                _: Input parameter accepted by `domain_error_handler`.
+                exc: Exception instance being mapped, wrapped, or inspected.
         
             Returns:
-                Value defined by `domain_error_handler` contract and consumed by downstream callers.
+                A value compatible with `JSONResponse`.
         """
         body = ProblemDetails(
             type=exc.problem_type,
@@ -153,20 +155,20 @@ def register_exception_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(RequestValidationError)
     async def request_validation_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
-        """Detailed asynchronous function documentation for `request_validation_handler`.
+        """Asynchronous execution path for `request_validation_handler`.
         
-        This callable is implemented in `src/document_analyzer_api/api/errors.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/api/errors.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (JSONResponse, ProblemDetails, errors, exception_handler) to satisfy the callable contract.
         
             Args:
-                request: Incoming request object carrying path/query/body/context information.
-                exc: Raised exception instance being mapped or processed.
+                request: Incoming HTTP request carrying route/query/body/context data.
+                exc: Exception instance being mapped, wrapped, or inspected.
         
             Returns:
-                Value defined by `request_validation_handler` contract and consumed by downstream callers.
+                A value compatible with `JSONResponse`.
         """
         body = ProblemDetails(
             type="urn:problem:request-validation",

@@ -1,20 +1,18 @@
-"""Detailed module documentation for `src/document_analyzer_api/application/services/health_service.py`.
+"""Module `src/document_analyzer_api/application/services/health_service.py`.
 
-File role:
-- Located in the application service layer.
-- Defines logic and symbols for `health_service.py` within Document Analyzer V1.
+This module belongs to the application service layer of Document Analyzer.
 
 Purpose:
-- Implements use-case orchestration across domain ports and infrastructure adapters.
+- Coordinates use-case workflows over domain ports and adapters.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: HealthReport, HealthService.
 - Functions: none.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 from dataclasses import asdict, dataclass
@@ -24,29 +22,31 @@ from document_analyzer_api.domain.ports.health import DependencyHealthPort, Depe
 
 @dataclass(slots=True)
 class HealthReport:
-    """Detailed class documentation for `HealthReport`.
+    """HealthReport component.
     
-    This component belongs to `src/document_analyzer_api/application/services/health_service.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/application/services/health_service.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: status, dependencies.
     """
     status: str
     dependencies: list[DependencyStatus]
 
     def to_dict(self) -> dict:
-        """Detailed synchronous function documentation for `to_dict`.
+        """Synchronous execution path for `to_dict`.
         
-        This callable is implemented in `src/document_analyzer_api/application/services/health_service.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/application/services/health_service.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (asdict) to satisfy the callable contract.
         
             Args:
                 None.
         
             Returns:
-                Value defined by `to_dict` contract and consumed by downstream callers.
+                A value compatible with `dict`.
         """
         return {
             "status": self.status,
@@ -55,60 +55,62 @@ class HealthReport:
 
 
 class HealthService:
-    """Detailed class documentation for `HealthService`.
+    """HealthService application service.
     
-    This application service belongs to `src/document_analyzer_api/application/services/health_service.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/application/services/health_service.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     def __init__(self, dependencies: list[DependencyHealthPort]) -> None:
-        """Detailed synchronous function documentation for `__init__`.
+        """Synchronous execution path for `__init__`.
         
-        This callable is implemented in `src/document_analyzer_api/application/services/health_service.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/application/services/health_service.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Executes the callable contract for this module concern.
         
             Args:
-                dependencies: Input parameter for `__init__`.
+                dependencies: Input parameter accepted by `__init__`.
         
             Returns:
-                Value defined by `__init__` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         self._dependencies = dependencies
 
     async def liveness(self) -> dict[str, str]:
-        """Detailed asynchronous function documentation for `liveness`.
+        """Asynchronous execution path for `liveness`.
         
-        This callable is implemented in `src/document_analyzer_api/application/services/health_service.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/application/services/health_service.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Executes the callable contract for this module concern.
         
             Args:
                 None.
         
             Returns:
-                Value defined by `liveness` contract and consumed by downstream callers.
+                A value compatible with `dict[str, str]`.
         """
         return {"status": "ok"}
 
     async def readiness(self) -> HealthReport:
-        """Detailed asynchronous function documentation for `readiness`.
+        """Asynchronous execution path for `readiness`.
         
-        This callable is implemented in `src/document_analyzer_api/application/services/health_service.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/application/services/health_service.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (HealthReport, all, append, check) to satisfy the callable contract.
         
             Args:
                 None.
         
             Returns:
-                Value defined by `readiness` contract and consumed by downstream callers.
+                A value compatible with `HealthReport`.
         """
         statuses: list[DependencyStatus] = []
         for dependency in self._dependencies:

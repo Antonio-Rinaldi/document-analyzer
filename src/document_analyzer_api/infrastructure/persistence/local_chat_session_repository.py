@@ -1,20 +1,18 @@
-"""Detailed module documentation for `src/document_analyzer_api/infrastructure/persistence/local_chat_session_repository.py`.
+"""Module `src/document_analyzer_api/infrastructure/persistence/local_chat_session_repository.py`.
 
-File role:
-- Located in the infrastructure adapter layer.
-- Defines logic and symbols for `local_chat_session_repository.py` within Document Analyzer V1.
+This module belongs to the infrastructure adapter layer of Document Analyzer.
 
 Purpose:
-- Implements concrete adapters for persistence, providers, parsing, and retrieval backends.
+- Implements concrete integrations for storage, retrieval, parsing, and providers.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: LocalChatSessionRepository.
 - Functions: _serialize_session, _deserialize_session, _parse_datetime.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 import asyncio
@@ -28,44 +26,46 @@ from ...domain.ports.chat_session_repository import ChatSessionRepositoryPort
 
 
 class LocalChatSessionRepository(ChatSessionRepositoryPort):
-    """Detailed class documentation for `LocalChatSessionRepository`.
+    """LocalChatSessionRepository repository adapter.
     
-    This repository adapter belongs to `src/document_analyzer_api/infrastructure/persistence/local_chat_session_repository.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/infrastructure/persistence/local_chat_session_repository.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     def __init__(self, root_path: str) -> None:
-        """Detailed synchronous function documentation for `__init__`.
+        """Synchronous execution path for `__init__`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chat_session_repository.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chat_session_repository.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (Path) to satisfy the callable contract.
         
             Args:
-                root_path: Input parameter for `__init__`.
+                root_path: Input parameter accepted by `__init__`.
         
             Returns:
-                Value defined by `__init__` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         self._file_path = Path(root_path) / "chat_sessions.json"
 
     async def create(self, session_id: str, ttl_seconds: int) -> ChatSession:
-        """Detailed asynchronous function documentation for `create`.
+        """Asynchronous execution path for `create`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chat_session_repository.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chat_session_repository.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (ChatSession, _load_records, _save_records, _serialize_session) to satisfy the callable contract.
         
             Args:
                 session_id: Server-side chat session identifier.
-                ttl_seconds: Input parameter for `create`.
+                ttl_seconds: Input parameter accepted by `create`.
         
             Returns:
-                Value defined by `create` contract and consumed by downstream callers.
+                A value compatible with `ChatSession`.
         """
         now = datetime.now(UTC)
         expires_at = now + timedelta(seconds=ttl_seconds) if ttl_seconds > 0 else None
@@ -78,19 +78,19 @@ class LocalChatSessionRepository(ChatSessionRepositoryPort):
         return session
 
     async def get(self, session_id: str) -> ChatSession | None:
-        """Detailed asynchronous function documentation for `get`.
+        """Asynchronous execution path for `get`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chat_session_repository.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chat_session_repository.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (_deserialize_session, _load_records, _parse_datetime, _save_records) to satisfy the callable contract.
         
             Args:
                 session_id: Server-side chat session identifier.
         
             Returns:
-                Value defined by `get` contract and consumed by downstream callers.
+                A value compatible with `ChatSession | None`.
         """
         records = await self._load_records()
         now = datetime.now(UTC)
@@ -113,20 +113,20 @@ class LocalChatSessionRepository(ChatSessionRepositoryPort):
         return found
 
     async def upsert(self, session: ChatSession, ttl_seconds: int) -> None:
-        """Detailed asynchronous function documentation for `upsert`.
+        """Asynchronous execution path for `upsert`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chat_session_repository.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chat_session_repository.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (_load_records, _save_records, _serialize_session, append) to satisfy the callable contract.
         
             Args:
-                session: Input parameter for `upsert`.
-                ttl_seconds: Input parameter for `upsert`.
+                session: Input parameter accepted by `upsert`.
+                ttl_seconds: Input parameter accepted by `upsert`.
         
             Returns:
-                Value defined by `upsert` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         records = await self._load_records()
         expires_at = datetime.now(UTC) + timedelta(seconds=ttl_seconds) if ttl_seconds > 0 else None
@@ -146,19 +146,19 @@ class LocalChatSessionRepository(ChatSessionRepositoryPort):
         await self._save_records(records)
 
     async def delete(self, session_id: str) -> bool:
-        """Detailed asynchronous function documentation for `delete`.
+        """Asynchronous execution path for `delete`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chat_session_repository.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chat_session_repository.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (_load_records, _save_records, get, len) to satisfy the callable contract.
         
             Args:
                 session_id: Server-side chat session identifier.
         
             Returns:
-                Value defined by `delete` contract and consumed by downstream callers.
+                A value compatible with `bool`.
         """
         records = await self._load_records()
         filtered = [item for item in records if item.get("sessionId") != session_id]
@@ -168,34 +168,34 @@ class LocalChatSessionRepository(ChatSessionRepositoryPort):
         return removed
 
     async def _load_records(self) -> list[dict[str, Any]]:
-        """Detailed asynchronous function documentation for `_load_records`.
+        """Asynchronous execution path for `_load_records`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chat_session_repository.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chat_session_repository.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (exists, loads, read_text, to_thread) to satisfy the callable contract.
         
             Args:
                 None.
         
             Returns:
-                Value defined by `_load_records` contract and consumed by downstream callers.
+                A value compatible with `list[dict[str, Any]]`.
         """
         def _read() -> list[dict[str, Any]]:
-            """Detailed synchronous function documentation for `_read`.
+            """Synchronous execution path for `_read`.
             
-            This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chat_session_repository.py` and contributes to the module workflow
-            through deterministic input/output behavior and explicit collaboration contracts.
+            This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chat_session_repository.py` and contributes to module-level behavior
+            with explicit and testable execution semantics.
             
                 Behavior:
-                    Executes the callable contract for this module responsibility.
+                    Coordinates helper calls (exists, loads, read_text) to satisfy the callable contract.
             
                 Args:
                     None.
             
                 Returns:
-                    Value defined by `_read` contract and consumed by downstream callers.
+                    A value compatible with `list[dict[str, Any]]`.
             """
             if not self._file_path.exists():
                 return []
@@ -204,34 +204,34 @@ class LocalChatSessionRepository(ChatSessionRepositoryPort):
         return await asyncio.to_thread(_read)
 
     async def _save_records(self, records: list[dict[str, Any]]) -> None:
-        """Detailed asynchronous function documentation for `_save_records`.
+        """Asynchronous execution path for `_save_records`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chat_session_repository.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chat_session_repository.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (dumps, mkdir, to_thread, write_text) to satisfy the callable contract.
         
             Args:
-                records: Input parameter for `_save_records`.
+                records: Input parameter accepted by `_save_records`.
         
             Returns:
-                Value defined by `_save_records` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         def _write() -> None:
-            """Detailed synchronous function documentation for `_write`.
+            """Synchronous execution path for `_write`.
             
-            This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chat_session_repository.py` and contributes to the module workflow
-            through deterministic input/output behavior and explicit collaboration contracts.
+            This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chat_session_repository.py` and contributes to module-level behavior
+            with explicit and testable execution semantics.
             
                 Behavior:
-                    Executes the callable contract for this module responsibility.
+                    Coordinates helper calls (dumps, mkdir, write_text) to satisfy the callable contract.
             
                 Args:
                     None.
             
                 Returns:
-                    Value defined by `_write` contract and consumed by downstream callers.
+                    A value compatible with `None`.
             """
             self._file_path.parent.mkdir(parents=True, exist_ok=True)
             self._file_path.write_text(json.dumps(records), encoding="utf-8")
@@ -240,19 +240,19 @@ class LocalChatSessionRepository(ChatSessionRepositoryPort):
 
 
 def _serialize_session(session: ChatSession) -> dict[str, Any]:
-    """Detailed synchronous function documentation for `_serialize_session`.
+    """Synchronous execution path for `_serialize_session`.
     
-    This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chat_session_repository.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chat_session_repository.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (isoformat) to satisfy the callable contract.
     
         Args:
-            session: Input parameter for `_serialize_session`.
+            session: Input parameter accepted by `_serialize_session`.
     
         Returns:
-            Value defined by `_serialize_session` contract and consumed by downstream callers.
+            A value compatible with `dict[str, Any]`.
     """
     return {
         "sessionId": session.session_id,
@@ -269,19 +269,19 @@ def _serialize_session(session: ChatSession) -> dict[str, Any]:
 
 
 def _deserialize_session(payload: dict[str, Any]) -> ChatSession:
-    """Detailed synchronous function documentation for `_deserialize_session`.
+    """Synchronous execution path for `_deserialize_session`.
     
-    This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chat_session_repository.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chat_session_repository.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (ChatMessage, ChatRole, ChatSession, _parse_datetime) to satisfy the callable contract.
     
         Args:
-            payload: Input parameter for `_deserialize_session`.
+            payload: Input parameter accepted by `_deserialize_session`.
     
         Returns:
-            Value defined by `_deserialize_session` contract and consumed by downstream callers.
+            A value compatible with `ChatSession`.
     """
     messages = [
         ChatMessage(
@@ -300,19 +300,19 @@ def _deserialize_session(payload: dict[str, Any]) -> ChatSession:
 
 
 def _parse_datetime(value: Any) -> datetime | None:
-    """Detailed synchronous function documentation for `_parse_datetime`.
+    """Synchronous execution path for `_parse_datetime`.
     
-    This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chat_session_repository.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chat_session_repository.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (fromisoformat, isinstance) to satisfy the callable contract.
     
         Args:
-            value: Input parameter for `_parse_datetime`.
+            value: Input parameter accepted by `_parse_datetime`.
     
         Returns:
-            Value defined by `_parse_datetime` contract and consumed by downstream callers.
+            A value compatible with `datetime | None`.
     """
     if not value:
         return None

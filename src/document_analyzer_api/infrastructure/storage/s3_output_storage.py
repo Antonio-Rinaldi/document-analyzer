@@ -1,20 +1,18 @@
-"""Detailed module documentation for `src/document_analyzer_api/infrastructure/storage/s3_output_storage.py`.
+"""Module `src/document_analyzer_api/infrastructure/storage/s3_output_storage.py`.
 
-File role:
-- Located in the infrastructure adapter layer.
-- Defines logic and symbols for `s3_output_storage.py` within Document Analyzer V1.
+This module belongs to the infrastructure adapter layer of Document Analyzer.
 
 Purpose:
-- Implements concrete adapters for persistence, providers, parsing, and retrieval backends.
+- Implements concrete integrations for storage, retrieval, parsing, and providers.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: S3OutputStorage.
 - Functions: none.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 import asyncio
@@ -22,11 +20,13 @@ from io import BytesIO
 
 
 class S3OutputStorage:
-    """Detailed class documentation for `S3OutputStorage`.
+    """S3OutputStorage component.
     
-    This component belongs to `src/document_analyzer_api/infrastructure/storage/s3_output_storage.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/infrastructure/storage/s3_output_storage.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     def __init__(
         self,
@@ -36,22 +36,22 @@ class S3OutputStorage:
         secret_key: str,
         bucket: str,
     ) -> None:
-        """Detailed synchronous function documentation for `__init__`.
+        """Synchronous execution path for `__init__`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/storage/s3_output_storage.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/storage/s3_output_storage.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (Minio) to satisfy the callable contract.
         
             Args:
-                endpoint: Input parameter for `__init__`.
-                access_key: Input parameter for `__init__`.
-                secret_key: Input parameter for `__init__`.
-                bucket: Input parameter for `__init__`.
+                endpoint: Input parameter accepted by `__init__`.
+                access_key: Input parameter accepted by `__init__`.
+                secret_key: Input parameter accepted by `__init__`.
+                bucket: Input parameter accepted by `__init__`.
         
             Returns:
-                Value defined by `__init__` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         from minio import Minio
 
@@ -59,59 +59,59 @@ class S3OutputStorage:
         self._client = Minio(endpoint, access_key=access_key, secret_key=secret_key, secure=False)
 
     async def write_output(self, filename: str, content: bytes, content_type: str | None = None) -> str:
-        """Detailed asynchronous function documentation for `write_output`.
+        """Asynchronous execution path for `write_output`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/storage/s3_output_storage.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/storage/s3_output_storage.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (to_thread) to satisfy the callable contract.
         
             Args:
-                filename: Input parameter for `write_output`.
-                content: Raw payload bytes or text handled by the callable.
-                content_type: Input parameter for `write_output`.
+                filename: Input parameter accepted by `write_output`.
+                content: Raw payload bytes/text processed or transformed by this callable.
+                content_type: Input parameter accepted by `write_output`.
         
             Returns:
-                Value defined by `write_output` contract and consumed by downstream callers.
+                A value compatible with `str`.
         """
         await asyncio.to_thread(self._write_sync, filename, content, content_type)
         return f"s3://{self._bucket}/{filename}"
 
     def _ensure_bucket(self) -> None:
-        """Detailed synchronous function documentation for `_ensure_bucket`.
+        """Synchronous execution path for `_ensure_bucket`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/storage/s3_output_storage.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/storage/s3_output_storage.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (bucket_exists, make_bucket) to satisfy the callable contract.
         
             Args:
                 None.
         
             Returns:
-                Value defined by `_ensure_bucket` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         if not self._client.bucket_exists(self._bucket):
             self._client.make_bucket(self._bucket)
 
     def _write_sync(self, filename: str, content: bytes, content_type: str | None) -> None:
-        """Detailed synchronous function documentation for `_write_sync`.
+        """Synchronous execution path for `_write_sync`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/storage/s3_output_storage.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/storage/s3_output_storage.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (BytesIO, _ensure_bucket, len, put_object) to satisfy the callable contract.
         
             Args:
-                filename: Input parameter for `_write_sync`.
-                content: Raw payload bytes or text handled by the callable.
-                content_type: Input parameter for `_write_sync`.
+                filename: Input parameter accepted by `_write_sync`.
+                content: Raw payload bytes/text processed or transformed by this callable.
+                content_type: Input parameter accepted by `_write_sync`.
         
             Returns:
-                Value defined by `_write_sync` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         self._ensure_bucket()
         self._client.put_object(

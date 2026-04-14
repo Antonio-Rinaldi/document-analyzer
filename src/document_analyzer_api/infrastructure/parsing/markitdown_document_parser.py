@@ -1,20 +1,18 @@
-"""Detailed module documentation for `src/document_analyzer_api/infrastructure/parsing/markitdown_document_parser.py`.
+"""Module `src/document_analyzer_api/infrastructure/parsing/markitdown_document_parser.py`.
 
-File role:
-- Located in the infrastructure adapter layer.
-- Defines logic and symbols for `markitdown_document_parser.py` within Document Analyzer V1.
+This module belongs to the infrastructure adapter layer of Document Analyzer.
 
 Purpose:
-- Implements concrete adapters for persistence, providers, parsing, and retrieval backends.
+- Implements concrete integrations for storage, retrieval, parsing, and providers.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: MarkItDownDocumentParser.
 - Functions: none.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 from __future__ import annotations
@@ -31,62 +29,64 @@ from ..markitdown.capabilities import discover_supported_input_extensions
 
 
 class MarkItDownDocumentParser(DocumentParserPort):
-    """Detailed class documentation for `MarkItDownDocumentParser`.
+    """MarkItDownDocumentParser component.
     
-    This component belongs to `src/document_analyzer_api/infrastructure/parsing/markitdown_document_parser.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/infrastructure/parsing/markitdown_document_parser.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     def __init__(self) -> None:
-        """Detailed synchronous function documentation for `__init__`.
+        """Synchronous execution path for `__init__`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/parsing/markitdown_document_parser.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/parsing/markitdown_document_parser.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (MarkItDown, discover_supported_input_extensions) to satisfy the callable contract.
         
             Args:
                 None.
         
             Returns:
-                Value defined by `__init__` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         self._markitdown = MarkItDown(enable_plugins=False)
         self._supported_extensions = discover_supported_input_extensions()
 
     def supported_extensions(self) -> tuple[str, ...]:
-        """Detailed synchronous function documentation for `supported_extensions`.
+        """Synchronous execution path for `supported_extensions`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/parsing/markitdown_document_parser.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/parsing/markitdown_document_parser.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Executes the callable contract for this module concern.
         
             Args:
                 None.
         
             Returns:
-                Value defined by `supported_extensions` contract and consumed by downstream callers.
+                A value compatible with `tuple[str, ...]`.
         """
         return self._supported_extensions
 
     async def parse(self, document_name: str, content: bytes) -> ParsedDocument:
-        """Detailed asynchronous function documentation for `parse`.
+        """Asynchronous execution path for `parse`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/parsing/markitdown_document_parser.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/parsing/markitdown_document_parser.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Parses incoming payloads into structured objects used by downstream flows.
+                Parses incoming payloads and converts them to structured internal objects.
         
             Args:
-                document_name: Input parameter for `parse`.
-                content: Raw payload bytes or text handled by the callable.
+                document_name: Input parameter accepted by `parse`.
+                content: Raw payload bytes/text processed or transformed by this callable.
         
             Returns:
-                Value defined by `parse` contract and consumed by downstream callers.
+                A value compatible with `ParsedDocument`.
         """
         extension = Path(document_name).suffix.lower()
         result = self._markitdown.convert_stream(BytesIO(content), file_extension=extension or None)
@@ -98,20 +98,20 @@ class MarkItDownDocumentParser(DocumentParserPort):
         return ParsedDocument(document_name=document_name, sections=sections)
 
     def _to_sections(self, *, document_name: str, text: str) -> list[ParsedSection]:
-        """Detailed synchronous function documentation for `_to_sections`.
+        """Synchronous execution path for `_to_sections`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/parsing/markitdown_document_parser.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/parsing/markitdown_document_parser.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (ParsedSection, Path, append, compile) to satisfy the callable contract.
         
             Args:
-                document_name: Input parameter for `_to_sections`.
-                text: Input parameter for `_to_sections`.
+                document_name: Input parameter accepted by `_to_sections`.
+                text: Input parameter accepted by `_to_sections`.
         
             Returns:
-                Value defined by `_to_sections` contract and consumed by downstream callers.
+                A value compatible with `list[ParsedSection]`.
         """
         heading_pattern = re.compile(r"^#{1,6}\s+.+$", re.MULTILINE)
         headings = list(heading_pattern.finditer(text))

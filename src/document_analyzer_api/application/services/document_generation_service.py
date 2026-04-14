@@ -1,20 +1,18 @@
-"""Detailed module documentation for `src/document_analyzer_api/application/services/document_generation_service.py`.
+"""Module `src/document_analyzer_api/application/services/document_generation_service.py`.
 
-File role:
-- Located in the application service layer.
-- Defines logic and symbols for `document_generation_service.py` within Document Analyzer V1.
+This module belongs to the application service layer of Document Analyzer.
 
 Purpose:
-- Implements use-case orchestration across domain ports and infrastructure adapters.
+- Coordinates use-case workflows over domain ports and adapters.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: DocumentGenerationService.
 - Functions: none.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 from ...domain.models.retrieval import KeywordsMode, RetrievalMode, RetrievalRequest
@@ -26,27 +24,29 @@ INSUFFICIENT_EVIDENCE_MESSAGE = "I cannot find enough support in selected docume
 
 
 class DocumentGenerationService:
-    """Detailed class documentation for `DocumentGenerationService`.
+    """DocumentGenerationService application service.
     
-    This application service belongs to `src/document_analyzer_api/application/services/document_generation_service.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/application/services/document_generation_service.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     def __init__(self, retrieval_service: RetrievalService, text_generation_client: TextGenerationClientPort) -> None:
-        """Detailed synchronous function documentation for `__init__`.
+        """Synchronous execution path for `__init__`.
         
-        This callable is implemented in `src/document_analyzer_api/application/services/document_generation_service.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/application/services/document_generation_service.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Executes the callable contract for this module concern.
         
             Args:
-                retrieval_service: Input parameter for `__init__`.
-                text_generation_client: Input parameter for `__init__`.
+                retrieval_service: Input parameter accepted by `__init__`.
+                text_generation_client: Input parameter accepted by `__init__`.
         
             Returns:
-                Value defined by `__init__` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         self._retrieval_service = retrieval_service
         self._text_generation_client = text_generation_client
@@ -64,27 +64,27 @@ class DocumentGenerationService:
         hybrid_alpha: float,
         include_sources: bool,
     ) -> tuple[str, list[dict]]:
-        """Detailed asynchronous function documentation for `generate`.
+        """Asynchronous execution path for `generate`.
         
-        This callable is implemented in `src/document_analyzer_api/application/services/document_generation_service.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/application/services/document_generation_service.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Generates derived output from retrieved context and provided options.
+                Generates derived output from context, prompts, and generation options.
         
             Args:
-                question: User question or prompt text to process.
-                document_ids: Optional subset of document identifiers to scope the operation.
-                keywords: Optional keyword list used by retrieval behavior.
-                keywords_mode: Retrieval keyword strategy selector.
+                question: User prompt processed by retrieval and generation workflows.
+                document_ids: Optional subset of documents used to scope the operation.
+                keywords: Optional keyword list used for retrieval metadata/filtering/boosting.
+                keywords_mode: Keyword strategy selector (`metadata_only`, `filter`, `rank_boost`).
                 retrieval_mode: Retrieval backend mode (`vector`, `graph`, or `hybrid`).
-                top_k: Maximum number of retrieved items considered in downstream steps.
-                min_score: Minimum score threshold used to accept retrieval hits.
-                hybrid_alpha: Fusion weight used when hybrid retrieval mode is selected.
-                include_sources: Flag controlling citation/source emission in responses.
+                top_k: Maximum number of retrieval hits retained for context assembly.
+                min_score: Minimum score threshold used to discard low-confidence hits.
+                hybrid_alpha: Fusion weight for hybrid retrieval blending.
+                include_sources: Flag controlling citation extraction in response payloads.
         
             Returns:
-                Value defined by `generate` contract and consumed by downstream callers.
+                A value compatible with `tuple[str, list[dict]]`.
         """
         request = RetrievalRequest(
             query=question,

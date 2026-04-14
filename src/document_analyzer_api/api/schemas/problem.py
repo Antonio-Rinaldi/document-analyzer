@@ -1,31 +1,31 @@
-"""Detailed module documentation for `src/document_analyzer_api/api/schemas/problem.py`.
+"""Module `src/document_analyzer_api/api/schemas/problem.py`.
 
-File role:
-- Located in the API schema layer.
-- Defines logic and symbols for `problem.py` within Document Analyzer V1.
+This module belongs to the API schema layer of Document Analyzer.
 
 Purpose:
-- Supports a focused concern in the Document Analyzer codebase.
+- Implements a focused responsibility in the Document Analyzer codebase.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: ProblemDetails.
 - Functions: none.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 from pydantic import BaseModel, Field
 
 
 class ProblemDetails(BaseModel):
-    """Detailed class documentation for `ProblemDetails`.
+    """ProblemDetails component.
     
-    This component belongs to `src/document_analyzer_api/api/schemas/problem.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/api/schemas/problem.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: type, title, status, detail, instance, errorCode, details.
     """
     type: str = Field(default="about:blank")
     title: str

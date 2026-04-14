@@ -1,20 +1,18 @@
-"""Detailed module documentation for `src/document_analyzer_api/infrastructure/resilience/provider_wrappers.py`.
+"""Module `src/document_analyzer_api/infrastructure/resilience/provider_wrappers.py`.
 
-File role:
-- Located in the infrastructure adapter layer.
-- Defines logic and symbols for `provider_wrappers.py` within Document Analyzer V1.
+This module belongs to the infrastructure adapter layer of Document Analyzer.
 
 Purpose:
-- Implements concrete adapters for persistence, providers, parsing, and retrieval backends.
+- Implements concrete integrations for storage, retrieval, parsing, and providers.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: RetryEmbeddingClient, RetrySummarizer.
 - Functions: _retry_async.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 from __future__ import annotations
@@ -34,22 +32,22 @@ async def _retry_async(
     timeout_seconds: float,
     backoff_seconds: float,
 ) -> Any:
-    """Detailed asynchronous function documentation for `_retry_async`.
+    """Asynchronous execution path for `_retry_async`.
     
-    This callable is implemented in `src/document_analyzer_api/infrastructure/resilience/provider_wrappers.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `src/document_analyzer_api/infrastructure/resilience/provider_wrappers.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (RuntimeError, operation, range, sleep) to satisfy the callable contract.
     
         Args:
-            operation: Input parameter for `_retry_async`.
-            retries: Input parameter for `_retry_async`.
-            timeout_seconds: Input parameter for `_retry_async`.
-            backoff_seconds: Input parameter for `_retry_async`.
+            operation: Input parameter accepted by `_retry_async`.
+            retries: Input parameter accepted by `_retry_async`.
+            timeout_seconds: Input parameter accepted by `_retry_async`.
+            backoff_seconds: Input parameter accepted by `_retry_async`.
     
         Returns:
-            Value defined by `_retry_async` contract and consumed by downstream callers.
+            A value compatible with `Any`.
     """
     last_exc: Exception | None = None
     for attempt in range(retries + 1):
@@ -67,11 +65,13 @@ async def _retry_async(
 
 
 class RetryEmbeddingClient(EmbeddingClientPort):
-    """Detailed class documentation for `RetryEmbeddingClient`.
+    """RetryEmbeddingClient component.
     
-    This component belongs to `src/document_analyzer_api/infrastructure/resilience/provider_wrappers.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/infrastructure/resilience/provider_wrappers.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     def __init__(
         self,
@@ -81,22 +81,22 @@ class RetryEmbeddingClient(EmbeddingClientPort):
         timeout_seconds: float,
         backoff_seconds: float,
     ) -> None:
-        """Detailed synchronous function documentation for `__init__`.
+        """Synchronous execution path for `__init__`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/resilience/provider_wrappers.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/resilience/provider_wrappers.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Executes the callable contract for this module concern.
         
             Args:
-                inner: Input parameter for `__init__`.
-                retries: Input parameter for `__init__`.
-                timeout_seconds: Input parameter for `__init__`.
-                backoff_seconds: Input parameter for `__init__`.
+                inner: Input parameter accepted by `__init__`.
+                retries: Input parameter accepted by `__init__`.
+                timeout_seconds: Input parameter accepted by `__init__`.
+                backoff_seconds: Input parameter accepted by `__init__`.
         
             Returns:
-                Value defined by `__init__` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         self._inner = inner
         self._retries = retries
@@ -104,19 +104,19 @@ class RetryEmbeddingClient(EmbeddingClientPort):
         self._backoff_seconds = backoff_seconds
 
     async def embed_texts(self, texts: list[str]) -> list[list[float]]:
-        """Detailed asynchronous function documentation for `embed_texts`.
+        """Asynchronous execution path for `embed_texts`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/resilience/provider_wrappers.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/resilience/provider_wrappers.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (_retry_async, embed_texts) to satisfy the callable contract.
         
             Args:
-                texts: Input parameter for `embed_texts`.
+                texts: Input parameter accepted by `embed_texts`.
         
             Returns:
-                Value defined by `embed_texts` contract and consumed by downstream callers.
+                A value compatible with `list[list[float]]`.
         """
         return await _retry_async(
             lambda: self._inner.embed_texts(texts),
@@ -127,11 +127,13 @@ class RetryEmbeddingClient(EmbeddingClientPort):
 
 
 class RetrySummarizer(TextSummarizerPort):
-    """Detailed class documentation for `RetrySummarizer`.
+    """RetrySummarizer component.
     
-    This component belongs to `src/document_analyzer_api/infrastructure/resilience/provider_wrappers.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/infrastructure/resilience/provider_wrappers.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     def __init__(
         self,
@@ -141,22 +143,22 @@ class RetrySummarizer(TextSummarizerPort):
         timeout_seconds: float,
         backoff_seconds: float,
     ) -> None:
-        """Detailed synchronous function documentation for `__init__`.
+        """Synchronous execution path for `__init__`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/resilience/provider_wrappers.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/resilience/provider_wrappers.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Executes the callable contract for this module concern.
         
             Args:
-                inner: Input parameter for `__init__`.
-                retries: Input parameter for `__init__`.
-                timeout_seconds: Input parameter for `__init__`.
-                backoff_seconds: Input parameter for `__init__`.
+                inner: Input parameter accepted by `__init__`.
+                retries: Input parameter accepted by `__init__`.
+                timeout_seconds: Input parameter accepted by `__init__`.
+                backoff_seconds: Input parameter accepted by `__init__`.
         
             Returns:
-                Value defined by `__init__` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         self._inner = inner
         self._retries = retries
@@ -164,21 +166,21 @@ class RetrySummarizer(TextSummarizerPort):
         self._backoff_seconds = backoff_seconds
 
     async def summarize(self, target_text: str, context_text: str, prompt: str) -> str:
-        """Detailed asynchronous function documentation for `summarize`.
+        """Asynchronous execution path for `summarize`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/resilience/provider_wrappers.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/resilience/provider_wrappers.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (_retry_async, summarize) to satisfy the callable contract.
         
             Args:
-                target_text: Input parameter for `summarize`.
-                context_text: Input parameter for `summarize`.
-                prompt: Input parameter for `summarize`.
+                target_text: Input parameter accepted by `summarize`.
+                context_text: Input parameter accepted by `summarize`.
+                prompt: Input parameter accepted by `summarize`.
         
             Returns:
-                Value defined by `summarize` contract and consumed by downstream callers.
+                A value compatible with `str`.
         """
         return await _retry_async(
             lambda: self._inner.summarize(target_text=target_text, context_text=context_text, prompt=prompt),

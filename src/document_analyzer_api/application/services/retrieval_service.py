@@ -1,20 +1,18 @@
-"""Detailed module documentation for `src/document_analyzer_api/application/services/retrieval_service.py`.
+"""Module `src/document_analyzer_api/application/services/retrieval_service.py`.
 
-File role:
-- Located in the application service layer.
-- Defines logic and symbols for `retrieval_service.py` within Document Analyzer V1.
+This module belongs to the application service layer of Document Analyzer.
 
 Purpose:
-- Implements use-case orchestration across domain ports and infrastructure adapters.
+- Coordinates use-case workflows over domain ports and adapters.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: RetrievalService.
 - Functions: _chunk_index_from_id.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 from ...domain.models.retrieval import Citation, RetrievalMode, RetrievalRequest, RetrievalResult
@@ -22,11 +20,13 @@ from ...domain.ports.retrieval_backend import RetrievalBackendPort
 
 
 class RetrievalService:
-    """Detailed class documentation for `RetrievalService`.
+    """RetrievalService application service.
     
-    This application service belongs to `src/document_analyzer_api/application/services/retrieval_service.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/application/services/retrieval_service.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     def __init__(
         self,
@@ -35,21 +35,21 @@ class RetrievalService:
         graph_backend: RetrievalBackendPort,
         hybrid_backend: RetrievalBackendPort,
     ) -> None:
-        """Detailed synchronous function documentation for `__init__`.
+        """Synchronous execution path for `__init__`.
         
-        This callable is implemented in `src/document_analyzer_api/application/services/retrieval_service.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/application/services/retrieval_service.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Executes the callable contract for this module concern.
         
             Args:
-                vector_backend: Input parameter for `__init__`.
-                graph_backend: Input parameter for `__init__`.
-                hybrid_backend: Input parameter for `__init__`.
+                vector_backend: Input parameter accepted by `__init__`.
+                graph_backend: Input parameter accepted by `__init__`.
+                hybrid_backend: Input parameter accepted by `__init__`.
         
             Returns:
-                Value defined by `__init__` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         self._backends: dict[RetrievalMode, RetrievalBackendPort] = {
             RetrievalMode.vector: vector_backend,
@@ -58,19 +58,19 @@ class RetrievalService:
         }
 
     async def retrieve(self, request: RetrievalRequest) -> RetrievalResult:
-        """Detailed asynchronous function documentation for `retrieve`.
+        """Asynchronous execution path for `retrieve`.
         
-        This callable is implemented in `src/document_analyzer_api/application/services/retrieval_service.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/application/services/retrieval_service.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes retrieval strategy selection and returns matching evidence chunks.
+                Executes retrieval strategy selection and returns ranked evidence chunks.
         
             Args:
-                request: Incoming request object carrying path/query/body/context information.
+                request: Incoming HTTP request carrying route/query/body/context data.
         
             Returns:
-                Value defined by `retrieve` contract and consumed by downstream callers.
+                A value compatible with `RetrievalResult`.
         """
         backend = self._backends[request.retrieval_mode]
         hits = await backend.retrieve(request)
@@ -90,19 +90,19 @@ class RetrievalService:
 
 
 def _chunk_index_from_id(chunk_id: str) -> int | None:
-    """Detailed synchronous function documentation for `_chunk_index_from_id`.
+    """Synchronous execution path for `_chunk_index_from_id`.
     
-    This callable is implemented in `src/document_analyzer_api/application/services/retrieval_service.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `src/document_analyzer_api/application/services/retrieval_service.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (int, isdigit, split) to satisfy the callable contract.
     
         Args:
-            chunk_id: Input parameter for `_chunk_index_from_id`.
+            chunk_id: Input parameter accepted by `_chunk_index_from_id`.
     
         Returns:
-            Value defined by `_chunk_index_from_id` contract and consumed by downstream callers.
+            A value compatible with `int | None`.
     """
     if ":" not in chunk_id:
         return None

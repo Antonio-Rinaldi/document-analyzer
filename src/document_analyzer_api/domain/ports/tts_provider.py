@@ -1,47 +1,47 @@
-"""Detailed module documentation for `src/document_analyzer_api/domain/ports/tts_provider.py`.
+"""Module `src/document_analyzer_api/domain/ports/tts_provider.py`.
 
-File role:
-- Located in the domain port layer.
-- Defines logic and symbols for `tts_provider.py` within Document Analyzer V1.
+This module belongs to the domain abstraction layer of Document Analyzer.
 
 Purpose:
-- Declares abstract contracts implemented by infrastructure adapters.
+- Declares protocol contracts implemented by infrastructure adapters.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: TTSProviderPort.
 - Functions: none.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 from typing import Protocol
 
 
 class TTSProviderPort(Protocol):
-    """Detailed class documentation for `TTSProviderPort`.
+    """TTSProviderPort component.
     
-    This component belongs to `src/document_analyzer_api/domain/ports/tts_provider.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/domain/ports/tts_provider.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     def synthesize(self, text: str, audio_format: str) -> bytes:
-        """Detailed synchronous function documentation for `synthesize`.
+        """Synchronous execution path for `synthesize`.
         
-        This callable is implemented in `src/document_analyzer_api/domain/ports/tts_provider.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/domain/ports/tts_provider.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Executes the callable contract for this module concern.
         
             Args:
-                text: Input parameter for `synthesize`.
-                audio_format: Input parameter for `synthesize`.
+                text: Input parameter accepted by `synthesize`.
+                audio_format: Input parameter accepted by `synthesize`.
         
             Returns:
-                Value defined by `synthesize` contract and consumed by downstream callers.
+                A value compatible with `bytes`.
         """
         ...
 

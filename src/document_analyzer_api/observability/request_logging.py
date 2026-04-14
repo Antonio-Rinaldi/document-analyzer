@@ -1,20 +1,18 @@
-"""Detailed module documentation for `src/document_analyzer_api/observability/request_logging.py`.
+"""Module `src/document_analyzer_api/observability/request_logging.py`.
 
-File role:
-- Located in the observability layer.
-- Defines logic and symbols for `request_logging.py` within Document Analyzer V1.
+This module belongs to the observability layer of Document Analyzer.
 
 Purpose:
-- Supports a focused concern in the Document Analyzer codebase.
+- Implements metrics, tracing, and request-level telemetry support.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: RequestLoggingMiddleware.
 - Functions: none.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 from __future__ import annotations
@@ -32,45 +30,47 @@ from .metrics import observe_request
 
 
 class RequestLoggingMiddleware(BaseHTTPMiddleware):
-    """Detailed class documentation for `RequestLoggingMiddleware`.
+    """RequestLoggingMiddleware component.
     
-    This component belongs to `src/document_analyzer_api/observability/request_logging.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/observability/request_logging.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     def __init__(self, app: ASGIApp) -> None:
-        """Detailed synchronous function documentation for `__init__`.
+        """Synchronous execution path for `__init__`.
         
-        This callable is implemented in `src/document_analyzer_api/observability/request_logging.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/observability/request_logging.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (__init__, getLogger, super) to satisfy the callable contract.
         
             Args:
-                app: FastAPI application instance used for registration or runtime access.
+                app: FastAPI application instance used for registration or lifecycle wiring.
         
             Returns:
-                Value defined by `__init__` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         super().__init__(app)
         self._logger = logging.getLogger("document_analyzer.request")
 
     async def dispatch(self, request: Request, call_next):
-        """Detailed asynchronous function documentation for `dispatch`.
+        """Asynchronous execution path for `dispatch`.
         
-        This callable is implemented in `src/document_analyzer_api/observability/request_logging.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/observability/request_logging.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (call_next, dumps, get, info) to satisfy the callable contract.
         
             Args:
-                request: Incoming request object carrying path/query/body/context information.
-                call_next: Input parameter for `dispatch`.
+                request: Incoming HTTP request carrying route/query/body/context data.
+                call_next: Input parameter accepted by `dispatch`.
         
             Returns:
-                Value defined by `dispatch` contract and consumed by downstream callers.
+                Return value defined by the callable contract.
         """
         request_id = request.headers.get("X-Request-ID", uuid.uuid4().hex)
         start = time.perf_counter()

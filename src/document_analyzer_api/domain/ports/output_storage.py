@@ -1,48 +1,48 @@
-"""Detailed module documentation for `src/document_analyzer_api/domain/ports/output_storage.py`.
+"""Module `src/document_analyzer_api/domain/ports/output_storage.py`.
 
-File role:
-- Located in the domain port layer.
-- Defines logic and symbols for `output_storage.py` within Document Analyzer V1.
+This module belongs to the domain abstraction layer of Document Analyzer.
 
 Purpose:
-- Declares abstract contracts implemented by infrastructure adapters.
+- Declares protocol contracts implemented by infrastructure adapters.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: OutputStoragePort.
 - Functions: none.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 from typing import Protocol
 
 
 class OutputStoragePort(Protocol):
-    """Detailed class documentation for `OutputStoragePort`.
+    """OutputStoragePort component.
     
-    This component belongs to `src/document_analyzer_api/domain/ports/output_storage.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/domain/ports/output_storage.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     async def write_output(self, filename: str, content: bytes, content_type: str | None = None) -> str:
-        """Detailed asynchronous function documentation for `write_output`.
+        """Asynchronous execution path for `write_output`.
         
-        This callable is implemented in `src/document_analyzer_api/domain/ports/output_storage.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/domain/ports/output_storage.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Executes the callable contract for this module concern.
         
             Args:
-                filename: Input parameter for `write_output`.
-                content: Raw payload bytes or text handled by the callable.
-                content_type: Input parameter for `write_output`.
+                filename: Input parameter accepted by `write_output`.
+                content: Raw payload bytes/text processed or transformed by this callable.
+                content_type: Input parameter accepted by `write_output`.
         
             Returns:
-                Value defined by `write_output` contract and consumed by downstream callers.
+                A value compatible with `str`.
         """
         ...
 

@@ -1,20 +1,18 @@
-"""Detailed module documentation for `tests/unit/test_document_processing_pipeline_service.py`.
+"""Module `tests/unit/test_document_processing_pipeline_service.py`.
 
-File role:
-- Located in the project layer.
-- Defines logic and symbols for `test_document_processing_pipeline_service.py` within Document Analyzer V1.
+This module belongs to the project support layer of Document Analyzer.
 
 Purpose:
-- Supports a focused concern in the Document Analyzer codebase.
+- Implements a focused responsibility in the Document Analyzer codebase.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: none.
 - Functions: test_processing_pipeline_commits_to_both_repositories.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 import asyncio
@@ -35,19 +33,19 @@ from document_analyzer_api.infrastructure.persistence.local_document_metadata_re
 
 
 def test_processing_pipeline_commits_to_both_repositories(tmp_path: Path) -> None:
-    """Detailed synchronous function documentation for `test_processing_pipeline_commits_to_both_repositories`.
+    """Synchronous execution path for `test_processing_pipeline_commits_to_both_repositories`.
     
-    This callable is implemented in `tests/unit/test_document_processing_pipeline_service.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/unit/test_document_processing_pipeline_service.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (BaseChunkBuilderService, ChunkingConfig, ChunkingService, DeterministicEmbeddingClient) to satisfy the callable contract.
     
         Args:
-            tmp_path: Input parameter for `test_processing_pipeline_commits_to_both_repositories`.
+            tmp_path: Input parameter accepted by `test_processing_pipeline_commits_to_both_repositories`.
     
         Returns:
-            Value defined by `test_processing_pipeline_commits_to_both_repositories` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     pipeline = DocumentProcessingPipelineService(
         parser=SimpleEpubParser(),

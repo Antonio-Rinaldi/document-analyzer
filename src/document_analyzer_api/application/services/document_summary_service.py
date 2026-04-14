@@ -1,20 +1,18 @@
-"""Detailed module documentation for `src/document_analyzer_api/application/services/document_summary_service.py`.
+"""Module `src/document_analyzer_api/application/services/document_summary_service.py`.
 
-File role:
-- Located in the application service layer.
-- Defines logic and symbols for `document_summary_service.py` within Document Analyzer V1.
+This module belongs to the application service layer of Document Analyzer.
 
 Purpose:
-- Implements use-case orchestration across domain ports and infrastructure adapters.
+- Coordinates use-case workflows over domain ports and adapters.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: DocumentSummaryService.
 - Functions: none.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 import uuid
@@ -25,11 +23,13 @@ from ...domain.ports.output_storage import OutputStoragePort
 
 
 class DocumentSummaryService:
-    """Detailed class documentation for `DocumentSummaryService`.
+    """DocumentSummaryService application service.
     
-    This application service belongs to `src/document_analyzer_api/application/services/document_summary_service.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/application/services/document_summary_service.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     def __init__(
         self,
@@ -37,21 +37,21 @@ class DocumentSummaryService:
         output_storage: OutputStoragePort,
         document_creator: DocumentCreatorPort,
     ) -> None:
-        """Detailed synchronous function documentation for `__init__`.
+        """Synchronous execution path for `__init__`.
         
-        This callable is implemented in `src/document_analyzer_api/application/services/document_summary_service.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/application/services/document_summary_service.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Executes the callable contract for this module concern.
         
             Args:
-                query_service: Input parameter for `__init__`.
-                output_storage: Input parameter for `__init__`.
-                document_creator: Input parameter for `__init__`.
+                query_service: Input parameter accepted by `__init__`.
+                output_storage: Input parameter accepted by `__init__`.
+                document_creator: Input parameter accepted by `__init__`.
         
             Returns:
-                Value defined by `__init__` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         self._query_service = query_service
         self._output_storage = output_storage
@@ -59,38 +59,38 @@ class DocumentSummaryService:
 
     @property
     def supported_output_formats(self) -> tuple[str, ...]:
-        """Detailed synchronous function documentation for `supported_output_formats`.
+        """Synchronous execution path for `supported_output_formats`.
         
-        This callable is implemented in `src/document_analyzer_api/application/services/document_summary_service.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/application/services/document_summary_service.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (supported_output_formats) to satisfy the callable contract.
         
             Args:
                 None.
         
             Returns:
-                Value defined by `supported_output_formats` contract and consumed by downstream callers.
+                A value compatible with `tuple[str, ...]`.
         """
         return self._document_creator.supported_output_formats()
 
     async def create_summary(self, document_ids: list[str] | None, keywords: list[str], output_format: str) -> str:
-        """Detailed asynchronous function documentation for `create_summary`.
+        """Asynchronous execution path for `create_summary`.
         
-        This callable is implemented in `src/document_analyzer_api/application/services/document_summary_service.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/application/services/document_summary_service.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Creates a new resource and returns identifiers or resulting payloads.
+                Creates a resource and returns identifiers or materialized result payloads.
         
             Args:
-                document_ids: Optional subset of document identifiers to scope the operation.
-                keywords: Optional keyword list used by retrieval behavior.
-                output_format: Input parameter for `create_summary`.
+                document_ids: Optional subset of documents used to scope the operation.
+                keywords: Optional keyword list used for retrieval metadata/filtering/boosting.
+                output_format: Input parameter accepted by `create_summary`.
         
             Returns:
-                Value defined by `create_summary` contract and consumed by downstream callers.
+                A value compatible with `str`.
         """
         items, _ = await self._query_service.list_documents(offset=0, limit=10000)
         selected = items

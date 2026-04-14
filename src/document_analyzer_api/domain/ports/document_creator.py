@@ -1,20 +1,18 @@
-"""Detailed module documentation for `src/document_analyzer_api/domain/ports/document_creator.py`.
+"""Module `src/document_analyzer_api/domain/ports/document_creator.py`.
 
-File role:
-- Located in the domain port layer.
-- Defines logic and symbols for `document_creator.py` within Document Analyzer V1.
+This module belongs to the domain abstraction layer of Document Analyzer.
 
 Purpose:
-- Declares abstract contracts implemented by infrastructure adapters.
+- Declares protocol contracts implemented by infrastructure adapters.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: CreatedDocument, DocumentCreatorPort.
 - Functions: none.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 from dataclasses import dataclass
@@ -23,56 +21,60 @@ from typing import Protocol
 
 @dataclass(slots=True)
 class CreatedDocument:
-    """Detailed class documentation for `CreatedDocument`.
+    """CreatedDocument component.
     
-    This component belongs to `src/document_analyzer_api/domain/ports/document_creator.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/domain/ports/document_creator.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: filename, content.
     """
     filename: str
     content: bytes
 
 
 class DocumentCreatorPort(Protocol):
-    """Detailed class documentation for `DocumentCreatorPort`.
+    """DocumentCreatorPort component.
     
-    This component belongs to `src/document_analyzer_api/domain/ports/document_creator.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/domain/ports/document_creator.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     def supported_output_formats(self) -> tuple[str, ...]:
-        """Detailed synchronous function documentation for `supported_output_formats`.
+        """Synchronous execution path for `supported_output_formats`.
         
-        This callable is implemented in `src/document_analyzer_api/domain/ports/document_creator.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/domain/ports/document_creator.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Executes the callable contract for this module concern.
         
             Args:
                 None.
         
             Returns:
-                Value defined by `supported_output_formats` contract and consumed by downstream callers.
+                A value compatible with `tuple[str, ...]`.
         """
         ...
 
     async def create(self, *, summary_text: str, output_format: str, filename_stem: str) -> CreatedDocument:
-        """Detailed asynchronous function documentation for `create`.
+        """Asynchronous execution path for `create`.
         
-        This callable is implemented in `src/document_analyzer_api/domain/ports/document_creator.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/domain/ports/document_creator.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Executes the callable contract for this module concern.
         
             Args:
-                summary_text: Input parameter for `create`.
-                output_format: Input parameter for `create`.
-                filename_stem: Input parameter for `create`.
+                summary_text: Input parameter accepted by `create`.
+                output_format: Input parameter accepted by `create`.
+                filename_stem: Input parameter accepted by `create`.
         
             Returns:
-                Value defined by `create` contract and consumed by downstream callers.
+                A value compatible with `CreatedDocument`.
         """
         ...
 

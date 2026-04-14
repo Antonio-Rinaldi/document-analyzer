@@ -1,20 +1,18 @@
-"""Detailed module documentation for `tests/unit/test_chat_service.py`.
+"""Module `tests/unit/test_chat_service.py`.
 
-File role:
-- Located in the project layer.
-- Defines logic and symbols for `test_chat_service.py` within Document Analyzer V1.
+This module belongs to the project support layer of Document Analyzer.
 
 Purpose:
-- Supports a focused concern in the Document Analyzer codebase.
+- Implements a focused responsibility in the Document Analyzer codebase.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: StubGenerationService.
 - Functions: test_chat_service_compacts_history_when_threshold_exceeded, test_chat_service_delete_session.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 import asyncio
@@ -26,44 +24,46 @@ from document_analyzer_api.infrastructure.persistence.local_chat_session_reposit
 
 
 class StubGenerationService:
-    """Detailed class documentation for `StubGenerationService`.
+    """StubGenerationService application service.
     
-    This application service belongs to `tests/unit/test_chat_service.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `tests/unit/test_chat_service.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     async def generate(self, **kwargs):
-        """Detailed asynchronous function documentation for `generate`.
+        """Asynchronous execution path for `generate`.
         
-        This callable is implemented in `tests/unit/test_chat_service.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `tests/unit/test_chat_service.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Generates derived output from retrieved context and provided options.
+                Generates derived output from context, prompts, and generation options.
         
             Args:
-                **kwargs: Input parameter for `generate`.
+                **kwargs: Input parameter accepted by `generate`.
         
             Returns:
-                Value defined by `generate` contract and consumed by downstream callers.
+                Return value defined by the callable contract.
         """
         return "answer", []
 
 
 def test_chat_service_compacts_history_when_threshold_exceeded(tmp_path: Path) -> None:
-    """Detailed synchronous function documentation for `test_chat_service_compacts_history_when_threshold_exceeded`.
+    """Synchronous execution path for `test_chat_service_compacts_history_when_threshold_exceeded`.
     
-    This callable is implemented in `tests/unit/test_chat_service.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/unit/test_chat_service.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (ChatService, LocalChatSessionRepository, StubGenerationService, any) to satisfy the callable contract.
     
         Args:
-            tmp_path: Input parameter for `test_chat_service_compacts_history_when_threshold_exceeded`.
+            tmp_path: Input parameter accepted by `test_chat_service_compacts_history_when_threshold_exceeded`.
     
         Returns:
-            Value defined by `test_chat_service_compacts_history_when_threshold_exceeded` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     repository = LocalChatSessionRepository(root_path=str(tmp_path))
     service = ChatService(
@@ -112,19 +112,19 @@ def test_chat_service_compacts_history_when_threshold_exceeded(tmp_path: Path) -
 
 
 def test_chat_service_delete_session(tmp_path: Path) -> None:
-    """Detailed synchronous function documentation for `test_chat_service_delete_session`.
+    """Synchronous execution path for `test_chat_service_delete_session`.
     
-    This callable is implemented in `tests/unit/test_chat_service.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/unit/test_chat_service.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (ChatService, LocalChatSessionRepository, StubGenerationService, create_session) to satisfy the callable contract.
     
         Args:
-            tmp_path: Input parameter for `test_chat_service_delete_session`.
+            tmp_path: Input parameter accepted by `test_chat_service_delete_session`.
     
         Returns:
-            Value defined by `test_chat_service_delete_session` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     repository = LocalChatSessionRepository(root_path=str(tmp_path))
     service = ChatService(

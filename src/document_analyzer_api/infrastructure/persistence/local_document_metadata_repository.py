@@ -1,20 +1,18 @@
-"""Detailed module documentation for `src/document_analyzer_api/infrastructure/persistence/local_document_metadata_repository.py`.
+"""Module `src/document_analyzer_api/infrastructure/persistence/local_document_metadata_repository.py`.
 
-File role:
-- Located in the infrastructure adapter layer.
-- Defines logic and symbols for `local_document_metadata_repository.py` within Document Analyzer V1.
+This module belongs to the infrastructure adapter layer of Document Analyzer.
 
 Purpose:
-- Implements concrete adapters for persistence, providers, parsing, and retrieval backends.
+- Implements concrete integrations for storage, retrieval, parsing, and providers.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: LocalDocumentMetadataRepository.
 - Functions: none.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 import asyncio
@@ -27,43 +25,45 @@ from ...domain.ports.document_metadata_repository import DocumentMetadataReposit
 
 
 class LocalDocumentMetadataRepository(DocumentMetadataRepositoryPort):
-    """Detailed class documentation for `LocalDocumentMetadataRepository`.
+    """LocalDocumentMetadataRepository repository adapter.
     
-    This repository adapter belongs to `src/document_analyzer_api/infrastructure/persistence/local_document_metadata_repository.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/infrastructure/persistence/local_document_metadata_repository.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     def __init__(self, root_path: str) -> None:
-        """Detailed synchronous function documentation for `__init__`.
+        """Synchronous execution path for `__init__`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_document_metadata_repository.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_document_metadata_repository.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (Path) to satisfy the callable contract.
         
             Args:
-                root_path: Input parameter for `__init__`.
+                root_path: Input parameter accepted by `__init__`.
         
             Returns:
-                Value defined by `__init__` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         self._file_path = Path(root_path) / "documents.json"
 
     async def upsert(self, document: DocumentMetadata) -> None:
-        """Detailed asynchronous function documentation for `upsert`.
+        """Asynchronous execution path for `upsert`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_document_metadata_repository.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_document_metadata_repository.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (_load_records, _save_records, append, asdict) to satisfy the callable contract.
         
             Args:
-                document: Input parameter for `upsert`.
+                document: Input parameter accepted by `upsert`.
         
             Returns:
-                Value defined by `upsert` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         records = await self._load_records()
         data = asdict(document)
@@ -75,20 +75,20 @@ class LocalDocumentMetadataRepository(DocumentMetadataRepositoryPort):
         await self._save_records(records)
 
     async def list_paginated(self, offset: int, limit: int) -> tuple[list[DocumentMetadata], int]:
-        """Detailed asynchronous function documentation for `list_paginated`.
+        """Asynchronous execution path for `list_paginated`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_document_metadata_repository.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_document_metadata_repository.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Collects and returns a paginated or aggregated list of entities.
+                Collects and returns a list or paginated subset of entities.
         
             Args:
-                offset: Input parameter for `list_paginated`.
-                limit: Input parameter for `list_paginated`.
+                offset: Input parameter accepted by `list_paginated`.
+                limit: Input parameter accepted by `list_paginated`.
         
             Returns:
-                Value defined by `list_paginated` contract and consumed by downstream callers.
+                A value compatible with `tuple[list[DocumentMetadata], int]`.
         """
         records = await self._load_records()
         total = len(records)
@@ -96,34 +96,34 @@ class LocalDocumentMetadataRepository(DocumentMetadataRepositoryPort):
         return items, total
 
     async def _load_records(self) -> list[dict]:
-        """Detailed asynchronous function documentation for `_load_records`.
+        """Asynchronous execution path for `_load_records`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_document_metadata_repository.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_document_metadata_repository.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (exists, loads, read_text, to_thread) to satisfy the callable contract.
         
             Args:
                 None.
         
             Returns:
-                Value defined by `_load_records` contract and consumed by downstream callers.
+                A value compatible with `list[dict]`.
         """
         def _read() -> list[dict]:
-            """Detailed synchronous function documentation for `_read`.
+            """Synchronous execution path for `_read`.
             
-            This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_document_metadata_repository.py` and contributes to the module workflow
-            through deterministic input/output behavior and explicit collaboration contracts.
+            This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_document_metadata_repository.py` and contributes to module-level behavior
+            with explicit and testable execution semantics.
             
                 Behavior:
-                    Executes the callable contract for this module responsibility.
+                    Coordinates helper calls (exists, loads, read_text) to satisfy the callable contract.
             
                 Args:
                     None.
             
                 Returns:
-                    Value defined by `_read` contract and consumed by downstream callers.
+                    A value compatible with `list[dict]`.
             """
             if not self._file_path.exists():
                 return []
@@ -132,34 +132,34 @@ class LocalDocumentMetadataRepository(DocumentMetadataRepositoryPort):
         return await asyncio.to_thread(_read)
 
     async def _save_records(self, records: list[dict]) -> None:
-        """Detailed asynchronous function documentation for `_save_records`.
+        """Asynchronous execution path for `_save_records`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_document_metadata_repository.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_document_metadata_repository.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (dumps, mkdir, to_thread, write_text) to satisfy the callable contract.
         
             Args:
-                records: Input parameter for `_save_records`.
+                records: Input parameter accepted by `_save_records`.
         
             Returns:
-                Value defined by `_save_records` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         def _write() -> None:
-            """Detailed synchronous function documentation for `_write`.
+            """Synchronous execution path for `_write`.
             
-            This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_document_metadata_repository.py` and contributes to the module workflow
-            through deterministic input/output behavior and explicit collaboration contracts.
+            This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_document_metadata_repository.py` and contributes to module-level behavior
+            with explicit and testable execution semantics.
             
                 Behavior:
-                    Executes the callable contract for this module responsibility.
+                    Coordinates helper calls (dumps, mkdir, write_text) to satisfy the callable contract.
             
                 Args:
                     None.
             
                 Returns:
-                    Value defined by `_write` contract and consumed by downstream callers.
+                    A value compatible with `None`.
             """
             self._file_path.parent.mkdir(parents=True, exist_ok=True)
             self._file_path.write_text(json.dumps(records), encoding="utf-8")

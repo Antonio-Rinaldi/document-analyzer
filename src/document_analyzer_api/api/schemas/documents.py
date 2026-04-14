@@ -1,20 +1,18 @@
-"""Detailed module documentation for `src/document_analyzer_api/api/schemas/documents.py`.
+"""Module `src/document_analyzer_api/api/schemas/documents.py`.
 
-File role:
-- Located in the API schema layer.
-- Defines logic and symbols for `documents.py` within Document Analyzer V1.
+This module belongs to the API schema layer of Document Analyzer.
 
 Purpose:
-- Supports a focused concern in the Document Analyzer codebase.
+- Implements a focused responsibility in the Document Analyzer codebase.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: ChunkingStrategy, ChunkGranularity, SubParagraphOptions, ContextualSummaryOptions, ChunkingStrategyOptions, ChunkingOptions, DocumentIngestFileStatus, DocumentIngestResult, DocumentIngestResponse, DocumentListItem, DocumentListResponse, DocumentCapabilitiesResponse.
 - Functions: none.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 from enum import Enum
@@ -23,22 +21,26 @@ from pydantic import BaseModel, Field
 
 
 class ChunkingStrategy(str, Enum):
-    """Detailed class documentation for `ChunkingStrategy`.
+    """ChunkingStrategy component.
     
-    This component belongs to `src/document_analyzer_api/api/schemas/documents.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/api/schemas/documents.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     meaningful = "meaningful"
     contextual_summary = "contextual_summary"
 
 
 class ChunkGranularity(str, Enum):
-    """Detailed class documentation for `ChunkGranularity`.
+    """ChunkGranularity component.
     
-    This component belongs to `src/document_analyzer_api/api/schemas/documents.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/api/schemas/documents.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     chapter = "chapter"
     paragraph = "paragraph"
@@ -46,42 +48,50 @@ class ChunkGranularity(str, Enum):
 
 
 class SubParagraphOptions(BaseModel):
-    """Detailed class documentation for `SubParagraphOptions`.
+    """SubParagraphOptions component.
     
-    This component belongs to `src/document_analyzer_api/api/schemas/documents.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/api/schemas/documents.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: targetTokens, overlapTokens.
     """
     targetTokens: int = Field(default=350, ge=50)
     overlapTokens: int = Field(default=60, ge=0)
 
 
 class ContextualSummaryOptions(BaseModel):
-    """Detailed class documentation for `ContextualSummaryOptions`.
+    """ContextualSummaryOptions component.
     
-    This component belongs to `src/document_analyzer_api/api/schemas/documents.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/api/schemas/documents.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: prompt.
     """
     prompt: str = Field(default="Write a concise neutral summary of the target chunk.", min_length=1)
 
 
 class ChunkingStrategyOptions(BaseModel):
-    """Detailed class documentation for `ChunkingStrategyOptions`.
+    """ChunkingStrategyOptions component.
     
-    This component belongs to `src/document_analyzer_api/api/schemas/documents.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/api/schemas/documents.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: contextualSummary.
     """
     contextualSummary: ContextualSummaryOptions | None = None
 
 
 class ChunkingOptions(BaseModel):
-    """Detailed class documentation for `ChunkingOptions`.
+    """ChunkingOptions component.
     
-    This component belongs to `src/document_analyzer_api/api/schemas/documents.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/api/schemas/documents.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: strategy, granularity, subParagraph, strategyOptions.
     """
     strategy: ChunkingStrategy = ChunkingStrategy.meaningful
     granularity: ChunkGranularity = ChunkGranularity.paragraph
@@ -90,11 +100,13 @@ class ChunkingOptions(BaseModel):
 
 
 class DocumentIngestFileStatus(str, Enum):
-    """Detailed class documentation for `DocumentIngestFileStatus`.
+    """DocumentIngestFileStatus component.
     
-    This component belongs to `src/document_analyzer_api/api/schemas/documents.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/api/schemas/documents.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     processed = "processed"
     already_processed = "already_processed"
@@ -104,11 +116,13 @@ class DocumentIngestFileStatus(str, Enum):
 
 
 class DocumentIngestResult(BaseModel):
-    """Detailed class documentation for `DocumentIngestResult`.
+    """DocumentIngestResult component.
     
-    This component belongs to `src/document_analyzer_api/api/schemas/documents.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/api/schemas/documents.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: name, status, documentId, errorCode, error.
     """
     name: str
     status: DocumentIngestFileStatus
@@ -118,21 +132,25 @@ class DocumentIngestResult(BaseModel):
 
 
 class DocumentIngestResponse(BaseModel):
-    """Detailed class documentation for `DocumentIngestResponse`.
+    """DocumentIngestResponse transport schema.
     
-    This transport schema model belongs to `src/document_analyzer_api/api/schemas/documents.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/api/schemas/documents.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: results.
     """
     results: list[DocumentIngestResult]
 
 
 class DocumentListItem(BaseModel):
-    """Detailed class documentation for `DocumentListItem`.
+    """DocumentListItem component.
     
-    This component belongs to `src/document_analyzer_api/api/schemas/documents.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/api/schemas/documents.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: id, name, description.
     """
     id: str
     name: str
@@ -140,11 +158,13 @@ class DocumentListItem(BaseModel):
 
 
 class DocumentListResponse(BaseModel):
-    """Detailed class documentation for `DocumentListResponse`.
+    """DocumentListResponse transport schema.
     
-    This transport schema model belongs to `src/document_analyzer_api/api/schemas/documents.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/api/schemas/documents.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: items, offset, limit, total.
     """
     items: list[DocumentListItem]
     offset: int
@@ -153,11 +173,13 @@ class DocumentListResponse(BaseModel):
 
 
 class DocumentCapabilitiesResponse(BaseModel):
-    """Detailed class documentation for `DocumentCapabilitiesResponse`.
+    """DocumentCapabilitiesResponse transport schema.
     
-    This transport schema model belongs to `src/document_analyzer_api/api/schemas/documents.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/api/schemas/documents.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: supportedInputExtensions, supportedSummaryOutputFormats.
     """
     supportedInputExtensions: list[str]
     supportedSummaryOutputFormats: list[str]

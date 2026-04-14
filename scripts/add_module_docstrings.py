@@ -1,20 +1,18 @@
-"""Detailed module documentation for `scripts/add_module_docstrings.py`.
+"""Module `scripts/add_module_docstrings.py`.
 
-File role:
-- Located in the project layer.
-- Defines logic and symbols for `add_module_docstrings.py` within Document Analyzer V1.
+This module belongs to the project support layer of Document Analyzer.
 
 Purpose:
-- Supports a focused concern in the Document Analyzer codebase.
+- Implements a focused responsibility in the Document Analyzer codebase.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: none.
 - Functions: _module_doc, _iter_python_files, main.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 from __future__ import annotations
@@ -27,21 +25,21 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def _module_doc(relative_path: str, classes: list[str], functions: list[str]) -> str:
-    """Detailed synchronous function documentation for `_module_doc`.
+    """Synchronous execution path for `_module_doc`.
     
-    This callable is implemented in `scripts/add_module_docstrings.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `scripts/add_module_docstrings.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (append, join) to satisfy the callable contract.
     
         Args:
-            relative_path: Input parameter for `_module_doc`.
-            classes: Input parameter for `_module_doc`.
-            functions: Input parameter for `_module_doc`.
+            relative_path: Input parameter accepted by `_module_doc`.
+            classes: Input parameter accepted by `_module_doc`.
+            functions: Input parameter accepted by `_module_doc`.
     
         Returns:
-            Value defined by `_module_doc` contract and consumed by downstream callers.
+            A value compatible with `str`.
     """
     area = "shared project support utilities"
     if "/api/" in relative_path:
@@ -82,19 +80,19 @@ def _module_doc(relative_path: str, classes: list[str], functions: list[str]) ->
 
 
 def _iter_python_files() -> list[Path]:
-    """Detailed synchronous function documentation for `_iter_python_files`.
+    """Synchronous execution path for `_iter_python_files`.
     
-    This callable is implemented in `scripts/add_module_docstrings.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `scripts/add_module_docstrings.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (rglob, str) to satisfy the callable contract.
     
         Args:
             None.
     
         Returns:
-            Value defined by `_iter_python_files` contract and consumed by downstream callers.
+            A value compatible with `list[Path]`.
     """
     return [
         path
@@ -104,10 +102,10 @@ def _iter_python_files() -> list[Path]:
 
 
 def main() -> None:
-    """Detailed synchronous function documentation for `main`.
+    """Synchronous execution path for `main`.
     
-    This callable is implemented in `scripts/add_module_docstrings.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `scripts/add_module_docstrings.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
             Builds and configures the runtime application entrypoint.
@@ -116,7 +114,7 @@ def main() -> None:
             None.
     
         Returns:
-            Value defined by `main` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     updated = 0
     for path in sorted(_iter_python_files()):

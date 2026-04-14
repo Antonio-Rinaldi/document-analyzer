@@ -1,20 +1,18 @@
-"""Detailed module documentation for `src/document_analyzer_api/infrastructure/modalities/local_tts_provider.py`.
+"""Module `src/document_analyzer_api/infrastructure/modalities/local_tts_provider.py`.
 
-File role:
-- Located in the infrastructure adapter layer.
-- Defines logic and symbols for `local_tts_provider.py` within Document Analyzer V1.
+This module belongs to the infrastructure adapter layer of Document Analyzer.
 
 Purpose:
-- Implements concrete adapters for persistence, providers, parsing, and retrieval backends.
+- Implements concrete integrations for storage, retrieval, parsing, and providers.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: LocalTTSProvider.
 - Functions: none.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 import io
@@ -23,28 +21,30 @@ import wave
 
 
 class LocalTTSProvider:
-    """Detailed class documentation for `LocalTTSProvider`.
+    """LocalTTSProvider provider adapter.
     
-    This provider adapter belongs to `src/document_analyzer_api/infrastructure/modalities/local_tts_provider.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/infrastructure/modalities/local_tts_provider.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     def synthesize(self, text: str, audio_format: str) -> bytes:
         # Local deterministic wav generation used for development-phase modality plumbing.
-        """Detailed synchronous function documentation for `synthesize`.
+        """Synchronous execution path for `synthesize`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/modalities/local_tts_provider.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/modalities/local_tts_provider.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (BytesIO, getvalue, int, len) to satisfy the callable contract.
         
             Args:
-                text: Input parameter for `synthesize`.
-                audio_format: Input parameter for `synthesize`.
+                text: Input parameter accepted by `synthesize`.
+                audio_format: Input parameter accepted by `synthesize`.
         
             Returns:
-                Value defined by `synthesize` contract and consumed by downstream callers.
+                A value compatible with `bytes`.
         """
         sample_rate = 16000
         duration_seconds = max(1, min(6, len(text) // 80 + 1))

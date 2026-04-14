@@ -1,20 +1,18 @@
-"""Detailed module documentation for `src/document_analyzer_api/domain/models/retrieval.py`.
+"""Module `src/document_analyzer_api/domain/models/retrieval.py`.
 
-File role:
-- Located in the domain model layer.
-- Defines logic and symbols for `retrieval.py` within Document Analyzer V1.
+This module belongs to the domain model layer of Document Analyzer.
 
 Purpose:
-- Declares domain-level structures exchanged by services and adapters.
+- Declares domain objects exchanged across business workflows.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: RetrievalMode, KeywordsMode, RetrievalRequest, RetrievalHit, Citation, RetrievalResult.
 - Functions: none.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 from dataclasses import dataclass, field
@@ -23,11 +21,13 @@ from typing import Any
 
 
 class RetrievalMode(str, Enum):
-    """Detailed class documentation for `RetrievalMode`.
+    """RetrievalMode component.
     
-    This component belongs to `src/document_analyzer_api/domain/models/retrieval.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/domain/models/retrieval.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     vector = "vector"
     graph = "graph"
@@ -35,11 +35,13 @@ class RetrievalMode(str, Enum):
 
 
 class KeywordsMode(str, Enum):
-    """Detailed class documentation for `KeywordsMode`.
+    """KeywordsMode component.
     
-    This component belongs to `src/document_analyzer_api/domain/models/retrieval.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/domain/models/retrieval.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     metadata_only = "metadata_only"
     filter = "filter"
@@ -48,11 +50,13 @@ class KeywordsMode(str, Enum):
 
 @dataclass(slots=True)
 class RetrievalRequest:
-    """Detailed class documentation for `RetrievalRequest`.
+    """RetrievalRequest transport schema.
     
-    This transport schema model belongs to `src/document_analyzer_api/domain/models/retrieval.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/domain/models/retrieval.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: query, retrieval_mode, document_ids, keywords, keywords_mode, top_k, min_score, hybrid_alpha.
     """
     query: str
     retrieval_mode: RetrievalMode = RetrievalMode.vector
@@ -67,11 +71,13 @@ class RetrievalRequest:
 
 @dataclass(slots=True)
 class RetrievalHit:
-    """Detailed class documentation for `RetrievalHit`.
+    """RetrievalHit component.
     
-    This component belongs to `src/document_analyzer_api/domain/models/retrieval.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/domain/models/retrieval.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: document_id, chunk_id, content, score, metadata.
     """
     document_id: str
     chunk_id: str
@@ -82,11 +88,13 @@ class RetrievalHit:
 
 @dataclass(slots=True)
 class Citation:
-    """Detailed class documentation for `Citation`.
+    """Citation component.
     
-    This component belongs to `src/document_analyzer_api/domain/models/retrieval.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/domain/models/retrieval.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: document_id, chunk_id, chunk_index.
     """
     document_id: str
     chunk_id: str
@@ -95,11 +103,13 @@ class Citation:
 
 @dataclass(slots=True)
 class RetrievalResult:
-    """Detailed class documentation for `RetrievalResult`.
+    """RetrievalResult component.
     
-    This component belongs to `src/document_analyzer_api/domain/models/retrieval.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/domain/models/retrieval.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: hits, citations.
     """
     hits: list[RetrievalHit]
     citations: list[Citation]

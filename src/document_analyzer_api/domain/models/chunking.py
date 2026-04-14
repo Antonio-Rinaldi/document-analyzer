@@ -1,20 +1,18 @@
-"""Detailed module documentation for `src/document_analyzer_api/domain/models/chunking.py`.
+"""Module `src/document_analyzer_api/domain/models/chunking.py`.
 
-File role:
-- Located in the domain model layer.
-- Defines logic and symbols for `chunking.py` within Document Analyzer V1.
+This module belongs to the domain model layer of Document Analyzer.
 
 Purpose:
-- Declares domain-level structures exchanged by services and adapters.
+- Declares domain objects exchanged across business workflows.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: ChunkingStrategyName, ChunkGranularity, ChunkingConfig, ParsedSection, ParsedDocument, BaseChunk, FinalChunk.
 - Functions: none.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 from dataclasses import dataclass, field
@@ -23,22 +21,26 @@ from typing import Any
 
 
 class ChunkingStrategyName(str, Enum):
-    """Detailed class documentation for `ChunkingStrategyName`.
+    """ChunkingStrategyName component.
     
-    This component belongs to `src/document_analyzer_api/domain/models/chunking.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/domain/models/chunking.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     meaningful = "meaningful"
     contextual_summary = "contextual_summary"
 
 
 class ChunkGranularity(str, Enum):
-    """Detailed class documentation for `ChunkGranularity`.
+    """ChunkGranularity component.
     
-    This component belongs to `src/document_analyzer_api/domain/models/chunking.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/domain/models/chunking.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     chapter = "chapter"
     paragraph = "paragraph"
@@ -50,11 +52,13 @@ DEFAULT_CONTEXTUAL_SUMMARY_PROMPT = "Write a concise neutral summary of the targ
 
 @dataclass(slots=True)
 class ChunkingConfig:
-    """Detailed class documentation for `ChunkingConfig`.
+    """ChunkingConfig component.
     
-    This component belongs to `src/document_analyzer_api/domain/models/chunking.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/domain/models/chunking.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: strategy, granularity, target_tokens, overlap_tokens, contextual_summary_prompt.
     """
     strategy: ChunkingStrategyName = ChunkingStrategyName.meaningful
     granularity: ChunkGranularity = ChunkGranularity.paragraph
@@ -65,11 +69,13 @@ class ChunkingConfig:
 
 @dataclass(slots=True)
 class ParsedSection:
-    """Detailed class documentation for `ParsedSection`.
+    """ParsedSection component.
     
-    This component belongs to `src/document_analyzer_api/domain/models/chunking.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/domain/models/chunking.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: section_id, title, text.
     """
     section_id: str
     title: str
@@ -78,11 +84,13 @@ class ParsedSection:
 
 @dataclass(slots=True)
 class ParsedDocument:
-    """Detailed class documentation for `ParsedDocument`.
+    """ParsedDocument component.
     
-    This component belongs to `src/document_analyzer_api/domain/models/chunking.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/domain/models/chunking.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: document_name, sections.
     """
     document_name: str
     sections: list[ParsedSection] = field(default_factory=list)
@@ -90,11 +98,13 @@ class ParsedDocument:
 
 @dataclass(slots=True)
 class BaseChunk:
-    """Detailed class documentation for `BaseChunk`.
+    """BaseChunk component.
     
-    This component belongs to `src/document_analyzer_api/domain/models/chunking.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/domain/models/chunking.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: chunk_id, section_id, text, context_text, metadata.
     """
     chunk_id: str
     section_id: str
@@ -105,11 +115,13 @@ class BaseChunk:
 
 @dataclass(slots=True)
 class FinalChunk:
-    """Detailed class documentation for `FinalChunk`.
+    """FinalChunk component.
     
-    This component belongs to `src/document_analyzer_api/domain/models/chunking.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/domain/models/chunking.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: chunk_id, content, metadata.
     """
     chunk_id: str
     content: str

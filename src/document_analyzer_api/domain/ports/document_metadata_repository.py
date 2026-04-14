@@ -1,20 +1,18 @@
-"""Detailed module documentation for `src/document_analyzer_api/domain/ports/document_metadata_repository.py`.
+"""Module `src/document_analyzer_api/domain/ports/document_metadata_repository.py`.
 
-File role:
-- Located in the domain port layer.
-- Defines logic and symbols for `document_metadata_repository.py` within Document Analyzer V1.
+This module belongs to the domain abstraction layer of Document Analyzer.
 
 Purpose:
-- Declares abstract contracts implemented by infrastructure adapters.
+- Declares protocol contracts implemented by infrastructure adapters.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: DocumentMetadataRepositoryPort.
 - Functions: none.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 from typing import Protocol
@@ -23,44 +21,46 @@ from ..models.persistence import DocumentMetadata
 
 
 class DocumentMetadataRepositoryPort(Protocol):
-    """Detailed class documentation for `DocumentMetadataRepositoryPort`.
+    """DocumentMetadataRepositoryPort component.
     
-    This component belongs to `src/document_analyzer_api/domain/ports/document_metadata_repository.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/domain/ports/document_metadata_repository.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     async def upsert(self, document: DocumentMetadata) -> None:
-        """Detailed asynchronous function documentation for `upsert`.
+        """Asynchronous execution path for `upsert`.
         
-        This callable is implemented in `src/document_analyzer_api/domain/ports/document_metadata_repository.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/domain/ports/document_metadata_repository.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Executes the callable contract for this module concern.
         
             Args:
-                document: Input parameter for `upsert`.
+                document: Input parameter accepted by `upsert`.
         
             Returns:
-                Value defined by `upsert` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         ...
 
     async def list_paginated(self, offset: int, limit: int) -> tuple[list[DocumentMetadata], int]:
-        """Detailed asynchronous function documentation for `list_paginated`.
+        """Asynchronous execution path for `list_paginated`.
         
-        This callable is implemented in `src/document_analyzer_api/domain/ports/document_metadata_repository.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/domain/ports/document_metadata_repository.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Collects and returns a paginated or aggregated list of entities.
+                Collects and returns a list or paginated subset of entities.
         
             Args:
-                offset: Input parameter for `list_paginated`.
-                limit: Input parameter for `list_paginated`.
+                offset: Input parameter accepted by `list_paginated`.
+                limit: Input parameter accepted by `list_paginated`.
         
             Returns:
-                Value defined by `list_paginated` contract and consumed by downstream callers.
+                A value compatible with `tuple[list[DocumentMetadata], int]`.
         """
         ...
 

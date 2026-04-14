@@ -1,20 +1,18 @@
-"""Detailed module documentation for `src/document_analyzer_api/observability/metrics.py`.
+"""Module `src/document_analyzer_api/observability/metrics.py`.
 
-File role:
-- Located in the observability layer.
-- Defines logic and symbols for `metrics.py` within Document Analyzer V1.
+This module belongs to the observability layer of Document Analyzer.
 
 Purpose:
-- Supports a focused concern in the Document Analyzer codebase.
+- Implements metrics, tracing, and request-level telemetry support.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: none.
 - Functions: observe_request, render_prometheus_metrics.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 from __future__ import annotations
@@ -29,22 +27,22 @@ _LOCK = Lock()
 
 
 def observe_request(method: str, path: str, status_code: int, duration_ms: float) -> None:
-    """Detailed synchronous function documentation for `observe_request`.
+    """Synchronous execution path for `observe_request`.
     
-    This callable is implemented in `src/document_analyzer_api/observability/metrics.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `src/document_analyzer_api/observability/metrics.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Executes the callable contract for this module concern.
     
         Args:
-            method: Input parameter for `observe_request`.
-            path: Filesystem path argument used by the callable.
-            status_code: Input parameter for `observe_request`.
-            duration_ms: Input parameter for `observe_request`.
+            method: Input parameter accepted by `observe_request`.
+            path: Filesystem path handled by this callable.
+            status_code: Input parameter accepted by `observe_request`.
+            duration_ms: Input parameter accepted by `observe_request`.
     
         Returns:
-            Value defined by `observe_request` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     key_total = (method, path, status_code)
     key_duration = (method, path)
@@ -55,19 +53,19 @@ def observe_request(method: str, path: str, status_code: int, duration_ms: float
 
 
 def render_prometheus_metrics() -> str:
-    """Detailed synchronous function documentation for `render_prometheus_metrics`.
+    """Synchronous execution path for `render_prometheus_metrics`.
     
-    This callable is implemented in `src/document_analyzer_api/observability/metrics.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `src/document_analyzer_api/observability/metrics.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (append, extend, items, join) to satisfy the callable contract.
     
         Args:
             None.
     
         Returns:
-            Value defined by `render_prometheus_metrics` contract and consumed by downstream callers.
+            A value compatible with `str`.
     """
     lines: list[str] = [
         "# HELP http_requests_total Total HTTP requests by method, path and status code.",

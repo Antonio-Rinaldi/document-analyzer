@@ -1,20 +1,18 @@
-"""Detailed module documentation for `tests/unit/test_retrieval_service.py`.
+"""Module `tests/unit/test_retrieval_service.py`.
 
-File role:
-- Located in the project layer.
-- Defines logic and symbols for `test_retrieval_service.py` within Document Analyzer V1.
+This module belongs to the project support layer of Document Analyzer.
 
 Purpose:
-- Supports a focused concern in the Document Analyzer codebase.
+- Implements a focused responsibility in the Document Analyzer codebase.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: none.
 - Functions: _seed_chunks, _build_service, test_retrieval_modes_return_hits, test_keywords_filter_mode_respects_filtering, test_include_sources_returns_chunk_level_citations.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 import asyncio
@@ -32,19 +30,19 @@ from document_analyzer_api.infrastructure.retrieval.local_retrieval_backends imp
 
 
 def _seed_chunks(tmp_path: Path) -> None:
-    """Detailed synchronous function documentation for `_seed_chunks`.
+    """Synchronous execution path for `_seed_chunks`.
     
-    This callable is implemented in `tests/unit/test_retrieval_service.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/unit/test_retrieval_service.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (LocalChunkRepository, PersistedChunk, _write, commit_document) to satisfy the callable contract.
     
         Args:
-            tmp_path: Input parameter for `_seed_chunks`.
+            tmp_path: Input parameter accepted by `_seed_chunks`.
     
         Returns:
-            Value defined by `_seed_chunks` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     chunks = [
         PersistedChunk(
@@ -66,19 +64,19 @@ def _seed_chunks(tmp_path: Path) -> None:
     ]
 
     async def _write() -> None:
-        """Detailed asynchronous function documentation for `_write`.
+        """Asynchronous execution path for `_write`.
         
-        This callable is implemented in `tests/unit/test_retrieval_service.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `tests/unit/test_retrieval_service.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (LocalChunkRepository, commit_document, stage_chunks, str) to satisfy the callable contract.
         
             Args:
                 None.
         
             Returns:
-                Value defined by `_write` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         mongo = LocalChunkRepository(root_path=str(tmp_path), backend_name="mongo")
         neo4j = LocalChunkRepository(root_path=str(tmp_path), backend_name="neo4j")
@@ -92,19 +90,19 @@ def _seed_chunks(tmp_path: Path) -> None:
 
 
 def _build_service(tmp_path: Path) -> RetrievalService:
-    """Detailed synchronous function documentation for `_build_service`.
+    """Synchronous execution path for `_build_service`.
     
-    This callable is implemented in `tests/unit/test_retrieval_service.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/unit/test_retrieval_service.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (LocalGraphRetrievalBackend, LocalHybridRetrievalBackend, LocalVectorRetrievalBackend, RetrievalService) to satisfy the callable contract.
     
         Args:
-            tmp_path: Input parameter for `_build_service`.
+            tmp_path: Input parameter accepted by `_build_service`.
     
         Returns:
-            Value defined by `_build_service` contract and consumed by downstream callers.
+            A value compatible with `RetrievalService`.
     """
     return RetrievalService(
         vector_backend=LocalVectorRetrievalBackend(root_path=str(tmp_path)),
@@ -114,19 +112,19 @@ def _build_service(tmp_path: Path) -> RetrievalService:
 
 
 def test_retrieval_modes_return_hits(tmp_path: Path) -> None:
-    """Detailed synchronous function documentation for `test_retrieval_modes_return_hits`.
+    """Synchronous execution path for `test_retrieval_modes_return_hits`.
     
-    This callable is implemented in `tests/unit/test_retrieval_service.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/unit/test_retrieval_service.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (RetrievalRequest, _build_service, _seed_chunks, retrieve) to satisfy the callable contract.
     
         Args:
-            tmp_path: Input parameter for `test_retrieval_modes_return_hits`.
+            tmp_path: Input parameter accepted by `test_retrieval_modes_return_hits`.
     
         Returns:
-            Value defined by `test_retrieval_modes_return_hits` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     _seed_chunks(tmp_path)
     service = _build_service(tmp_path)
@@ -147,19 +145,19 @@ def test_retrieval_modes_return_hits(tmp_path: Path) -> None:
 
 
 def test_keywords_filter_mode_respects_filtering(tmp_path: Path) -> None:
-    """Detailed synchronous function documentation for `test_keywords_filter_mode_respects_filtering`.
+    """Synchronous execution path for `test_keywords_filter_mode_respects_filtering`.
     
-    This callable is implemented in `tests/unit/test_retrieval_service.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/unit/test_retrieval_service.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (RetrievalRequest, _build_service, _seed_chunks, all) to satisfy the callable contract.
     
         Args:
-            tmp_path: Input parameter for `test_keywords_filter_mode_respects_filtering`.
+            tmp_path: Input parameter accepted by `test_keywords_filter_mode_respects_filtering`.
     
         Returns:
-            Value defined by `test_keywords_filter_mode_respects_filtering` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     _seed_chunks(tmp_path)
     service = _build_service(tmp_path)
@@ -180,19 +178,19 @@ def test_keywords_filter_mode_respects_filtering(tmp_path: Path) -> None:
 
 
 def test_include_sources_returns_chunk_level_citations(tmp_path: Path) -> None:
-    """Detailed synchronous function documentation for `test_include_sources_returns_chunk_level_citations`.
+    """Synchronous execution path for `test_include_sources_returns_chunk_level_citations`.
     
-    This callable is implemented in `tests/unit/test_retrieval_service.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/unit/test_retrieval_service.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (RetrievalRequest, _build_service, _seed_chunks, retrieve) to satisfy the callable contract.
     
         Args:
-            tmp_path: Input parameter for `test_include_sources_returns_chunk_level_citations`.
+            tmp_path: Input parameter accepted by `test_include_sources_returns_chunk_level_citations`.
     
         Returns:
-            Value defined by `test_include_sources_returns_chunk_level_citations` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     _seed_chunks(tmp_path)
     service = _build_service(tmp_path)

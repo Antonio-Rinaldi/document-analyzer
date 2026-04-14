@@ -1,20 +1,18 @@
-"""Detailed module documentation for `src/document_analyzer_api/api/routes/health.py`.
+"""Module `src/document_analyzer_api/api/routes/health.py`.
 
-File role:
-- Located in the API routing layer.
-- Defines logic and symbols for `health.py` within Document Analyzer V1.
+This module belongs to the API routing layer of Document Analyzer.
 
 Purpose:
-- Implements HTTP endpoint handlers and translates transport payloads into service calls.
+- Adapts HTTP input/output contracts to application-service calls.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: none.
 - Functions: health, ready.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 from fastapi import APIRouter, Request, status
@@ -27,38 +25,38 @@ router = APIRouter(tags=["health"])
 
 @router.get("/health")
 async def health() -> dict[str, str]:
-    """Detailed asynchronous function documentation for `health`.
+    """Asynchronous execution path for `health`.
     
-    This callable is implemented in `src/document_analyzer_api/api/routes/health.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `src/document_analyzer_api/api/routes/health.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (get) to satisfy the callable contract.
     
         Args:
             None.
     
         Returns:
-            Value defined by `health` contract and consumed by downstream callers.
+            A value compatible with `dict[str, str]`.
     """
     return {"status": "ok"}
 
 
 @router.get("/ready")
 async def ready(request: Request) -> JSONResponse:
-    """Detailed asynchronous function documentation for `ready`.
+    """Asynchronous execution path for `ready`.
     
-    This callable is implemented in `src/document_analyzer_api/api/routes/health.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `src/document_analyzer_api/api/routes/health.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (JSONResponse, get, readiness, to_dict) to satisfy the callable contract.
     
         Args:
-            request: Incoming request object carrying path/query/body/context information.
+            request: Incoming HTTP request carrying route/query/body/context data.
     
         Returns:
-            Value defined by `ready` contract and consumed by downstream callers.
+            A value compatible with `JSONResponse`.
     """
     health_service: HealthService = request.app.state.container.health_service
     report = await health_service.readiness()

@@ -1,20 +1,18 @@
-"""Detailed module documentation for `src/document_analyzer_api/infrastructure/persistence/local_chunk_repository.py`.
+"""Module `src/document_analyzer_api/infrastructure/persistence/local_chunk_repository.py`.
 
-File role:
-- Located in the infrastructure adapter layer.
-- Defines logic and symbols for `local_chunk_repository.py` within Document Analyzer V1.
+This module belongs to the infrastructure adapter layer of Document Analyzer.
 
 Purpose:
-- Implements concrete adapters for persistence, providers, parsing, and retrieval backends.
+- Implements concrete integrations for storage, retrieval, parsing, and providers.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: LocalChunkRepository.
 - Functions: none.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 import asyncio
@@ -29,46 +27,48 @@ from ...domain.ports.chunk_repository import ChunkRepositoryPort
 
 
 class LocalChunkRepository(ChunkRepositoryPort):
-    """Detailed class documentation for `LocalChunkRepository`.
+    """LocalChunkRepository repository adapter.
     
-    This repository adapter belongs to `src/document_analyzer_api/infrastructure/persistence/local_chunk_repository.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/infrastructure/persistence/local_chunk_repository.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     def __init__(self, root_path: str, backend_name: str) -> None:
-        """Detailed synchronous function documentation for `__init__`.
+        """Synchronous execution path for `__init__`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chunk_repository.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chunk_repository.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (Path) to satisfy the callable contract.
         
             Args:
-                root_path: Input parameter for `__init__`.
-                backend_name: Input parameter for `__init__`.
+                root_path: Input parameter accepted by `__init__`.
+                backend_name: Input parameter accepted by `__init__`.
         
             Returns:
-                Value defined by `__init__` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         self._file_path = Path(root_path) / f"{backend_name}_chunks.json"
 
     async def stage_chunks(self, document_id: str, chunks: list[PersistedChunk], ttl_seconds: int) -> None:
-        """Detailed asynchronous function documentation for `stage_chunks`.
+        """Asynchronous execution path for `stage_chunks`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chunk_repository.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chunk_repository.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (_load_records, _save_records, append, asdict) to satisfy the callable contract.
         
             Args:
-                document_id: Input parameter for `stage_chunks`.
-                chunks: Input parameter for `stage_chunks`.
-                ttl_seconds: Input parameter for `stage_chunks`.
+                document_id: Input parameter accepted by `stage_chunks`.
+                chunks: Input parameter accepted by `stage_chunks`.
+                ttl_seconds: Input parameter accepted by `stage_chunks`.
         
             Returns:
-                Value defined by `stage_chunks` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         records = await self._load_records()
         expires_at = (datetime.now(UTC) + timedelta(seconds=ttl_seconds)).isoformat() if ttl_seconds > 0 else None
@@ -82,19 +82,19 @@ class LocalChunkRepository(ChunkRepositoryPort):
         await self._save_records(records)
 
     async def commit_document(self, document_id: str) -> None:
-        """Detailed asynchronous function documentation for `commit_document`.
+        """Asynchronous execution path for `commit_document`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chunk_repository.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chunk_repository.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (_load_records, _save_records, get) to satisfy the callable contract.
         
             Args:
-                document_id: Input parameter for `commit_document`.
+                document_id: Input parameter accepted by `commit_document`.
         
             Returns:
-                Value defined by `commit_document` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         records = await self._load_records()
         for record in records:
@@ -104,53 +104,53 @@ class LocalChunkRepository(ChunkRepositoryPort):
         await self._save_records(records)
 
     async def rollback_document(self, document_id: str) -> None:
-        """Detailed asynchronous function documentation for `rollback_document`.
+        """Asynchronous execution path for `rollback_document`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chunk_repository.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chunk_repository.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (_load_records, _save_records, get) to satisfy the callable contract.
         
             Args:
-                document_id: Input parameter for `rollback_document`.
+                document_id: Input parameter accepted by `rollback_document`.
         
             Returns:
-                Value defined by `rollback_document` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         records = await self._load_records()
         filtered = [item for item in records if item.get("document_id") != document_id]
         await self._save_records(filtered)
 
     async def _load_records(self) -> list[dict[str, Any]]:
-        """Detailed asynchronous function documentation for `_load_records`.
+        """Asynchronous execution path for `_load_records`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chunk_repository.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chunk_repository.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (exists, loads, read_text, to_thread) to satisfy the callable contract.
         
             Args:
                 None.
         
             Returns:
-                Value defined by `_load_records` contract and consumed by downstream callers.
+                A value compatible with `list[dict[str, Any]]`.
         """
         def _read() -> list[dict[str, Any]]:
-            """Detailed synchronous function documentation for `_read`.
+            """Synchronous execution path for `_read`.
             
-            This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chunk_repository.py` and contributes to the module workflow
-            through deterministic input/output behavior and explicit collaboration contracts.
+            This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chunk_repository.py` and contributes to module-level behavior
+            with explicit and testable execution semantics.
             
                 Behavior:
-                    Executes the callable contract for this module responsibility.
+                    Coordinates helper calls (exists, loads, read_text) to satisfy the callable contract.
             
                 Args:
                     None.
             
                 Returns:
-                    Value defined by `_read` contract and consumed by downstream callers.
+                    A value compatible with `list[dict[str, Any]]`.
             """
             if not self._file_path.exists():
                 return []
@@ -159,34 +159,34 @@ class LocalChunkRepository(ChunkRepositoryPort):
         return await asyncio.to_thread(_read)
 
     async def _save_records(self, records: list[dict[str, Any]]) -> None:
-        """Detailed asynchronous function documentation for `_save_records`.
+        """Asynchronous execution path for `_save_records`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chunk_repository.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chunk_repository.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (dumps, mkdir, to_thread, write_text) to satisfy the callable contract.
         
             Args:
-                records: Input parameter for `_save_records`.
+                records: Input parameter accepted by `_save_records`.
         
             Returns:
-                Value defined by `_save_records` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         def _write() -> None:
-            """Detailed synchronous function documentation for `_write`.
+            """Synchronous execution path for `_write`.
             
-            This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chunk_repository.py` and contributes to the module workflow
-            through deterministic input/output behavior and explicit collaboration contracts.
+            This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/local_chunk_repository.py` and contributes to module-level behavior
+            with explicit and testable execution semantics.
             
                 Behavior:
-                    Executes the callable contract for this module responsibility.
+                    Coordinates helper calls (dumps, mkdir, write_text) to satisfy the callable contract.
             
                 Args:
                     None.
             
                 Returns:
-                    Value defined by `_write` contract and consumed by downstream callers.
+                    A value compatible with `None`.
             """
             self._file_path.parent.mkdir(parents=True, exist_ok=True)
             self._file_path.write_text(json.dumps(records), encoding="utf-8")

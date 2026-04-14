@@ -1,65 +1,65 @@
-"""Detailed module documentation for `src/document_analyzer_api/infrastructure/health/mongo_health_adapter.py`.
+"""Module `src/document_analyzer_api/infrastructure/health/mongo_health_adapter.py`.
 
-File role:
-- Located in the infrastructure adapter layer.
-- Defines logic and symbols for `mongo_health_adapter.py` within Document Analyzer V1.
+This module belongs to the infrastructure adapter layer of Document Analyzer.
 
 Purpose:
-- Implements concrete adapters for persistence, providers, parsing, and retrieval backends.
+- Implements concrete integrations for storage, retrieval, parsing, and providers.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: MongoHealthAdapter.
 - Functions: none.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 from document_analyzer_api.domain.ports.health import DependencyStatus
 
 
 class MongoHealthAdapter:
-    """Detailed class documentation for `MongoHealthAdapter`.
+    """MongoHealthAdapter component.
     
-    This component belongs to `src/document_analyzer_api/infrastructure/health/mongo_health_adapter.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/infrastructure/health/mongo_health_adapter.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     def __init__(self, uri: str, timeout_seconds: float) -> None:
-        """Detailed synchronous function documentation for `__init__`.
+        """Synchronous execution path for `__init__`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/health/mongo_health_adapter.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/health/mongo_health_adapter.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (int) to satisfy the callable contract.
         
             Args:
-                uri: Input parameter for `__init__`.
-                timeout_seconds: Input parameter for `__init__`.
+                uri: Input parameter accepted by `__init__`.
+                timeout_seconds: Input parameter accepted by `__init__`.
         
             Returns:
-                Value defined by `__init__` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         self._uri = uri
         self._timeout_ms = int(timeout_seconds * 1000)
 
     async def check(self) -> DependencyStatus:
-        """Detailed asynchronous function documentation for `check`.
+        """Asynchronous execution path for `check`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/health/mongo_health_adapter.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/health/mongo_health_adapter.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (DependencyStatus, MongoClient, command, str) to satisfy the callable contract.
         
             Args:
                 None.
         
             Returns:
-                Value defined by `check` contract and consumed by downstream callers.
+                A value compatible with `DependencyStatus`.
         """
         try:
             from pymongo import MongoClient

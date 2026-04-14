@@ -1,20 +1,18 @@
-"""Detailed module documentation for `src/document_analyzer_api/application/services/base_chunk_builder_service.py`.
+"""Module `src/document_analyzer_api/application/services/base_chunk_builder_service.py`.
 
-File role:
-- Located in the application service layer.
-- Defines logic and symbols for `base_chunk_builder_service.py` within Document Analyzer V1.
+This module belongs to the application service layer of Document Analyzer.
 
 Purpose:
-- Implements use-case orchestration across domain ports and infrastructure adapters.
+- Coordinates use-case workflows over domain ports and adapters.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: BaseChunkBuilderService.
 - Functions: none.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 import re
@@ -23,27 +21,29 @@ from ...domain.models.chunking import BaseChunk, ChunkGranularity, ChunkingConfi
 
 
 class BaseChunkBuilderService:
-    """Detailed class documentation for `BaseChunkBuilderService`.
+    """BaseChunkBuilderService application service.
     
-    This application service belongs to `src/document_analyzer_api/application/services/base_chunk_builder_service.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/application/services/base_chunk_builder_service.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     def build_chunks(self, document: ParsedDocument, config: ChunkingConfig) -> list[BaseChunk]:
-        """Detailed synchronous function documentation for `build_chunks`.
+        """Synchronous execution path for `build_chunks`.
         
-        This callable is implemented in `src/document_analyzer_api/application/services/base_chunk_builder_service.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/application/services/base_chunk_builder_service.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (BaseChunk, _build_sub_paragraph_chunks, append, enumerate) to satisfy the callable contract.
         
             Args:
-                document: Input parameter for `build_chunks`.
-                config: Input parameter for `build_chunks`.
+                document: Input parameter accepted by `build_chunks`.
+                config: Input parameter accepted by `build_chunks`.
         
             Returns:
-                Value defined by `build_chunks` contract and consumed by downstream callers.
+                A value compatible with `list[BaseChunk]`.
         """
         chunks: list[BaseChunk] = []
         for section in document.sections:
@@ -86,22 +86,22 @@ class BaseChunkBuilderService:
         text: str,
         config: ChunkingConfig,
     ) -> list[BaseChunk]:
-        """Detailed synchronous function documentation for `_build_sub_paragraph_chunks`.
+        """Synchronous execution path for `_build_sub_paragraph_chunks`.
         
-        This callable is implemented in `src/document_analyzer_api/application/services/base_chunk_builder_service.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/application/services/base_chunk_builder_service.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (BaseChunk, append, join, len) to satisfy the callable contract.
         
             Args:
-                section_id: Input parameter for `_build_sub_paragraph_chunks`.
-                section_title: Input parameter for `_build_sub_paragraph_chunks`.
-                text: Input parameter for `_build_sub_paragraph_chunks`.
-                config: Input parameter for `_build_sub_paragraph_chunks`.
+                section_id: Input parameter accepted by `_build_sub_paragraph_chunks`.
+                section_title: Input parameter accepted by `_build_sub_paragraph_chunks`.
+                text: Input parameter accepted by `_build_sub_paragraph_chunks`.
+                config: Input parameter accepted by `_build_sub_paragraph_chunks`.
         
             Returns:
-                Value defined by `_build_sub_paragraph_chunks` contract and consumed by downstream callers.
+                A value compatible with `list[BaseChunk]`.
         """
         words = [word for word in text.split() if word]
         if not words:

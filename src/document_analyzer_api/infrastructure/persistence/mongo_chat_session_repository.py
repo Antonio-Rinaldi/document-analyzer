@@ -1,20 +1,18 @@
-"""Detailed module documentation for `src/document_analyzer_api/infrastructure/persistence/mongo_chat_session_repository.py`.
+"""Module `src/document_analyzer_api/infrastructure/persistence/mongo_chat_session_repository.py`.
 
-File role:
-- Located in the infrastructure adapter layer.
-- Defines logic and symbols for `mongo_chat_session_repository.py` within Document Analyzer V1.
+This module belongs to the infrastructure adapter layer of Document Analyzer.
 
 Purpose:
-- Implements concrete adapters for persistence, providers, parsing, and retrieval backends.
+- Implements concrete integrations for storage, retrieval, parsing, and providers.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: MongoChatSessionRepository.
 - Functions: _serialize_session, _deserialize_session.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 from __future__ import annotations
@@ -28,28 +26,30 @@ from ...domain.ports.chat_session_repository import ChatSessionRepositoryPort
 
 
 class MongoChatSessionRepository(ChatSessionRepositoryPort):
-    """Detailed class documentation for `MongoChatSessionRepository`.
+    """MongoChatSessionRepository repository adapter.
     
-    This repository adapter belongs to `src/document_analyzer_api/infrastructure/persistence/mongo_chat_session_repository.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/infrastructure/persistence/mongo_chat_session_repository.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     def __init__(self, uri: str, database: str, collection: str = "chat_sessions") -> None:
-        """Detailed synchronous function documentation for `__init__`.
+        """Synchronous execution path for `__init__`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/mongo_chat_session_repository.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/mongo_chat_session_repository.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (MongoClient, create_index) to satisfy the callable contract.
         
             Args:
-                uri: Input parameter for `__init__`.
-                database: Input parameter for `__init__`.
-                collection: Input parameter for `__init__`.
+                uri: Input parameter accepted by `__init__`.
+                database: Input parameter accepted by `__init__`.
+                collection: Input parameter accepted by `__init__`.
         
             Returns:
-                Value defined by `__init__` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         from pymongo import MongoClient
 
@@ -59,20 +59,20 @@ class MongoChatSessionRepository(ChatSessionRepositoryPort):
         self._collection.create_index("expiresAt", expireAfterSeconds=0)
 
     async def create(self, session_id: str, ttl_seconds: int) -> ChatSession:
-        """Detailed asynchronous function documentation for `create`.
+        """Asynchronous execution path for `create`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/mongo_chat_session_repository.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/mongo_chat_session_repository.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (ChatSession, _serialize_session, now, timedelta) to satisfy the callable contract.
         
             Args:
                 session_id: Server-side chat session identifier.
-                ttl_seconds: Input parameter for `create`.
+                ttl_seconds: Input parameter accepted by `create`.
         
             Returns:
-                Value defined by `create` contract and consumed by downstream callers.
+                A value compatible with `ChatSession`.
         """
         now = datetime.now(UTC)
         expires_at = now + timedelta(seconds=ttl_seconds) if ttl_seconds > 0 else None
@@ -87,19 +87,19 @@ class MongoChatSessionRepository(ChatSessionRepositoryPort):
         return session
 
     async def get(self, session_id: str) -> ChatSession | None:
-        """Detailed asynchronous function documentation for `get`.
+        """Asynchronous execution path for `get`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/mongo_chat_session_repository.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/mongo_chat_session_repository.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (_deserialize_session, to_thread) to satisfy the callable contract.
         
             Args:
                 session_id: Server-side chat session identifier.
         
             Returns:
-                Value defined by `get` contract and consumed by downstream callers.
+                A value compatible with `ChatSession | None`.
         """
         payload = await asyncio.to_thread(self._collection.find_one, {"sessionId": session_id}, {"_id": 0})
         if payload is None:
@@ -107,20 +107,20 @@ class MongoChatSessionRepository(ChatSessionRepositoryPort):
         return _deserialize_session(payload)
 
     async def upsert(self, session: ChatSession, ttl_seconds: int) -> None:
-        """Detailed asynchronous function documentation for `upsert`.
+        """Asynchronous execution path for `upsert`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/mongo_chat_session_repository.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/mongo_chat_session_repository.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (_serialize_session, now, timedelta, to_thread) to satisfy the callable contract.
         
             Args:
-                session: Input parameter for `upsert`.
-                ttl_seconds: Input parameter for `upsert`.
+                session: Input parameter accepted by `upsert`.
+                ttl_seconds: Input parameter accepted by `upsert`.
         
             Returns:
-                Value defined by `upsert` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         expires_at = datetime.now(UTC) + timedelta(seconds=ttl_seconds) if ttl_seconds > 0 else None
         session.expires_at = expires_at
@@ -132,38 +132,38 @@ class MongoChatSessionRepository(ChatSessionRepositoryPort):
         )
 
     async def delete(self, session_id: str) -> bool:
-        """Detailed asynchronous function documentation for `delete`.
+        """Asynchronous execution path for `delete`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/mongo_chat_session_repository.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/mongo_chat_session_repository.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (to_thread) to satisfy the callable contract.
         
             Args:
                 session_id: Server-side chat session identifier.
         
             Returns:
-                Value defined by `delete` contract and consumed by downstream callers.
+                A value compatible with `bool`.
         """
         result = await asyncio.to_thread(self._collection.delete_one, {"sessionId": session_id})
         return result.deleted_count > 0
 
 
 def _serialize_session(session: ChatSession) -> dict[str, Any]:
-    """Detailed synchronous function documentation for `_serialize_session`.
+    """Synchronous execution path for `_serialize_session`.
     
-    This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/mongo_chat_session_repository.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/mongo_chat_session_repository.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Executes the callable contract for this module concern.
     
         Args:
-            session: Input parameter for `_serialize_session`.
+            session: Input parameter accepted by `_serialize_session`.
     
         Returns:
-            Value defined by `_serialize_session` contract and consumed by downstream callers.
+            A value compatible with `dict[str, Any]`.
     """
     return {
         "sessionId": session.session_id,
@@ -180,19 +180,19 @@ def _serialize_session(session: ChatSession) -> dict[str, Any]:
 
 
 def _deserialize_session(payload: dict[str, Any]) -> ChatSession:
-    """Detailed synchronous function documentation for `_deserialize_session`.
+    """Synchronous execution path for `_deserialize_session`.
     
-    This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/mongo_chat_session_repository.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `src/document_analyzer_api/infrastructure/persistence/mongo_chat_session_repository.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (ChatMessage, ChatRole, ChatSession, get) to satisfy the callable contract.
     
         Args:
-            payload: Input parameter for `_deserialize_session`.
+            payload: Input parameter accepted by `_deserialize_session`.
     
         Returns:
-            Value defined by `_deserialize_session` contract and consumed by downstream callers.
+            A value compatible with `ChatSession`.
     """
     messages = [
         ChatMessage(

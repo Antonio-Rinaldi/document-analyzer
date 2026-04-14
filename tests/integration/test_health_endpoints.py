@@ -1,20 +1,18 @@
-"""Detailed module documentation for `tests/integration/test_health_endpoints.py`.
+"""Module `tests/integration/test_health_endpoints.py`.
 
-File role:
-- Located in the project layer.
-- Defines logic and symbols for `test_health_endpoints.py` within Document Analyzer V1.
+This module belongs to the project support layer of Document Analyzer.
 
 Purpose:
-- Supports a focused concern in the Document Analyzer codebase.
+- Implements a focused responsibility in the Document Analyzer codebase.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: OkDependency, FailDependency.
 - Functions: test_health_endpoint, test_ready_endpoint_ok, test_ready_endpoint_degraded, test_metrics_endpoint_exposes_prometheus_format.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 from fastapi.testclient import TestClient
@@ -24,69 +22,73 @@ from document_analyzer_api.main import create_app
 
 
 class OkDependency:
-    """Detailed class documentation for `OkDependency`.
+    """OkDependency component.
     
-    This component belongs to `tests/integration/test_health_endpoints.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `tests/integration/test_health_endpoints.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     async def check(self) -> DependencyStatus:
-        """Detailed asynchronous function documentation for `check`.
+        """Asynchronous execution path for `check`.
         
-        This callable is implemented in `tests/integration/test_health_endpoints.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `tests/integration/test_health_endpoints.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (DependencyStatus) to satisfy the callable contract.
         
             Args:
                 None.
         
             Returns:
-                Value defined by `check` contract and consumed by downstream callers.
+                A value compatible with `DependencyStatus`.
         """
         return DependencyStatus(name="stub", ok=True, detail="reachable")
 
 
 class FailDependency:
-    """Detailed class documentation for `FailDependency`.
+    """FailDependency component.
     
-    This component belongs to `tests/integration/test_health_endpoints.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `tests/integration/test_health_endpoints.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     async def check(self) -> DependencyStatus:
-        """Detailed asynchronous function documentation for `check`.
+        """Asynchronous execution path for `check`.
         
-        This callable is implemented in `tests/integration/test_health_endpoints.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `tests/integration/test_health_endpoints.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Coordinates helper calls (DependencyStatus) to satisfy the callable contract.
         
             Args:
                 None.
         
             Returns:
-                Value defined by `check` contract and consumed by downstream callers.
+                A value compatible with `DependencyStatus`.
         """
         return DependencyStatus(name="stub", ok=False, detail="down")
 
 
 def test_health_endpoint() -> None:
-    """Detailed synchronous function documentation for `test_health_endpoint`.
+    """Synchronous execution path for `test_health_endpoint`.
     
-    This callable is implemented in `tests/integration/test_health_endpoints.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/integration/test_health_endpoints.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (TestClient, create_app, get, json) to satisfy the callable contract.
     
         Args:
             None.
     
         Returns:
-            Value defined by `test_health_endpoint` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     app = create_app()
     with TestClient(app) as client:
@@ -97,19 +99,19 @@ def test_health_endpoint() -> None:
 
 
 def test_ready_endpoint_ok() -> None:
-    """Detailed synchronous function documentation for `test_ready_endpoint_ok`.
+    """Synchronous execution path for `test_ready_endpoint_ok`.
     
-    This callable is implemented in `tests/integration/test_health_endpoints.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/integration/test_health_endpoints.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (OkDependency, TestClient, create_app, get) to satisfy the callable contract.
     
         Args:
             None.
     
         Returns:
-            Value defined by `test_ready_endpoint_ok` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     app = create_app()
     app.state.container.health_service._dependencies = [OkDependency()]
@@ -122,19 +124,19 @@ def test_ready_endpoint_ok() -> None:
 
 
 def test_ready_endpoint_degraded() -> None:
-    """Detailed synchronous function documentation for `test_ready_endpoint_degraded`.
+    """Synchronous execution path for `test_ready_endpoint_degraded`.
     
-    This callable is implemented in `tests/integration/test_health_endpoints.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/integration/test_health_endpoints.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (FailDependency, TestClient, create_app, get) to satisfy the callable contract.
     
         Args:
             None.
     
         Returns:
-            Value defined by `test_ready_endpoint_degraded` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     app = create_app()
     app.state.container.health_service._dependencies = [FailDependency()]
@@ -147,19 +149,19 @@ def test_ready_endpoint_degraded() -> None:
 
 
 def test_metrics_endpoint_exposes_prometheus_format() -> None:
-    """Detailed synchronous function documentation for `test_metrics_endpoint_exposes_prometheus_format`.
+    """Synchronous execution path for `test_metrics_endpoint_exposes_prometheus_format`.
     
-    This callable is implemented in `tests/integration/test_health_endpoints.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `tests/integration/test_health_endpoints.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (TestClient, create_app, get) to satisfy the callable contract.
     
         Args:
             None.
     
         Returns:
-            Value defined by `test_metrics_endpoint_exposes_prometheus_format` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     app = create_app()
 

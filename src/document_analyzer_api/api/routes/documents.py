@@ -1,20 +1,18 @@
-"""Detailed module documentation for `src/document_analyzer_api/api/routes/documents.py`.
+"""Module `src/document_analyzer_api/api/routes/documents.py`.
 
-File role:
-- Located in the API routing layer.
-- Defines logic and symbols for `documents.py` within Document Analyzer V1.
+This module belongs to the API routing layer of Document Analyzer.
 
 Purpose:
-- Implements HTTP endpoint handlers and translates transport payloads into service calls.
+- Adapts HTTP input/output contracts to application-service calls.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: none.
-- Functions: ingest_documents, list_documents, documents_capabilities, generate_document_answer, create_documents_summary, create_chat_session, delete_chat_session, chat_documents, _parse_chunking_options, _to_domain_chunking_config, _validate_upload_count, _validate_file_size, _validate_total_size, _to_api_result, _ollama_style_stream, _resolve_text_answer, _audio_response_from_generate.
+- Functions: _parse_chunking_options, _to_domain_chunking_config, _validate_upload_count, _validate_file_size, _validate_total_size, _to_api_result, ingest_documents, list_documents, documents_capabilities, generate_document_answer, create_documents_summary, create_chat_session, delete_chat_session, chat_documents, _ollama_style_stream, _resolve_text_answer, _audio_response_from_generate.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 import json
@@ -57,21 +55,21 @@ async def ingest_documents(
     files: list[UploadFile] = File(...),
     chunking: str | None = Form(default=None),
 ) -> JSONResponse:
-    """Detailed asynchronous function documentation for `ingest_documents`.
+    """Asynchronous execution path for `ingest_documents`.
     
-    This callable is implemented in `src/document_analyzer_api/api/routes/documents.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `src/document_analyzer_api/api/routes/documents.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (DocumentIngestResponse, File, Form, JSONResponse) to satisfy the callable contract.
     
         Args:
-            request: Incoming request object carrying path/query/body/context information.
-            files: Input parameter for `ingest_documents`.
-            chunking: Input parameter for `ingest_documents`.
+            request: Incoming HTTP request carrying route/query/body/context data.
+            files: Input parameter accepted by `ingest_documents`.
+            chunking: Input parameter accepted by `ingest_documents`.
     
         Returns:
-            Value defined by `ingest_documents` contract and consumed by downstream callers.
+            A value compatible with `JSONResponse`.
     """
     if not files:
         raise ValidationProblem(detail="At least one file is required")
@@ -107,21 +105,21 @@ async def list_documents(
     offset: int = Query(default=0, ge=0),
     limit: int = Query(default=50, ge=1),
 ) -> DocumentListResponse:
-    """Detailed asynchronous function documentation for `list_documents`.
+    """Asynchronous execution path for `list_documents`.
     
-    This callable is implemented in `src/document_analyzer_api/api/routes/documents.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `src/document_analyzer_api/api/routes/documents.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Collects and returns a paginated or aggregated list of entities.
+            Collects and returns a list or paginated subset of entities.
     
         Args:
-            request: Incoming request object carrying path/query/body/context information.
-            offset: Input parameter for `list_documents`.
-            limit: Input parameter for `list_documents`.
+            request: Incoming HTTP request carrying route/query/body/context data.
+            offset: Input parameter accepted by `list_documents`.
+            limit: Input parameter accepted by `list_documents`.
     
         Returns:
-            Value defined by `list_documents` contract and consumed by downstream callers.
+            A value compatible with `DocumentListResponse`.
     """
     items, total = await request.app.state.container.document_query_service.list_documents(offset=offset, limit=limit)
     return DocumentListResponse(
@@ -134,19 +132,19 @@ async def list_documents(
 
 @router.get("/documents/capabilities", response_model=DocumentCapabilitiesResponse)
 async def documents_capabilities(request: Request) -> DocumentCapabilitiesResponse:
-    """Detailed asynchronous function documentation for `documents_capabilities`.
+    """Asynchronous execution path for `documents_capabilities`.
     
-    This callable is implemented in `src/document_analyzer_api/api/routes/documents.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `src/document_analyzer_api/api/routes/documents.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (DocumentCapabilitiesResponse, get, list) to satisfy the callable contract.
     
         Args:
-            request: Incoming request object carrying path/query/body/context information.
+            request: Incoming HTTP request carrying route/query/body/context data.
     
         Returns:
-            Value defined by `documents_capabilities` contract and consumed by downstream callers.
+            A value compatible with `DocumentCapabilitiesResponse`.
     """
     ingestion_service = request.app.state.container.ingestion_service
     summary_service = request.app.state.container.summary_service
@@ -161,20 +159,20 @@ async def generate_document_answer(
     request: Request,
     payload: DocumentGenerateRequest,
 ) -> Response | JSONResponse | StreamingResponse:
-    """Detailed asynchronous function documentation for `generate_document_answer`.
+    """Asynchronous execution path for `generate_document_answer`.
     
-    This callable is implemented in `src/document_analyzer_api/api/routes/documents.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `src/document_analyzer_api/api/routes/documents.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Generates derived output from retrieved context and provided options.
+            Generates derived output from context, prompts, and generation options.
     
         Args:
-            request: Incoming request object carrying path/query/body/context information.
-            payload: Input parameter for `generate_document_answer`.
+            request: Incoming HTTP request carrying route/query/body/context data.
+            payload: Input parameter accepted by `generate_document_answer`.
     
         Returns:
-            Value defined by `generate_document_answer` contract and consumed by downstream callers.
+            A value compatible with `Response | JSONResponse | StreamingResponse`.
     """
     if payload.outputFormat.value == "audio":
         return await _audio_response_from_generate(request, payload)
@@ -226,20 +224,20 @@ async def create_documents_summary(
     request: Request,
     payload: DocumentSummaryRequest,
 ) -> DocumentSummaryResponse:
-    """Detailed asynchronous function documentation for `create_documents_summary`.
+    """Asynchronous execution path for `create_documents_summary`.
     
-    This callable is implemented in `src/document_analyzer_api/api/routes/documents.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `src/document_analyzer_api/api/routes/documents.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Creates a new resource and returns identifiers or resulting payloads.
+            Creates a resource and returns identifiers or materialized result payloads.
     
         Args:
-            request: Incoming request object carrying path/query/body/context information.
-            payload: Input parameter for `create_documents_summary`.
+            request: Incoming HTTP request carrying route/query/body/context data.
+            payload: Input parameter accepted by `create_documents_summary`.
     
         Returns:
-            Value defined by `create_documents_summary` contract and consumed by downstream callers.
+            A value compatible with `DocumentSummaryResponse`.
     """
     supported_output_formats = request.app.state.container.summary_service.supported_output_formats
     normalized_output = payload.outputFormat.lower()
@@ -259,19 +257,19 @@ async def create_documents_summary(
 
 @router.post("/chat/sessions", response_model=ChatSessionCreateResponse)
 async def create_chat_session(request: Request) -> ChatSessionCreateResponse:
-    """Detailed asynchronous function documentation for `create_chat_session`.
+    """Asynchronous execution path for `create_chat_session`.
     
-    This callable is implemented in `src/document_analyzer_api/api/routes/documents.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `src/document_analyzer_api/api/routes/documents.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Creates a new resource and returns identifiers or resulting payloads.
+            Creates a resource and returns identifiers or materialized result payloads.
     
         Args:
-            request: Incoming request object carrying path/query/body/context information.
+            request: Incoming HTTP request carrying route/query/body/context data.
     
         Returns:
-            Value defined by `create_chat_session` contract and consumed by downstream callers.
+            A value compatible with `ChatSessionCreateResponse`.
     """
     session_id = await request.app.state.container.chat_service.create_session()
     return ChatSessionCreateResponse(sessionId=session_id)
@@ -279,20 +277,20 @@ async def create_chat_session(request: Request) -> ChatSessionCreateResponse:
 
 @router.delete("/chat/sessions/{session_id}")
 async def delete_chat_session(request: Request, session_id: str) -> JSONResponse:
-    """Detailed asynchronous function documentation for `delete_chat_session`.
+    """Asynchronous execution path for `delete_chat_session`.
     
-    This callable is implemented in `src/document_analyzer_api/api/routes/documents.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `src/document_analyzer_api/api/routes/documents.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Deletes a resource and reports whether deletion succeeded.
+            Deletes a target resource and reports outcome deterministically.
     
         Args:
-            request: Incoming request object carrying path/query/body/context information.
+            request: Incoming HTTP request carrying route/query/body/context data.
             session_id: Server-side chat session identifier.
     
         Returns:
-            Value defined by `delete_chat_session` contract and consumed by downstream callers.
+            A value compatible with `JSONResponse`.
     """
     deleted = await request.app.state.container.chat_service.delete_session(session_id)
     status_code = status.HTTP_200_OK if deleted else status.HTTP_404_NOT_FOUND
@@ -304,20 +302,20 @@ async def chat_documents(
     request: Request,
     payload: DocumentChatRequest,
 ) -> Response | JSONResponse | StreamingResponse:
-    """Detailed asynchronous function documentation for `chat_documents`.
+    """Asynchronous execution path for `chat_documents`.
     
-    This callable is implemented in `src/document_analyzer_api/api/routes/documents.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `src/document_analyzer_api/api/routes/documents.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes stateful chat logic using persisted session context.
+            Runs stateful chat logic with persisted context and new user input.
     
         Args:
-            request: Incoming request object carrying path/query/body/context information.
-            payload: Input parameter for `chat_documents`.
+            request: Incoming HTTP request carrying route/query/body/context data.
+            payload: Input parameter accepted by `chat_documents`.
     
         Returns:
-            Value defined by `chat_documents` contract and consumed by downstream callers.
+            A value compatible with `Response | JSONResponse | StreamingResponse`.
     """
     try:
         answer, citations = await request.app.state.container.chat_service.chat(
@@ -364,19 +362,19 @@ async def chat_documents(
 
 
 def _parse_chunking_options(chunking: str | None) -> ChunkingOptions:
-    """Detailed synchronous function documentation for `_parse_chunking_options`.
+    """Synchronous execution path for `_parse_chunking_options`.
     
-    This callable is implemented in `src/document_analyzer_api/api/routes/documents.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `src/document_analyzer_api/api/routes/documents.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (ChunkingOptions, ValidationProblem, loads, model_validate) to satisfy the callable contract.
     
         Args:
-            chunking: Input parameter for `_parse_chunking_options`.
+            chunking: Input parameter accepted by `_parse_chunking_options`.
     
         Returns:
-            Value defined by `_parse_chunking_options` contract and consumed by downstream callers.
+            A value compatible with `ChunkingOptions`.
     """
     if not chunking:
         return ChunkingOptions()
@@ -402,19 +400,19 @@ def _parse_chunking_options(chunking: str | None) -> ChunkingOptions:
 
 
 def _to_domain_chunking_config(chunking_options: ChunkingOptions) -> ChunkingConfig:
-    """Detailed synchronous function documentation for `_to_domain_chunking_config`.
+    """Synchronous execution path for `_to_domain_chunking_config`.
     
-    This callable is implemented in `src/document_analyzer_api/api/routes/documents.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `src/document_analyzer_api/api/routes/documents.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (ChunkingConfig, ChunkingStrategyName, DomainChunkGranularity) to satisfy the callable contract.
     
         Args:
-            chunking_options: Input parameter for `_to_domain_chunking_config`.
+            chunking_options: Input parameter accepted by `_to_domain_chunking_config`.
     
         Returns:
-            Value defined by `_to_domain_chunking_config` contract and consumed by downstream callers.
+            A value compatible with `ChunkingConfig`.
     """
     prompt = DEFAULT_CONTEXTUAL_SUMMARY_PROMPT
     if chunking_options.strategyOptions and chunking_options.strategyOptions.contextualSummary:
@@ -436,80 +434,80 @@ def _to_domain_chunking_config(chunking_options: ChunkingOptions) -> ChunkingCon
 
 
 def _validate_upload_count(files_count: int, max_files_per_request: int) -> None:
-    """Detailed synchronous function documentation for `_validate_upload_count`.
+    """Synchronous execution path for `_validate_upload_count`.
     
-    This callable is implemented in `src/document_analyzer_api/api/routes/documents.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `src/document_analyzer_api/api/routes/documents.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (ValidationProblem) to satisfy the callable contract.
     
         Args:
-            files_count: Input parameter for `_validate_upload_count`.
-            max_files_per_request: Input parameter for `_validate_upload_count`.
+            files_count: Input parameter accepted by `_validate_upload_count`.
+            max_files_per_request: Input parameter accepted by `_validate_upload_count`.
     
         Returns:
-            Value defined by `_validate_upload_count` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     if max_files_per_request > 0 and files_count > max_files_per_request:
         raise ValidationProblem(detail=f"Too many files in request; max is {max_files_per_request}")
 
 
 def _validate_file_size(file_size: int, max_file_size_bytes: int, file_name: str) -> None:
-    """Detailed synchronous function documentation for `_validate_file_size`.
+    """Synchronous execution path for `_validate_file_size`.
     
-    This callable is implemented in `src/document_analyzer_api/api/routes/documents.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `src/document_analyzer_api/api/routes/documents.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (ValidationProblem) to satisfy the callable contract.
     
         Args:
-            file_size: Input parameter for `_validate_file_size`.
-            max_file_size_bytes: Input parameter for `_validate_file_size`.
-            file_name: Input parameter for `_validate_file_size`.
+            file_size: Input parameter accepted by `_validate_file_size`.
+            max_file_size_bytes: Input parameter accepted by `_validate_file_size`.
+            file_name: Input parameter accepted by `_validate_file_size`.
     
         Returns:
-            Value defined by `_validate_file_size` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     if max_file_size_bytes > 0 and file_size > max_file_size_bytes:
         raise ValidationProblem(detail=f"File '{file_name}' exceeds max allowed size")
 
 
 def _validate_total_size(total_payload: int, max_total_payload_bytes: int) -> None:
-    """Detailed synchronous function documentation for `_validate_total_size`.
+    """Synchronous execution path for `_validate_total_size`.
     
-    This callable is implemented in `src/document_analyzer_api/api/routes/documents.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `src/document_analyzer_api/api/routes/documents.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (ValidationProblem) to satisfy the callable contract.
     
         Args:
-            total_payload: Input parameter for `_validate_total_size`.
-            max_total_payload_bytes: Input parameter for `_validate_total_size`.
+            total_payload: Input parameter accepted by `_validate_total_size`.
+            max_total_payload_bytes: Input parameter accepted by `_validate_total_size`.
     
         Returns:
-            Value defined by `_validate_total_size` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     if max_total_payload_bytes > 0 and total_payload > max_total_payload_bytes:
         raise ValidationProblem(detail="Total payload exceeds max allowed size")
 
 
 def _to_api_result(item: IngestionResult) -> DocumentIngestResult:
-    """Detailed synchronous function documentation for `_to_api_result`.
+    """Synchronous execution path for `_to_api_result`.
     
-    This callable is implemented in `src/document_analyzer_api/api/routes/documents.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `src/document_analyzer_api/api/routes/documents.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (DocumentIngestFileStatus, DocumentIngestResult) to satisfy the callable contract.
     
         Args:
-            item: Input parameter for `_to_api_result`.
+            item: Input parameter accepted by `_to_api_result`.
     
         Returns:
-            Value defined by `_to_api_result` contract and consumed by downstream callers.
+            A value compatible with `DocumentIngestResult`.
     """
     error_code = None
     if item.status.value == "conflict":
@@ -529,19 +527,19 @@ def _to_api_result(item: IngestionResult) -> DocumentIngestResult:
 
 
 async def _ollama_style_stream(answer: str) -> AsyncGenerator[bytes, None]:
-    """Detailed asynchronous function documentation for `_ollama_style_stream`.
+    """Asynchronous execution path for `_ollama_style_stream`.
     
-    This callable is implemented in `src/document_analyzer_api/api/routes/documents.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `src/document_analyzer_api/api/routes/documents.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (dumps, encode, split) to satisfy the callable contract.
     
         Args:
-            answer: Input parameter for `_ollama_style_stream`.
+            answer: Input parameter accepted by `_ollama_style_stream`.
     
         Returns:
-            Value defined by `_ollama_style_stream` contract and consumed by downstream callers.
+            A value compatible with `AsyncGenerator[bytes, None]`.
     """
     words = answer.split(" ")
     for word in words:
@@ -551,20 +549,20 @@ async def _ollama_style_stream(answer: str) -> AsyncGenerator[bytes, None]:
 
 
 async def _resolve_text_answer(request: Request, payload: DocumentGenerateRequest | DocumentChatRequest) -> tuple[str, list[dict]]:
-    """Detailed asynchronous function documentation for `_resolve_text_answer`.
+    """Asynchronous execution path for `_resolve_text_answer`.
     
-    This callable is implemented in `src/document_analyzer_api/api/routes/documents.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `src/document_analyzer_api/api/routes/documents.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (generate) to satisfy the callable contract.
     
         Args:
-            request: Incoming request object carrying path/query/body/context information.
-            payload: Input parameter for `_resolve_text_answer`.
+            request: Incoming HTTP request carrying route/query/body/context data.
+            payload: Input parameter accepted by `_resolve_text_answer`.
     
         Returns:
-            Value defined by `_resolve_text_answer` contract and consumed by downstream callers.
+            A value compatible with `tuple[str, list[dict]]`.
     """
     return await request.app.state.container.generation_service.generate(
         question=payload.question,
@@ -580,20 +578,20 @@ async def _resolve_text_answer(request: Request, payload: DocumentGenerateReques
 
 
 async def _audio_response_from_generate(request: Request, payload: DocumentGenerateRequest) -> Response:
-    """Detailed asynchronous function documentation for `_audio_response_from_generate`.
+    """Asynchronous execution path for `_audio_response_from_generate`.
     
-    This callable is implemented in `src/document_analyzer_api/api/routes/documents.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `src/document_analyzer_api/api/routes/documents.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (Response, generate_audio_answer) to satisfy the callable contract.
     
         Args:
-            request: Incoming request object carrying path/query/body/context information.
-            payload: Input parameter for `_audio_response_from_generate`.
+            request: Incoming HTTP request carrying route/query/body/context data.
+            payload: Input parameter accepted by `_audio_response_from_generate`.
     
         Returns:
-            Value defined by `_audio_response_from_generate` contract and consumed by downstream callers.
+            A value compatible with `Response`.
     """
     audio_bytes, _ = await request.app.state.container.audio_service.generate_audio_answer(
         question=payload.question,

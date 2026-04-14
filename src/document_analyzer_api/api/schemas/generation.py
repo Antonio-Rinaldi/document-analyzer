@@ -1,20 +1,18 @@
-"""Detailed module documentation for `src/document_analyzer_api/api/schemas/generation.py`.
+"""Module `src/document_analyzer_api/api/schemas/generation.py`.
 
-File role:
-- Located in the API schema layer.
-- Defines logic and symbols for `generation.py` within Document Analyzer V1.
+This module belongs to the API schema layer of Document Analyzer.
 
 Purpose:
-- Supports a focused concern in the Document Analyzer codebase.
+- Implements a focused responsibility in the Document Analyzer codebase.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: KeywordsMode, RetrievalMode, OutputFormat, RetrievalOptionsCommon, RetrievalOptionsHybrid, RetrievalOptions, DocumentGenerateRequest, DocumentGenerateResponse, DocumentSummaryRequest, DocumentSummaryResponse, ChatSessionCreateResponse, DocumentChatRequest, DocumentChatResponse.
 - Functions: none.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 from enum import Enum
@@ -23,11 +21,13 @@ from pydantic import BaseModel, Field
 
 
 class KeywordsMode(str, Enum):
-    """Detailed class documentation for `KeywordsMode`.
+    """KeywordsMode component.
     
-    This component belongs to `src/document_analyzer_api/api/schemas/generation.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/api/schemas/generation.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     metadata_only = "metadata_only"
     filter = "filter"
@@ -35,11 +35,13 @@ class KeywordsMode(str, Enum):
 
 
 class RetrievalMode(str, Enum):
-    """Detailed class documentation for `RetrievalMode`.
+    """RetrievalMode component.
     
-    This component belongs to `src/document_analyzer_api/api/schemas/generation.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/api/schemas/generation.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     vector = "vector"
     graph = "graph"
@@ -47,11 +49,13 @@ class RetrievalMode(str, Enum):
 
 
 class OutputFormat(str, Enum):
-    """Detailed class documentation for `OutputFormat`.
+    """OutputFormat component.
     
-    This component belongs to `src/document_analyzer_api/api/schemas/generation.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/api/schemas/generation.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     text = "text"
     audio = "audio"
@@ -60,43 +64,51 @@ class OutputFormat(str, Enum):
 
 
 class RetrievalOptionsCommon(BaseModel):
-    """Detailed class documentation for `RetrievalOptionsCommon`.
+    """RetrievalOptionsCommon component.
     
-    This component belongs to `src/document_analyzer_api/api/schemas/generation.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/api/schemas/generation.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: topK, minScore.
     """
     topK: int = Field(default=8, ge=1)
     minScore: float = Field(default=0.2, ge=0.0)
 
 
 class RetrievalOptionsHybrid(BaseModel):
-    """Detailed class documentation for `RetrievalOptionsHybrid`.
+    """RetrievalOptionsHybrid component.
     
-    This component belongs to `src/document_analyzer_api/api/schemas/generation.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/api/schemas/generation.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: hybridAlpha.
     """
     hybridAlpha: float = Field(default=0.5, ge=0.0, le=1.0)
 
 
 class RetrievalOptions(BaseModel):
-    """Detailed class documentation for `RetrievalOptions`.
+    """RetrievalOptions component.
     
-    This component belongs to `src/document_analyzer_api/api/schemas/generation.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/api/schemas/generation.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: common, hybrid.
     """
     common: RetrievalOptionsCommon = RetrievalOptionsCommon()
     hybrid: RetrievalOptionsHybrid = RetrievalOptionsHybrid()
 
 
 class DocumentGenerateRequest(BaseModel):
-    """Detailed class documentation for `DocumentGenerateRequest`.
+    """DocumentGenerateRequest transport schema.
     
-    This transport schema model belongs to `src/document_analyzer_api/api/schemas/generation.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/api/schemas/generation.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: question, documentIds, keywords, keywordsMode, retrievalMode, retrievalOptions, outputFormat, includeSources.
     """
     question: str = Field(min_length=1)
     documentIds: list[str] | None = None
@@ -111,22 +123,26 @@ class DocumentGenerateRequest(BaseModel):
 
 
 class DocumentGenerateResponse(BaseModel):
-    """Detailed class documentation for `DocumentGenerateResponse`.
+    """DocumentGenerateResponse transport schema.
     
-    This transport schema model belongs to `src/document_analyzer_api/api/schemas/generation.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/api/schemas/generation.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: answer, citations.
     """
     answer: str
     citations: list[dict] = Field(default_factory=list)
 
 
 class DocumentSummaryRequest(BaseModel):
-    """Detailed class documentation for `DocumentSummaryRequest`.
+    """DocumentSummaryRequest transport schema.
     
-    This transport schema model belongs to `src/document_analyzer_api/api/schemas/generation.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/api/schemas/generation.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: documentIds, keywords, outputFormat, generationOptions.
     """
     documentIds: list[str] | None = None
     keywords: list[str] = Field(default_factory=list)
@@ -135,42 +151,50 @@ class DocumentSummaryRequest(BaseModel):
 
 
 class DocumentSummaryResponse(BaseModel):
-    """Detailed class documentation for `DocumentSummaryResponse`.
+    """DocumentSummaryResponse transport schema.
     
-    This transport schema model belongs to `src/document_analyzer_api/api/schemas/generation.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/api/schemas/generation.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: url.
     """
     url: str
 
 
 class ChatSessionCreateResponse(BaseModel):
-    """Detailed class documentation for `ChatSessionCreateResponse`.
+    """ChatSessionCreateResponse transport schema.
     
-    This transport schema model belongs to `src/document_analyzer_api/api/schemas/generation.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/api/schemas/generation.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: sessionId.
     """
     sessionId: str
 
 
 class DocumentChatRequest(DocumentGenerateRequest):
-    """Detailed class documentation for `DocumentChatRequest`.
+    """DocumentChatRequest transport schema.
     
-    This transport schema model belongs to `src/document_analyzer_api/api/schemas/generation.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/api/schemas/generation.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: sessionId, compactContext.
     """
     sessionId: str = Field(min_length=1)
     compactContext: bool = False
 
 
 class DocumentChatResponse(DocumentGenerateResponse):
-    """Detailed class documentation for `DocumentChatResponse`.
+    """DocumentChatResponse transport schema.
     
-    This transport schema model belongs to `src/document_analyzer_api/api/schemas/generation.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/api/schemas/generation.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: sessionId.
     """
     sessionId: str
 

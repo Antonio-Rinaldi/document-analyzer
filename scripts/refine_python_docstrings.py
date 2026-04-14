@@ -1,20 +1,18 @@
-"""Detailed module documentation for `scripts/refine_python_docstrings.py`.
+"""Module `scripts/refine_python_docstrings.py`.
 
-File role:
-- Located in the project layer.
-- Defines logic and symbols for `refine_python_docstrings.py` within Document Analyzer V1.
+This module belongs to the project support layer of Document Analyzer.
 
 Purpose:
-- Supports a focused concern in the Document Analyzer codebase.
+- Implements a focused responsibility in the Document Analyzer codebase.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: none.
 - Functions: _iter_python_files, _module_summary, _format_params, _indent_for, _build_module_doc, _build_function_doc, _build_class_doc, _replace_module_doc, _insert_missing_symbol_docstrings, main.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 from __future__ import annotations
@@ -27,19 +25,19 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def _iter_python_files() -> list[Path]:
-    """Detailed synchronous function documentation for `_iter_python_files`.
+    """Synchronous execution path for `_iter_python_files`.
     
-    This callable is implemented in `scripts/refine_python_docstrings.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `scripts/refine_python_docstrings.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (append, rglob, str) to satisfy the callable contract.
     
         Args:
             None.
     
         Returns:
-            Value defined by `_iter_python_files` contract and consumed by downstream callers.
+            A value compatible with `list[Path]`.
     """
     files: list[Path] = []
     for path in ROOT.rglob("*.py"):
@@ -51,19 +49,19 @@ def _iter_python_files() -> list[Path]:
 
 
 def _module_summary(rel: str) -> str:
-    """Detailed synchronous function documentation for `_module_summary`.
+    """Synchronous execution path for `_module_summary`.
     
-    This callable is implemented in `scripts/refine_python_docstrings.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `scripts/refine_python_docstrings.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (endswith) to satisfy the callable contract.
     
         Args:
-            rel: Input parameter for `_module_summary`.
+            rel: Input parameter accepted by `_module_summary`.
     
         Returns:
-            Value defined by `_module_summary` contract and consumed by downstream callers.
+            A value compatible with `str`.
     """
     if rel.endswith("/main.py"):
         return "Application entrypoint and FastAPI assembly with router and middleware wiring."
@@ -93,19 +91,19 @@ def _module_summary(rel: str) -> str:
 
 
 def _format_params(args: ast.arguments) -> list[str]:
-    """Detailed synchronous function documentation for `_format_params`.
+    """Synchronous execution path for `_format_params`.
     
-    This callable is implemented in `scripts/refine_python_docstrings.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `scripts/refine_python_docstrings.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (append, extend) to satisfy the callable contract.
     
         Args:
-            args: Input parameter for `_format_params`.
+            args: Input parameter accepted by `_format_params`.
     
         Returns:
-            Value defined by `_format_params` contract and consumed by downstream callers.
+            A value compatible with `list[str]`.
     """
     names = [a.arg for a in args.posonlyargs + args.args]
     if args.vararg:
@@ -117,41 +115,41 @@ def _format_params(args: ast.arguments) -> list[str]:
 
 
 def _indent_for(node: ast.AST, lines: list[str]) -> str:
-    """Detailed synchronous function documentation for `_indent_for`.
+    """Synchronous execution path for `_indent_for`.
     
-    This callable is implemented in `scripts/refine_python_docstrings.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `scripts/refine_python_docstrings.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (len, lstrip) to satisfy the callable contract.
     
         Args:
-            node: Input parameter for `_indent_for`.
-            lines: Input parameter for `_indent_for`.
+            node: Input parameter accepted by `_indent_for`.
+            lines: Input parameter accepted by `_indent_for`.
     
         Returns:
-            Value defined by `_indent_for` contract and consumed by downstream callers.
+            A value compatible with `str`.
     """
     line = lines[node.lineno - 1]
     return line[: len(line) - len(line.lstrip())]
 
 
 def _build_module_doc(rel: str, classes: list[ast.ClassDef], funcs: list[ast.AST]) -> str:
-    """Detailed synchronous function documentation for `_build_module_doc`.
+    """Synchronous execution path for `_build_module_doc`.
     
-    This callable is implemented in `scripts/refine_python_docstrings.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `scripts/refine_python_docstrings.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (_module_summary, getattr, join) to satisfy the callable contract.
     
         Args:
-            rel: Input parameter for `_build_module_doc`.
-            classes: Input parameter for `_build_module_doc`.
-            funcs: Input parameter for `_build_module_doc`.
+            rel: Input parameter accepted by `_build_module_doc`.
+            classes: Input parameter accepted by `_build_module_doc`.
+            funcs: Input parameter accepted by `_build_module_doc`.
     
         Returns:
-            Value defined by `_build_module_doc` contract and consumed by downstream callers.
+            A value compatible with `str`.
     """
     class_names = ", ".join(c.name for c in classes) if classes else "none"
     func_names = ", ".join(getattr(f, "name", "<anonymous>") for f in funcs) if funcs else "none"
@@ -171,21 +169,21 @@ def _build_module_doc(rel: str, classes: list[ast.ClassDef], funcs: list[ast.AST
 
 
 def _build_function_doc(name: str, params: list[str], is_async: bool) -> str:
-    """Detailed synchronous function documentation for `_build_function_doc`.
+    """Synchronous execution path for `_build_function_doc`.
     
-    This callable is implemented in `scripts/refine_python_docstrings.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `scripts/refine_python_docstrings.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (format, join, replace) to satisfy the callable contract.
     
         Args:
-            name: Environment variable or entity name, depending on callable context.
-            params: Input parameter for `_build_function_doc`.
-            is_async: Input parameter for `_build_function_doc`.
+            name: Identifier/environment key consumed by this callable.
+            params: Input parameter accepted by `_build_function_doc`.
+            is_async: Input parameter accepted by `_build_function_doc`.
     
         Returns:
-            Value defined by `_build_function_doc` contract and consumed by downstream callers.
+            A value compatible with `str`.
     """
     mode = "asynchronous" if is_async else "synchronous"
     params_block = "\n".join(f"        {p}: Input value used by this callable." for p in params)
@@ -202,19 +200,19 @@ def _build_function_doc(name: str, params: list[str], is_async: bool) -> str:
 
 
 def _build_class_doc(name: str) -> str:
-    """Detailed synchronous function documentation for `_build_class_doc`.
+    """Synchronous execution path for `_build_class_doc`.
     
-    This callable is implemented in `scripts/refine_python_docstrings.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `scripts/refine_python_docstrings.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (format) to satisfy the callable contract.
     
         Args:
-            name: Environment variable or entity name, depending on callable context.
+            name: Identifier/environment key consumed by this callable.
     
         Returns:
-            Value defined by `_build_class_doc` contract and consumed by downstream callers.
+            A value compatible with `str`.
     """
     return (
         '"""{} component.\n\n'
@@ -225,21 +223,21 @@ def _build_class_doc(name: str) -> str:
 
 
 def _replace_module_doc(content: str, tree: ast.Module, rel: str) -> str:
-    """Detailed synchronous function documentation for `_replace_module_doc`.
+    """Synchronous execution path for `_replace_module_doc`.
     
-    This callable is implemented in `scripts/refine_python_docstrings.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `scripts/refine_python_docstrings.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (_build_module_doc, getattr, isinstance, join) to satisfy the callable contract.
     
         Args:
-            content: Raw payload bytes or text handled by the callable.
-            tree: Input parameter for `_replace_module_doc`.
-            rel: Input parameter for `_replace_module_doc`.
+            content: Raw payload bytes/text processed or transformed by this callable.
+            tree: Input parameter accepted by `_replace_module_doc`.
+            rel: Input parameter accepted by `_replace_module_doc`.
     
         Returns:
-            Value defined by `_replace_module_doc` contract and consumed by downstream callers.
+            A value compatible with `str`.
     """
     classes = [n for n in tree.body if isinstance(n, ast.ClassDef)]
     funcs = [n for n in tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
@@ -264,20 +262,20 @@ def _replace_module_doc(content: str, tree: ast.Module, rel: str) -> str:
 
 
 def _insert_missing_symbol_docstrings(content: str, tree: ast.Module) -> str:
-    """Detailed synchronous function documentation for `_insert_missing_symbol_docstrings`.
+    """Synchronous execution path for `_insert_missing_symbol_docstrings`.
     
-    This callable is implemented in `scripts/refine_python_docstrings.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `scripts/refine_python_docstrings.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
-            Executes the callable contract for this module responsibility.
+            Coordinates helper calls (_build_class_doc, _build_function_doc, _format_params, _indent_for) to satisfy the callable contract.
     
         Args:
-            content: Raw payload bytes or text handled by the callable.
-            tree: Input parameter for `_insert_missing_symbol_docstrings`.
+            content: Raw payload bytes/text processed or transformed by this callable.
+            tree: Input parameter accepted by `_insert_missing_symbol_docstrings`.
     
         Returns:
-            Value defined by `_insert_missing_symbol_docstrings` contract and consumed by downstream callers.
+            A value compatible with `str`.
     """
     lines = content.splitlines(keepends=True)
     edits: list[tuple[int, list[str]]] = []
@@ -309,10 +307,10 @@ def _insert_missing_symbol_docstrings(content: str, tree: ast.Module) -> str:
 
 
 def main() -> None:
-    """Detailed synchronous function documentation for `main`.
+    """Synchronous execution path for `main`.
     
-    This callable is implemented in `scripts/refine_python_docstrings.py` and contributes to the module workflow
-    through deterministic input/output behavior and explicit collaboration contracts.
+    This callable is implemented in `scripts/refine_python_docstrings.py` and contributes to module-level behavior
+    with explicit and testable execution semantics.
     
         Behavior:
             Builds and configures the runtime application entrypoint.
@@ -321,7 +319,7 @@ def main() -> None:
             None.
     
         Returns:
-            Value defined by `main` contract and consumed by downstream callers.
+            A value compatible with `None`.
     """
     changed = 0
     for path in _iter_python_files():

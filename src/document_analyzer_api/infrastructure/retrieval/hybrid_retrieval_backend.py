@@ -1,20 +1,18 @@
-"""Detailed module documentation for `src/document_analyzer_api/infrastructure/retrieval/hybrid_retrieval_backend.py`.
+"""Module `src/document_analyzer_api/infrastructure/retrieval/hybrid_retrieval_backend.py`.
 
-File role:
-- Located in the infrastructure adapter layer.
-- Defines logic and symbols for `hybrid_retrieval_backend.py` within Document Analyzer V1.
+This module belongs to the infrastructure adapter layer of Document Analyzer.
 
 Purpose:
-- Implements concrete adapters for persistence, providers, parsing, and retrieval backends.
+- Implements concrete integrations for storage, retrieval, parsing, and providers.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: HybridRetrievalBackend.
 - Functions: none.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 from ...domain.models.retrieval import RetrievalHit, RetrievalRequest
@@ -22,45 +20,47 @@ from ...domain.ports.retrieval_backend import RetrievalBackendPort
 
 
 class HybridRetrievalBackend(RetrievalBackendPort):
-    """Detailed class documentation for `HybridRetrievalBackend`.
+    """HybridRetrievalBackend component.
     
-    This component belongs to `src/document_analyzer_api/infrastructure/retrieval/hybrid_retrieval_backend.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/infrastructure/retrieval/hybrid_retrieval_backend.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     def __init__(self, vector_backend: RetrievalBackendPort, graph_backend: RetrievalBackendPort) -> None:
-        """Detailed synchronous function documentation for `__init__`.
+        """Synchronous execution path for `__init__`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/retrieval/hybrid_retrieval_backend.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/retrieval/hybrid_retrieval_backend.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes the callable contract for this module responsibility.
+                Executes the callable contract for this module concern.
         
             Args:
-                vector_backend: Input parameter for `__init__`.
-                graph_backend: Input parameter for `__init__`.
+                vector_backend: Input parameter accepted by `__init__`.
+                graph_backend: Input parameter accepted by `__init__`.
         
             Returns:
-                Value defined by `__init__` contract and consumed by downstream callers.
+                A value compatible with `None`.
         """
         self._vector = vector_backend
         self._graph = graph_backend
 
     async def retrieve(self, request: RetrievalRequest) -> list[RetrievalHit]:
-        """Detailed asynchronous function documentation for `retrieve`.
+        """Asynchronous execution path for `retrieve`.
         
-        This callable is implemented in `src/document_analyzer_api/infrastructure/retrieval/hybrid_retrieval_backend.py` and contributes to the module workflow
-        through deterministic input/output behavior and explicit collaboration contracts.
+        This callable is implemented in `src/document_analyzer_api/infrastructure/retrieval/hybrid_retrieval_backend.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
         
             Behavior:
-                Executes retrieval strategy selection and returns matching evidence chunks.
+                Executes retrieval strategy selection and returns ranked evidence chunks.
         
             Args:
-                request: Incoming request object carrying path/query/body/context information.
+                request: Incoming HTTP request carrying route/query/body/context data.
         
             Returns:
-                Value defined by `retrieve` contract and consumed by downstream callers.
+                A value compatible with `list[RetrievalHit]`.
         """
         vector_hits = await self._vector.retrieve(request)
         graph_hits = await self._graph.retrieve(request)

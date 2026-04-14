@@ -1,20 +1,18 @@
-"""Detailed module documentation for `src/document_analyzer_api/domain/models/chat.py`.
+"""Module `src/document_analyzer_api/domain/models/chat.py`.
 
-File role:
-- Located in the domain model layer.
-- Defines logic and symbols for `chat.py` within Document Analyzer V1.
+This module belongs to the domain model layer of Document Analyzer.
 
 Purpose:
-- Declares domain-level structures exchanged by services and adapters.
+- Declares domain objects exchanged across business workflows.
 
-Exported symbols overview:
+Defined symbols:
 - Classes: ChatRole, ChatMessage, ChatSession.
 - Functions: none.
 
-Operational context:
-- Behavior aligns with `documentation/REFINED_SPECS.md` and conventions in
+Project alignment:
+- Functional expectations are described in `documentation/REFINED_SPECS.md`.
+- Architectural and style conventions are defined in
   `documentation/REFINED_PROJECT_CONVENTIONS.md`.
-- Contracts in this module are verified by the project test suite.
 """
 
 from dataclasses import dataclass, field
@@ -23,11 +21,13 @@ from enum import Enum
 
 
 class ChatRole(str, Enum):
-    """Detailed class documentation for `ChatRole`.
+    """ChatRole component.
     
-    This component belongs to `src/document_analyzer_api/domain/models/chat.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/domain/models/chat.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
     """
     user = "user"
     assistant = "assistant"
@@ -36,11 +36,13 @@ class ChatRole(str, Enum):
 
 @dataclass(slots=True)
 class ChatMessage:
-    """Detailed class documentation for `ChatMessage`.
+    """ChatMessage component.
     
-    This component belongs to `src/document_analyzer_api/domain/models/chat.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/domain/models/chat.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: role, content, created_at.
     """
     role: ChatRole
     content: str
@@ -49,11 +51,13 @@ class ChatMessage:
 
 @dataclass(slots=True)
 class ChatSession:
-    """Detailed class documentation for `ChatSession`.
+    """ChatSession component.
     
-    This component belongs to `src/document_analyzer_api/domain/models/chat.py` and encapsulates one cohesive responsibility in the
-    Document Analyzer architecture. It is designed for dependency-injected composition,
-    explicit boundaries, stable contracts, and straightforward unit/integration testing.
+    This class is defined in `src/document_analyzer_api/domain/models/chat.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: session_id, messages, expires_at.
     """
     session_id: str
     messages: list[ChatMessage] = field(default_factory=list)
