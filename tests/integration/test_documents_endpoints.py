@@ -35,9 +35,21 @@ def test_list_documents_invalid_offset_problem_details(tmp_path: Path) -> None:
     assert payload["errorCode"] == "REQUEST_VALIDATION_ERROR"
 
 
+def test_documents_capabilities_returns_supported_formats(tmp_path: Path) -> None:
+    app = _make_app(tmp_path)
+    with TestClient(app) as client:
+        response = client.get("/api/v1/documents/capabilities")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert ".txt" in payload["supportedInputExtensions"]
+    assert ".epub" in payload["supportedInputExtensions"]
+    assert payload["supportedSummaryOutputFormats"] == ["md", "markdown", "txt"]
+
+
 def test_ingest_documents_processed_then_already_processed(tmp_path: Path) -> None:
     app = _make_app(tmp_path)
-    files = [("files", ("book.epub", b"dummy-content", "application/epub+zip"))]
+    files = [("files", ("book.txt", b"dummy-content", "text/plain"))]
 
     with TestClient(app) as client:
         first = client.post("/api/v1/documents", files=files)
@@ -52,8 +64,8 @@ def test_ingest_documents_processed_then_already_processed(tmp_path: Path) -> No
 
 def test_ingest_documents_conflict_same_name_different_hash(tmp_path: Path) -> None:
     app = _make_app(tmp_path)
-    files_v1 = [("files", ("book.epub", b"version-one", "application/epub+zip"))]
-    files_v2 = [("files", ("book.epub", b"version-two", "application/epub+zip"))]
+    files_v1 = [("files", ("book.txt", b"version-one", "text/plain"))]
+    files_v2 = [("files", ("book.txt", b"version-two", "text/plain"))]
 
     with TestClient(app) as client:
         first = client.post("/api/v1/documents", files=files_v1)
@@ -69,8 +81,8 @@ def test_ingest_documents_conflict_same_name_different_hash(tmp_path: Path) -> N
 def test_ingest_documents_mixed_status_returns_207(tmp_path: Path) -> None:
     app = _make_app(tmp_path)
     files = [
-        ("files", ("good.epub", b"ok", "application/epub+zip")),
-        ("files", ("bad.txt", b"nope", "text/plain")),
+        ("files", ("good.txt", b"ok", "text/plain")),
+        ("files", ("bad.exe", b"nope", "application/octet-stream")),
     ]
 
     with TestClient(app) as client:
@@ -84,7 +96,7 @@ def test_ingest_documents_mixed_status_returns_207(tmp_path: Path) -> None:
 
 def test_ingest_documents_invalid_chunking_json(tmp_path: Path) -> None:
     app = _make_app(tmp_path)
-    files = [("files", ("book.epub", b"dummy-content", "application/epub+zip"))]
+    files = [("files", ("book.txt", b"dummy-content", "text/plain"))]
     data = {"chunking": "{not-json"}
 
     with TestClient(app) as client:
@@ -98,7 +110,7 @@ def test_ingest_documents_invalid_chunking_json(tmp_path: Path) -> None:
 
 def test_ingest_documents_contextual_summary_custom_prompt_is_accepted(tmp_path: Path) -> None:
     app = _make_app(tmp_path)
-    files = [("files", ("book.epub", b"dummy-content", "application/epub+zip"))]
+    files = [("files", ("book.txt", b"dummy-content", "text/plain"))]
     data = {
         "chunking": '{"strategy":"contextual_summary","granularity":"paragraph",'
         '"strategyOptions":{"contextualSummary":{"prompt":"Only important happenings."}}}'
@@ -113,7 +125,7 @@ def test_ingest_documents_contextual_summary_custom_prompt_is_accepted(tmp_path:
 
 def test_list_documents_returns_processed_item(tmp_path: Path) -> None:
     app = _make_app(tmp_path)
-    files = [("files", ("book.epub", b"chapter one\n\nchapter two", "application/epub+zip"))]
+    files = [("files", ("book.txt", b"chapter one\n\nchapter two", "text/plain"))]
 
     with TestClient(app) as client:
         ingest = client.post("/api/v1/documents", files=files)
@@ -123,13 +135,13 @@ def test_list_documents_returns_processed_item(tmp_path: Path) -> None:
     assert response.status_code == 200
     payload = response.json()
     assert payload["total"] == 1
-    assert payload["items"][0]["name"] == "book.epub"
+    assert payload["items"][0]["name"] == "book.txt"
     assert payload["items"][0]["description"]
 
 
 def test_ingest_documents_contextual_summary_prompt_with_wrong_strategy_fails(tmp_path: Path) -> None:
     app = _make_app(tmp_path)
-    files = [("files", ("book.epub", b"dummy-content", "application/epub+zip"))]
+    files = [("files", ("book.txt", b"dummy-content", "text/plain"))]
     data = {
         "chunking": '{"strategy":"meaningful","granularity":"paragraph",'
         '"strategyOptions":{"contextualSummary":{"prompt":"Only important happenings."}}}'
@@ -144,11 +156,11 @@ def test_ingest_documents_contextual_summary_prompt_with_wrong_strategy_fails(tm
 
 def test_documents_summary_returns_local_url(tmp_path: Path) -> None:
     app = _make_app(tmp_path)
-    files = [("files", ("book.epub", b"chapter one\n\nchapter two", "application/epub+zip"))]
+    files = [("files", ("book.txt", b"chapter one\n\nchapter two", "text/plain"))]
 
     with TestClient(app) as client:
         ingest = client.post("/api/v1/documents", files=files)
-        response = client.post("/api/v1/documents/summary", json={"outputFormat": "epub"})
+        response = client.post("/api/v1/documents/summary", json={"outputFormat": "md"})
 
     assert ingest.status_code == 200
     assert response.status_code == 200
@@ -160,7 +172,7 @@ def test_documents_generate_non_stream_returns_answer_and_citations(tmp_path: Pa
     app = _make_app(tmp_path)
     files = [(
         "files",
-        ("book.epub", b"The hero enters the castle and fights the dragon.", "application/epub+zip"),
+        ("book.txt", b"The hero enters the castle and fights the dragon.", "text/plain"),
     )]
 
     with TestClient(app) as client:
@@ -184,7 +196,7 @@ def test_documents_generate_non_stream_returns_answer_and_citations(tmp_path: Pa
 
 def test_documents_generate_stream_returns_ollama_style_lines(tmp_path: Path) -> None:
     app = _make_app(tmp_path)
-    files = [("files", ("book.epub", b"No overlap text.", "application/epub+zip"))]
+    files = [("files", ("book.txt", b"No overlap text.", "text/plain"))]
 
     with TestClient(app) as client:
         client.post("/api/v1/documents", files=files)
@@ -207,7 +219,7 @@ def test_chat_session_lifecycle_and_non_stream_chat(tmp_path: Path) -> None:
     app = _make_app(tmp_path)
     files = [(
         "files",
-        ("book.epub", b"The hero enters the castle and fights the dragon.", "application/epub+zip"),
+        ("book.txt", b"The hero enters the castle and fights the dragon.", "text/plain"),
     )]
 
     with TestClient(app) as client:
@@ -254,7 +266,7 @@ def test_chat_with_unknown_session_returns_validation_error(tmp_path: Path) -> N
 
 def test_chat_stream_with_compact_context_flag(tmp_path: Path) -> None:
     app = _make_app(tmp_path)
-    files = [("files", ("book.epub", b"Castle dragon hero story.", "application/epub+zip"))]
+    files = [("files", ("book.txt", b"Castle dragon hero story.", "text/plain"))]
 
     with TestClient(app) as client:
         client.post("/api/v1/documents", files=files)
@@ -279,7 +291,7 @@ def test_chat_stream_with_compact_context_flag(tmp_path: Path) -> None:
 
 def test_generate_audio_returns_wav_stream(tmp_path: Path) -> None:
     app = _make_app(tmp_path)
-    files = [("files", ("book.epub", b"Hero fights dragon in castle.", "application/epub+zip"))]
+    files = [("files", ("book.txt", b"Hero fights dragon in castle.", "text/plain"))]
 
     with TestClient(app) as client:
         client.post("/api/v1/documents", files=files)
@@ -300,7 +312,7 @@ def test_generate_audio_returns_wav_stream(tmp_path: Path) -> None:
 
 def test_generate_image_returns_integrated_payload(tmp_path: Path) -> None:
     app = _make_app(tmp_path)
-    files = [("files", ("book.epub", b"Hero fights dragon in castle.", "application/epub+zip"))]
+    files = [("files", ("book.txt", b"Hero fights dragon in castle.", "text/plain"))]
 
     with TestClient(app) as client:
         client.post("/api/v1/documents", files=files)
@@ -323,7 +335,7 @@ def test_generate_image_returns_integrated_payload(tmp_path: Path) -> None:
 
 def test_chat_audio_returns_binary_stream(tmp_path: Path) -> None:
     app = _make_app(tmp_path)
-    files = [("files", ("book.epub", b"Hero fights dragon in castle.", "application/epub+zip"))]
+    files = [("files", ("book.txt", b"Hero fights dragon in castle.", "text/plain"))]
 
     with TestClient(app) as client:
         client.post("/api/v1/documents", files=files)

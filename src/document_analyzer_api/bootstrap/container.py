@@ -26,7 +26,8 @@ from ..infrastructure.modalities.local_tts_provider import LocalTTSProvider
 from ..infrastructure.modalities.http_image_provider import HttpImageProvider
 from ..infrastructure.modalities.http_tts_provider import HttpTTSProvider
 from ..infrastructure.modalities.ollama_image_provider import OllamaImageProvider
-from ..infrastructure.parsing.simple_epub_parser import SimpleEpubParser
+from ..infrastructure.parsing.markitdown_document_creator import MarkItDownDocumentCreator
+from ..infrastructure.parsing.markitdown_document_parser import MarkItDownDocumentParser
 from ..infrastructure.persistence.local_chunk_repository import LocalChunkRepository
 from ..infrastructure.persistence.local_chat_session_repository import LocalChatSessionRepository
 from ..infrastructure.persistence.local_document_metadata_repository import LocalDocumentMetadataRepository
@@ -162,6 +163,8 @@ class AppContainer:
             image_provider = LocalImageProvider()
 
         base_chunk_builder_service = BaseChunkBuilderService()
+        parser = MarkItDownDocumentParser()
+        document_creator = MarkItDownDocumentCreator()
         retrying_summarizer = RetrySummarizer(
             summarizer,
             retries=settings.provider_retry_count,
@@ -206,6 +209,7 @@ class AppContainer:
         summary_service = DocumentSummaryService(
             query_service=document_query_service,
             output_storage=output_storage,
+            document_creator=document_creator,
         )
         chat_service = ChatService(
             repository=chat_repository,
@@ -214,7 +218,7 @@ class AppContainer:
             max_messages_before_compaction=settings.chat_compaction_max_messages,
         )
         processing_pipeline = DocumentProcessingPipelineService(
-            parser=SimpleEpubParser(),
+            parser=parser,
             base_chunk_builder=base_chunk_builder_service,
             chunking_service=chunking_service,
             embedding_client=retrying_embedding_client,
@@ -226,7 +230,11 @@ class AppContainer:
         return cls(
             settings=settings,
             health_service=HealthService(dependencies=dependencies),
-            ingestion_service=DocumentIngestionService(storage=storage, pipeline=processing_pipeline),
+            ingestion_service=DocumentIngestionService(
+                storage=storage,
+                pipeline=processing_pipeline,
+                supported_extensions=parser.supported_extensions(),
+            ),
             document_query_service=document_query_service,
             retrieval_service=retrieval_service,
             generation_service=generation_service,

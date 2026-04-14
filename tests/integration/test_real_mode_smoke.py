@@ -48,7 +48,7 @@ def test_real_mode_health_smoke() -> None:
 @pytest.mark.skipif(not RUN_REAL_E2E, reason="Set RUN_REAL_E2E=1 to run real-mode smoke tests")
 def test_real_mode_end_to_end_flow() -> None:
     app = create_app(_real_settings())
-    files = [("files", ("real_mode_book.epub", b"Hero enters the castle and defeats the dragon.", "application/epub+zip"))]
+    files = [("files", ("real_mode_book.txt", b"Hero enters the castle and defeats the dragon.", "text/plain"))]
 
     with TestClient(app) as client:
         ingest = client.post("/api/v1/documents", files=files)
@@ -68,7 +68,7 @@ def test_real_mode_end_to_end_flow() -> None:
         )
         assert generated.status_code == 200
 
-        summary = client.post("/api/v1/documents/summary", json={"outputFormat": "epub"})
+        summary = client.post("/api/v1/documents/summary", json={"outputFormat": "md"})
         assert summary.status_code == 200
 
         session = client.post("/api/v1/chat/sessions")

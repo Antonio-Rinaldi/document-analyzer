@@ -31,8 +31,8 @@ Ports (interfaces):
 
 - `DocumentRepository` (Mongo + Neo4j adapters)
 - `DocumentStorage` (S3/MinIO adapter)
-- `DocumentParser` (EPUB parser)
-- `DocumentCreator` (EPUB creator)
+- `DocumentParser` (MarkItDown-backed parser)
+- `DocumentCreator` (summary document creator)
 - `AIEmbeddingClient`
 - `AITextClient`
 - `AITTSClient`
@@ -58,6 +58,7 @@ Rules:
 - Use RFC 7807 for errors (`application/problem+json`).
 - For multi-file ingestion, return per-file status in one response.
 - Streaming format for chat/generate follows Ollama-style chunked JSON semantics.
+- Keep format validation capability-driven and expose it via `GET /api/v1/documents/capabilities`.
 
 ## 6) Error Handling
 

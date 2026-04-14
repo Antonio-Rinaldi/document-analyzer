@@ -4,9 +4,9 @@
 
 V1 is an internal-only API service that:
 
-- Ingests EPUB files only.
+- Ingests MarkItDown-supported file formats.
 - Stores original files in S3-compatible storage (MinIO locally).
-- Parses EPUB content and creates chunked RAG data in both MongoDB and Neo4j.
+- Parses document content through MarkItDown and creates chunked RAG data in both MongoDB and Neo4j.
 - Supports document listing, summary generation, one-shot generation, and stateful chat.
 - Supports text, audio, and image outputs.
 - Uses Ollama as the LLM/embedding provider for V1.
@@ -15,7 +15,7 @@ Out of scope for V1:
 
 - Auth and multi-tenancy.
 - Re-ranking and confidence score.
-- Additional file formats (must return 415).
+- Unsupported file formats (outside MarkItDown-supported extensions, must return 415).
 
 ## 2) Runtime and Deployment
 
@@ -75,7 +75,7 @@ Uploads one or more files and processes each file synchronously in the same requ
 
 ### Validation
 
-- Only `.epub` accepted in V1; all other formats return per-file status 415.
+- Accept extensions supported by MarkItDown capability discovery; unsupported formats return per-file status 415.
 - Upload limits controlled by environment variables:
   - `MAX_FILES_PER_REQUEST` (default unlimited)
   - `MAX_FILE_SIZE_BYTES` (default unlimited)
@@ -99,7 +99,7 @@ For each uploaded file name:
 Synchronous per request, per file:
 
 1. Upload original file to object storage.
-2. Parse EPUB preserving document hierarchy.
+2. Parse input document with MarkItDown and preserve normalized section hierarchy metadata.
 3. Build base chunks using selected chunking granularity.
 4. Apply selected chunking strategy and enrich metadata.
    - `meaningful` (default): keep chunk text as meaningful source chunk (chapter/paragraph/sub-paragraph piece).
@@ -149,7 +149,7 @@ Each item includes exactly:
 
 ## 4.3 POST /api/v1/documents/summary
 
-Creates a new EPUB summary/synthesis document synchronously.
+Creates a new summary/synthesis document synchronously.
 
 ### Request JSON
 
@@ -159,13 +159,22 @@ Creates a new EPUB summary/synthesis document synchronously.
   - `null` => `400`
 - `keywords`: optional
 - `keywordsMode`: `metadata_only` (default) | `filter` | `rank_boost`
-- `outputFormat`: `epub`
+- `outputFormat`: `md` | `markdown` | `txt`
 - `generationOptions`: provider-specific options (for V1: Ollama schema)
 - Retrieval overrides and mode (see Retrieval section)
 
 ### Response
 
 - Presigned URL only.
+
+## 4.3.1 GET /api/v1/documents/capabilities
+
+Returns runtime-advertised file format capabilities.
+
+### Response JSON
+
+- `supportedInputExtensions`: list of accepted file extensions for `POST /api/v1/documents`
+- `supportedSummaryOutputFormats`: list of accepted values for `/documents/summary.outputFormat`
 
 ## 4.4 POST /api/v1/documents/generate
 

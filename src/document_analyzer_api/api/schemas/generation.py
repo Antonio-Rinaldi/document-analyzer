@@ -57,7 +57,7 @@ class DocumentGenerateResponse(BaseModel):
 class DocumentSummaryRequest(BaseModel):
     documentIds: list[str] | None = None
     keywords: list[str] = Field(default_factory=list)
-    outputFormat: str = Field(default="epub")
+    outputFormat: str = Field(default="md")
     generationOptions: dict = Field(default_factory=dict)
 
 

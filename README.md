@@ -1,58 +1,115 @@
-# Document Analyzer API
+# document-analyzer
 
-This is the implementation workspace for `document-analyzer`.
+Internal RAG API (FastAPI) for document ingestion, dual-store retrieval (MongoDB + Neo4j), and multimodal generation.
 
-## Current Status
+## What This Service Does
 
-Implemented so far:
+- Exposes versioned endpoints under `/api/v1`.
+- Ingests documents with `POST /api/v1/documents`.
+- Parses incoming files with Microsoft MarkItDown and builds chunked RAG data.
+- Persists processed chunks in both MongoDB and Neo4j.
+- Supports retrieval modes `vector`, `graph`, and `hybrid`.
+- Supports generate, summary, and chat workflows.
+- Supports text, audio, image, and text+image responses.
 
-- FastAPI app with `/api/v1/health` and `/api/v1/ready`
-- Clean architecture folder layout (domain/application/infrastructure/api)
-- Typed settings via a dataclass + environment variables
-- Dependency readiness adapters for MongoDB, Neo4j, MinIO, and Ollama
-- Local Docker Compose stack
-- RFC 7807 centralized error responses
-- `GET /api/v1/documents` contract with pagination
-- `POST /api/v1/documents` sync ingestion v1 behavior:
-  - epub-only validation
-  - per-file partial results
-  - duplicate name/hash conflict handling
-  - `.done` marker skip/reprocess behavior
-- Chunking foundation services for Phase 4 with two strategies:
+## Architecture And Design Choices
+
+The service follows clean architecture with explicit ports/adapters:
+
+- **Facade services**: `DocumentIngestionService`, `DocumentGenerationService`, `DocumentSummaryService`, `ChatService`.
+- **Ports and adapters**: storage, parser, creator, retrieval backends, and AI providers are isolated behind interfaces.
+- **Strategy**: retrieval mode (`vector` / `graph` / `hybrid`) is selected per request.
+- **Pipeline**: ingestion flow is parse -> chunk -> transform -> embed -> persist.
+- **Fail-fast config**: `Settings.validate_runtime()` validates adapter mode and required real-mode env.
+- **Dependency injection**: composition is centralized in `bootstrap/container.py`.
+
+## Document Processing Pipeline
+
+### 1) Ingestion
+
+Implemented in `src/document_analyzer_api/api/routes/documents.py` and `application/services/document_ingestion_service.py`:
+
+- validates multipart request limits (count/size/total payload)
+- validates extension against MarkItDown-supported inputs
+- enforces duplicate-name idempotency with hash + `.done` semantics
+- supports per-file partial outcomes (`200` all ok, `207` mixed)
+
+### 2) Parsing + Chunking
+
+Implemented in `infrastructure/parsing/markitdown_document_parser.py` and chunking services:
+
+- parses supported file types through MarkItDown into normalized text
+- keeps section-aware structure for downstream chunking
+- supports chunking strategy selection:
   - `meaningful`
-  - `contextual_summary` (deterministic summarizer stub for now)
-- Unit and integration tests
+  - `contextual_summary` (with optional custom prompt criteria)
 
-## Quick Start
+### 3) Persistence + Retrieval
 
-1. Copy env file:
+- stages chunk writes with TTL and commits only on full-file success
+- writes chunks to MongoDB and Neo4j
+- supports retrieval modes:
+  - `vector`
+  - `graph`
+  - `hybrid`
+
+## Summary Output Formats
+
+`POST /api/v1/documents/summary` supports MarkItDown-aligned output formats:
+
+- `md`
+- `markdown`
+- `txt`
+
+Response returns a presigned-style URL (local or S3-backed depending on adapter mode).
+
+## Endpoints
+
+### Core
+
+- `GET /api/v1/health`
+- `GET /api/v1/ready`
+- `GET /api/v1/metrics`
+- `GET /api/v1/documents`
+- `POST /api/v1/documents`
+- `POST /api/v1/documents/generate`
+- `POST /api/v1/documents/summary`
+- `POST /api/v1/chat/sessions`
+- `DELETE /api/v1/chat/sessions/{id}`
+- `POST /api/v1/documents/chat`
+
+Detailed contract file:
+
+- `documentation/openapi/openapi.v1.yaml`
+
+## Project Structure
+
+- `src/document_analyzer_api/api/`: routes, schemas, RFC7807 error mapping.
+- `src/document_analyzer_api/application/`: orchestration services.
+- `src/document_analyzer_api/domain/`: models and ports.
+- `src/document_analyzer_api/infrastructure/`: adapters (MarkItDown, Mongo, Neo4j, MinIO, Ollama, modalities).
+- `src/document_analyzer_api/bootstrap/container.py`: dependency composition root.
+- `documentation/`: refined specs, conventions, and implementation plan.
+- `tests/`: unit and integration tests.
+
+## Install
 
 ```bash
-cp .env.example .env
+python -m venv .venv
+source .venv/bin/activate
+pip install -U pip
+pip install -e ".[dev]"
 ```
 
-2. Install dependencies:
+## Run
 
 ```bash
-python -m pip install -e .[dev]
+uvicorn document_analyzer_api.main:app --host 0.0.0.0 --port 8000 --workers 1
 ```
-
-3. Run tests:
 
 ```bash
-python -m pytest
+python -m document_analyzer_api.main
 ```
-
-4. Run API locally:
-
-```bash
-uvicorn document_analyzer_api.main:app --reload --host 0.0.0.0 --port 8000
-```
-
-5. Check endpoints:
-
-- `GET http://localhost:8000/api/v1/health`
-- `GET http://localhost:8000/api/v1/ready`
 
 ## Docker Compose
 
@@ -60,32 +117,38 @@ uvicorn document_analyzer_api.main:app --reload --host 0.0.0.0 --port 8000
 docker compose up --build
 ```
 
-The API will be available at `http://localhost:8000`.
+## Real Mode
 
-## Real Mode Smoke
+Real mode switches adapters to real dependencies (`ADAPTER_MODE=real`):
 
-You can switch adapter composition to real providers by setting `ADAPTER_MODE=real` and the required env vars.
-Recommended baseline for real mode is MongoDB `8.2+` and Neo4j `6`.
-Real-mode TTS is integrated via sibling `../llm-tts-api` (compose service `tts-api`), and image generation prefers
-Ollama image endpoints when available.
+- MongoDB (metadata, chunks, chat history)
+- Neo4j (graph chunks + graph retrieval)
+- MinIO/S3 (raw files + outputs)
+- Ollama (embeddings, generation, image)
+- `../llm-tts-api` for TTS
 
-Start from the real env template:
+Useful starting point:
 
 ```bash
 cp .env.real.example .env.real
 ```
 
-To run the gated real-mode smoke test:
+Smoke test (gated):
 
 ```bash
 RUN_REAL_E2E=1 python -m pytest -m real_e2e
 ```
 
-Or use the helper script that starts required dependencies and runs the smoke suite:
+## Testing
 
 ```bash
-./scripts/run_real_mode_smoke.sh
+python -m pytest -q
 ```
 
+## Key Files To Read First
 
-
+- `src/document_analyzer_api/bootstrap/container.py`
+- `src/document_analyzer_api/api/routes/documents.py`
+- `src/document_analyzer_api/application/services/document_processing_pipeline_service.py`
+- `src/document_analyzer_api/infrastructure/parsing/markitdown_document_parser.py`
+- `src/document_analyzer_api/infrastructure/parsing/markitdown_document_creator.py`

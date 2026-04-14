@@ -1,0 +1,766 @@
+openapi: 3.1.0
+info:
+  title: Document Analyzer API
+  version: 1.0.0
+  summary: Internal RAG API for document ingestion, retrieval, generation, summary, and chat.
+  description: |
+    Detailed contract for the Document Analyzer service under `/api/v1`.
+
+    Behavior highlights:
+    - Ingestion is synchronous per request with per-file outcomes.
+    - Input formats are capability-driven (MarkItDown-supported extensions).
+    - Summary output formats are capability-driven (`md`, `markdown`, `txt` in current implementation).
+    - Generate/chat support text streaming (Ollama-style NDJSON), audio binary responses, and image payloads.
+    - Errors use RFC 7807 (`application/problem+json`).
+
+servers:
+  - url: http://localhost:8000
+    description: Local development
+
+tags:
+  - name: health
+    description: Liveness/readiness for service and dependencies.
+  - name: metrics
+    description: Prometheus metrics endpoint.
+  - name: documents
+    description: Ingestion, listing, capabilities, generation, summary, and chat APIs.
+
+paths:
+  /api/v1/health:
+    get:
+      tags: [health]
+      summary: Liveness probe
+      description: Returns service liveness; does not validate external dependencies.
+      operationId: getHealth
+      responses:
+        '200':
+          description: Service process is alive.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LivenessResponse'
+              example:
+                status: ok
+
+  /api/v1/ready:
+    get:
+      tags: [health]
+      summary: Readiness probe
+      description: |
+        Performs dependency checks (MongoDB, Neo4j, MinIO/S3, Ollama) and returns:
+        - `200` when all dependencies are healthy.
+        - `503` when at least one dependency is degraded.
+      operationId: getReadiness
+      responses:
+        '200':
+          description: All dependencies healthy.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadinessResponse'
+        '503':
+          description: Service is reachable but one or more dependencies are degraded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadinessResponse'
+
+  /api/v1/metrics:
+    get:
+      tags: [metrics]
+      summary: Prometheus metrics
+      description: Returns metrics in Prometheus text exposition format.
+      operationId: getMetrics
+      responses:
+        '200':
+          description: Metrics payload.
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                sample:
+                  value: |
+                    # HELP http_requests_total Total HTTP requests
+                    # TYPE http_requests_total counter
+                    http_requests_total{path="/api/v1/health",method="GET",status="200"} 12
+
+  /api/v1/documents:
+    get:
+      tags: [documents]
+      summary: List ingested documents
+      description: Returns paginated document metadata (`id`, `name`, `description`).
+      operationId: listDocuments
+      parameters:
+        - in: query
+          name: offset
+          required: false
+          description: Pagination offset.
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - in: query
+          name: limit
+          required: false
+          description: Page size.
+          schema:
+            type: integer
+            minimum: 1
+            default: 50
+      responses:
+        '200':
+          description: Paginated documents list.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentListResponse'
+        '400':
+          $ref: '#/components/responses/RequestValidationProblem'
+
+    post:
+      tags: [documents]
+      summary: Ingest one or more documents
+      description: |
+        Uploads files with multipart/form-data and processes each file synchronously.
+
+        Processing flow (per file):
+        1. Request-level validations (`files`, limits, optional chunking JSON).
+        2. Extension validation against runtime-supported input extensions.
+        3. Name/hash idempotency checks:
+           - same name + same hash + `.done` exists => `already_processed`
+           - same name + different hash => `conflict`
+           - same name + same hash + no `.done` => reprocess
+        4. Parse -> chunk -> embed -> persist (Mongo + Neo4j).
+
+        Multi-file requests may return mixed statuses (`207`).
+      operationId: ingestDocuments
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [files]
+              properties:
+                files:
+                  type: array
+                  description: One or more files to ingest.
+                  items:
+                    type: string
+                    format: binary
+                chunking:
+                  type: string
+                  description: |
+                    JSON string with chunking options.
+                    Example: `{"strategy":"contextual_summary","granularity":"paragraph"}`.
+            encoding:
+              chunking:
+                contentType: application/json
+      responses:
+        '200':
+          description: All files processed or already processed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentIngestResponse'
+        '207':
+          description: Mixed per-file results (partial success).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentIngestResponse'
+        '400':
+          $ref: '#/components/responses/ValidationProblem'
+        '500':
+          $ref: '#/components/responses/DomainProblem'
+
+  /api/v1/documents/capabilities:
+    get:
+      tags: [documents]
+      summary: Discover runtime format capabilities
+      description: |
+        Returns currently supported:
+        - input file extensions for `POST /api/v1/documents`
+        - summary output formats for `POST /api/v1/documents/summary`
+      operationId: getDocumentCapabilities
+      responses:
+        '200':
+          description: Capability snapshot.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentCapabilitiesResponse'
+
+  /api/v1/documents/generate:
+    post:
+      tags: [documents]
+      summary: Generate answer from selected documents
+      description: |
+        Runs retrieval + generation over selected document corpus.
+
+        Output behavior depends on `outputFormat` and `stream`:
+        - `outputFormat=text` + `stream=true` (default): NDJSON stream (Ollama-style chunks).
+        - `outputFormat=text` + `stream=false`: JSON payload with `answer` and optional `citations`.
+        - `outputFormat=audio`: direct `audio/wav` binary download.
+        - `outputFormat=image` or `text+image`: JSON with `answer`, `citations`, and `image` payload.
+
+        `documentIds` semantics:
+        - omitted: all documents
+        - empty array: no documents
+        - `null`: validation error (`400`)
+      operationId: generateDocumentAnswer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentGenerateRequest'
+      responses:
+        '200':
+          description: Successful generation (shape depends on output mode).
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/DocumentGenerateResponse'
+                  - $ref: '#/components/schemas/GenerateImageResponse'
+              examples:
+                nonStreamText:
+                  value:
+                    answer: "Based on selected documents: ..."
+                    citations: []
+                image:
+                  value:
+                    answer: "Based on selected documents: ..."
+                    citations: []
+                    image:
+                      mimeType: image/png
+                      dataBase64: iVBORw0KGgoAAA...
+            application/x-ndjson:
+              schema:
+                type: string
+              examples:
+                stream:
+                  value: |
+                    {"response":"Based ","done":false}
+                    {"response":"on ","done":false}
+                    {"response":"","done":true}
+            audio/wav:
+              schema:
+                type: string
+                format: binary
+        '400':
+          $ref: '#/components/responses/RequestValidationProblem'
+
+  /api/v1/documents/summary:
+    post:
+      tags: [documents]
+      summary: Build synthesized summary document
+      description: |
+        Produces a summary artifact from selected documents and returns a URL.
+
+        Supported `outputFormat` values are runtime-driven by `/documents/capabilities`
+        (currently `md`, `markdown`, `txt`).
+      operationId: createDocumentsSummary
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentSummaryRequest'
+      responses:
+        '200':
+          description: Summary artifact created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentSummaryResponse'
+        '400':
+          $ref: '#/components/responses/ValidationProblem'
+
+  /api/v1/chat/sessions:
+    post:
+      tags: [documents]
+      summary: Create chat session
+      description: Creates a server-side chat session used by `/api/v1/documents/chat`.
+      operationId: createChatSession
+      responses:
+        '200':
+          description: Session created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatSessionCreateResponse'
+
+  /api/v1/chat/sessions/{session_id}:
+    delete:
+      tags: [documents]
+      summary: Delete chat session
+      description: Deletes a chat session and its persisted context.
+      operationId: deleteChatSession
+      parameters:
+        - in: path
+          name: session_id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Session deleted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteChatSessionResponse'
+        '404':
+          description: Session not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteChatSessionResponse'
+
+  /api/v1/documents/chat:
+    post:
+      tags: [documents]
+      summary: Chat over documents with server-side memory
+      description: |
+        Executes retrieval + generation with session memory.
+
+        Behavior mirrors `/documents/generate` for modality/streaming:
+        - text (`stream=true`): NDJSON stream
+        - text (`stream=false`): JSON response
+        - audio: `audio/wav` binary
+        - image/text+image: integrated JSON image payload
+
+        Additional controls:
+        - `sessionId` is required
+        - `compactContext=true` requests immediate context compaction
+      operationId: chatDocuments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentChatRequest'
+      responses:
+        '200':
+          description: Chat response (mode-dependent).
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/DocumentChatResponse'
+                  - $ref: '#/components/schemas/ChatImageResponse'
+            application/x-ndjson:
+              schema:
+                type: string
+            audio/wav:
+              schema:
+                type: string
+                format: binary
+        '400':
+          $ref: '#/components/responses/ValidationProblem'
+
+components:
+  responses:
+    ValidationProblem:
+      description: Domain validation failure.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+          examples:
+            validation:
+              value:
+                type: urn:problem:validation-error
+                title: Bad Request
+                status: 400
+                detail: chunking field must be valid JSON
+                errorCode: VALIDATION_ERROR
+    RequestValidationProblem:
+      description: Request schema/parameter validation failure.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+          examples:
+            requestValidation:
+              value:
+                type: urn:problem:request-validation
+                title: Bad Request
+                status: 400
+                detail: Request validation failed
+                instance: /api/v1/documents
+                errorCode: REQUEST_VALIDATION_ERROR
+                details: []
+    DomainProblem:
+      description: Generic domain-level failure mapped as RFC 7807.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+
+  schemas:
+    ProblemDetails:
+      type: object
+      required: [title, status, detail, errorCode]
+      properties:
+        type:
+          type: string
+          default: about:blank
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+          nullable: true
+        errorCode:
+          type: string
+        details:
+          oneOf:
+            - type: object
+              additionalProperties: true
+            - type: array
+              items:
+                type: object
+                additionalProperties: true
+          nullable: true
+
+    LivenessResponse:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [ok]
+
+    DependencyStatus:
+      type: object
+      required: [name, ok, detail]
+      properties:
+        name:
+          type: string
+        ok:
+          type: boolean
+        detail:
+          type: string
+
+    ReadinessResponse:
+      type: object
+      required: [status, dependencies]
+      properties:
+        status:
+          type: string
+          enum: [ok, degraded]
+        dependencies:
+          type: array
+          items:
+            $ref: '#/components/schemas/DependencyStatus'
+
+    ChunkingOptions:
+      type: object
+      properties:
+        strategy:
+          type: string
+          enum: [meaningful, contextual_summary]
+          default: meaningful
+        granularity:
+          type: string
+          enum: [chapter, paragraph, sub_paragraph_tokens]
+          default: paragraph
+        subParagraph:
+          $ref: '#/components/schemas/SubParagraphOptions'
+        strategyOptions:
+          $ref: '#/components/schemas/ChunkingStrategyOptions'
+
+    SubParagraphOptions:
+      type: object
+      properties:
+        targetTokens:
+          type: integer
+          minimum: 50
+          default: 350
+        overlapTokens:
+          type: integer
+          minimum: 0
+          default: 60
+
+    ChunkingStrategyOptions:
+      type: object
+      properties:
+        contextualSummary:
+          $ref: '#/components/schemas/ContextualSummaryOptions'
+
+    ContextualSummaryOptions:
+      type: object
+      properties:
+        prompt:
+          type: string
+          minLength: 1
+          default: Write a concise neutral summary of the target chunk.
+
+    DocumentIngestResult:
+      type: object
+      required: [name, status]
+      properties:
+        name:
+          type: string
+        status:
+          type: string
+          enum: [processed, already_processed, conflict, unsupported_media_type, failed]
+        documentId:
+          type: string
+          nullable: true
+        errorCode:
+          type: string
+          nullable: true
+          enum: [CONFLICT, UNSUPPORTED_MEDIA_TYPE, INGESTION_FAILED]
+        error:
+          type: string
+          nullable: true
+
+    DocumentIngestResponse:
+      type: object
+      required: [results]
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/DocumentIngestResult'
+
+    DocumentListItem:
+      type: object
+      required: [id, name, description]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+
+    DocumentListResponse:
+      type: object
+      required: [items, offset, limit, total]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/DocumentListItem'
+        offset:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+
+    DocumentCapabilitiesResponse:
+      type: object
+      required: [supportedInputExtensions, supportedSummaryOutputFormats]
+      properties:
+        supportedInputExtensions:
+          type: array
+          items:
+            type: string
+            description: Lower-case extension including leading dot.
+          example: [.txt, .md, .pdf, .docx, .epub]
+        supportedSummaryOutputFormats:
+          type: array
+          items:
+            type: string
+          example: [md, markdown, txt]
+
+    RetrievalOptionsCommon:
+      type: object
+      properties:
+        topK:
+          type: integer
+          minimum: 1
+          default: 8
+        minScore:
+          type: number
+          minimum: 0
+          default: 0.2
+
+    RetrievalOptionsHybrid:
+      type: object
+      properties:
+        hybridAlpha:
+          type: number
+          minimum: 0
+          maximum: 1
+          default: 0.5
+
+    RetrievalOptions:
+      type: object
+      properties:
+        common:
+          $ref: '#/components/schemas/RetrievalOptionsCommon'
+        hybrid:
+          $ref: '#/components/schemas/RetrievalOptionsHybrid'
+
+    DocumentGenerateRequest:
+      type: object
+      required: [question]
+      properties:
+        question:
+          type: string
+          minLength: 1
+        documentIds:
+          type: array
+          nullable: true
+          items:
+            type: string
+          description: Omit for all docs, use [] for none, null is invalid.
+        keywords:
+          type: array
+          items:
+            type: string
+          default: []
+        keywordsMode:
+          type: string
+          enum: [metadata_only, filter, rank_boost]
+          default: metadata_only
+        retrievalMode:
+          type: string
+          enum: [vector, graph, hybrid]
+          default: vector
+        retrievalOptions:
+          $ref: '#/components/schemas/RetrievalOptions'
+        outputFormat:
+          type: string
+          enum: [text, audio, image, text+image]
+          default: text
+        includeSources:
+          type: boolean
+          default: false
+        stream:
+          type: boolean
+          default: true
+        generationOptions:
+          type: object
+          additionalProperties: true
+          description: Provider-scoped options.
+
+    DocumentGenerateResponse:
+      type: object
+      required: [answer, citations]
+      properties:
+        answer:
+          type: string
+        citations:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+
+    GenerateImageResponse:
+      type: object
+      required: [answer, citations, image]
+      properties:
+        answer:
+          type: string
+        citations:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        image:
+          $ref: '#/components/schemas/ImagePayload'
+
+    DocumentSummaryRequest:
+      type: object
+      properties:
+        documentIds:
+          type: array
+          nullable: true
+          items:
+            type: string
+        keywords:
+          type: array
+          items:
+            type: string
+          default: []
+        outputFormat:
+          type: string
+          default: md
+          description: See `/api/v1/documents/capabilities`.
+        generationOptions:
+          type: object
+          additionalProperties: true
+
+    DocumentSummaryResponse:
+      type: object
+      required: [url]
+      properties:
+        url:
+          type: string
+          description: Local/S3-style output location.
+
+    ChatSessionCreateResponse:
+      type: object
+      required: [sessionId]
+      properties:
+        sessionId:
+          type: string
+
+    DeleteChatSessionResponse:
+      type: object
+      required: [deleted]
+      properties:
+        deleted:
+          type: boolean
+
+    DocumentChatRequest:
+      allOf:
+        - $ref: '#/components/schemas/DocumentGenerateRequest'
+        - type: object
+          required: [sessionId]
+          properties:
+            sessionId:
+              type: string
+              minLength: 1
+            compactContext:
+              type: boolean
+              default: false
+
+    DocumentChatResponse:
+      allOf:
+        - $ref: '#/components/schemas/DocumentGenerateResponse'
+        - type: object
+          required: [sessionId]
+          properties:
+            sessionId:
+              type: string
+
+    ChatImageResponse:
+      type: object
+      required: [answer, citations, sessionId, image]
+      properties:
+        answer:
+          type: string
+        citations:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        sessionId:
+          type: string
+        image:
+          $ref: '#/components/schemas/ImagePayload'
+
+    ImagePayload:
+      type: object
+      required: [mimeType, dataBase64]
+      properties:
+        mimeType:
+          type: string
+          example: image/png
+        dataBase64:
+          type: string
+          description: Base64-encoded image payload.
+
+

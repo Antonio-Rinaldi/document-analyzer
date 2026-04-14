@@ -1,4 +1,5 @@
 import hashlib
+from pathlib import Path
 from dataclasses import dataclass
 from enum import Enum
 
@@ -28,9 +29,19 @@ class IngestionResult:
 
 
 class DocumentIngestionService:
-    def __init__(self, storage: DocumentStoragePort, pipeline: DocumentProcessingPipelineService) -> None:
+    def __init__(
+        self,
+        storage: DocumentStoragePort,
+        pipeline: DocumentProcessingPipelineService,
+        supported_extensions: tuple[str, ...],
+    ) -> None:
         self._storage = storage
         self._pipeline = pipeline
+        self._supported_extensions = tuple(ext.lower() for ext in supported_extensions)
+
+    @property
+    def supported_extensions(self) -> tuple[str, ...]:
+        return self._supported_extensions
 
     async def ingest_files(
         self,
@@ -47,11 +58,12 @@ class DocumentIngestionService:
         return results
 
     async def _ingest_one(self, file_data: UploadedFileData, chunking_config: ChunkingConfig) -> IngestionResult:
-        if not file_data.name.lower().endswith(".epub"):
+        extension = Path(file_data.name).suffix.lower()
+        if extension not in self._supported_extensions:
             return IngestionResult(
                 name=file_data.name,
                 status=IngestionStatus.unsupported_media_type,
-                error="Only .epub files are supported in v1",
+                error=f"Unsupported file extension '{extension or '<none>'}'",
             )
 
         incoming_hash = hashlib.sha256(file_data.content).hexdigest()

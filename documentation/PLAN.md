@@ -4,7 +4,7 @@
 
 Deliver a production-grade internal Document Analyzer V1 with:
 
-- EPUB-only ingestion.
+- MarkItDown-supported ingestion formats.
 - Dual persistence for RAG chunks (MongoDB + Neo4j).
 - Retrieval modes (`vector`, `graph`, `hybrid`).
 - Summary, generate, and chat endpoints.
@@ -23,6 +23,9 @@ Deliver a production-grade internal Document Analyzer V1 with:
 - [x] M8: Modalities (audio/image) and streaming behavior.
 - [x] M9: Observability, tests, and hardening.
 - [ ] M10: Replace local adapters with requested real integrations.
+- [x] M11: MarkItDown format integration for ingestion and summary output.
+- [x] M12: Runtime capability discoverability and spec alignment.
+- [x] M13: Detailed OpenAPI contract documentation.
 
 ## 2) Phase-by-Phase Plan
 
@@ -53,6 +56,14 @@ Deliver a production-grade internal Document Analyzer V1 with:
   Real-mode TTS now targets sibling `epub/llm-tts-api`, and image generation prefers Ollama with fallback provider.
   Remaining work: execute and validate these real-mode flows against running dependencies and finalize production
   hardening defaults.
+- Phase 11 completed (2026-04-14): document parsing now uses Microsoft MarkItDown in ingestion, input validation is
+  extension-driven from MarkItDown capabilities, and summary output now supports MarkItDown-aligned output formats
+  (`md`, `markdown`, `txt`).
+- Phase 12 completed (2026-04-14): `GET /api/v1/documents/capabilities` now exposes supported input extensions and
+  summary output formats; refined specs and project conventions were aligned with implemented MarkItDown behavior.
+- Phase 13 completed (2026-04-14): detailed OpenAPI specification added at
+  `documentation/openapi/openapi.v1.yaml`, covering all exposed endpoints, request/response payloads, modality-specific
+  behaviors (NDJSON stream, JSON payloads, audio binary), and RFC 7807 error contracts.
 
 ## Phase 1 - Foundation
 
@@ -88,7 +99,7 @@ Acceptance:
 Scope:
 
 - Implement `POST /api/v1/documents` multipart handling.
-- Enforce EPUB-only validation and upload limits.
+- Enforce MarkItDown-supported input validation and upload limits.
 - Implement duplicate name/hash checks.
 - Implement `.done` skip/reprocess logic.
 - Support partial success per file.
@@ -149,7 +160,7 @@ Scope:
 Acceptance:
 
 - Generate supports stream default true.
-- Summary returns presigned URL only.
+- Summary returns presigned URL only and validates output formats (`md`, `markdown`, `txt`).
 
 ## Phase 7 - Chat Sessions
 

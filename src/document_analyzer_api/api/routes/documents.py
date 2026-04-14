@@ -20,6 +20,7 @@ from ..schemas.generation import (
 )
 from ..errors import ValidationProblem
 from ..schemas.documents import (
+    DocumentCapabilitiesResponse,
     ChunkingOptions,
     DocumentIngestFileStatus,
     DocumentIngestResponse,
@@ -80,6 +81,16 @@ async def list_documents(
     )
 
 
+@router.get("/documents/capabilities", response_model=DocumentCapabilitiesResponse)
+async def documents_capabilities(request: Request) -> DocumentCapabilitiesResponse:
+    ingestion_service = request.app.state.container.ingestion_service
+    summary_service = request.app.state.container.summary_service
+    return DocumentCapabilitiesResponse(
+        supportedInputExtensions=list(ingestion_service.supported_extensions),
+        supportedSummaryOutputFormats=list(summary_service.supported_output_formats),
+    )
+
+
 @router.post("/documents/generate", response_model=None)
 async def generate_document_answer(
     request: Request,
@@ -135,12 +146,18 @@ async def create_documents_summary(
     request: Request,
     payload: DocumentSummaryRequest,
 ) -> DocumentSummaryResponse:
-    if payload.outputFormat != "epub":
-        raise ValidationProblem(detail="Only outputFormat=epub is supported")
+    supported_output_formats = request.app.state.container.summary_service.supported_output_formats
+    normalized_output = payload.outputFormat.lower()
+    if normalized_output not in supported_output_formats:
+        supported_values = ", ".join(supported_output_formats)
+        raise ValidationProblem(
+            detail=f"Unsupported outputFormat '{payload.outputFormat}'. Supported values: {supported_values}"
+        )
 
     url = await request.app.state.container.summary_service.create_summary(
         document_ids=payload.documentIds,
         keywords=payload.keywords,
+        output_format=normalized_output,
     )
     return DocumentSummaryResponse(url=url)
 

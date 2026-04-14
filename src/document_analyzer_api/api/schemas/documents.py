@@ -67,4 +67,9 @@ class DocumentListResponse(BaseModel):
     total: int
 
 
+class DocumentCapabilitiesResponse(BaseModel):
+    supportedInputExtensions: list[str]
+    supportedSummaryOutputFormats: list[str]
+
+
 
