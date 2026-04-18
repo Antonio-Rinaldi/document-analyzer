@@ -6,7 +6,7 @@ Purpose:
 - Implements a focused responsibility in the Document Analyzer codebase.
 
 Defined symbols:
-- Classes: KeywordsMode, RetrievalMode, OutputFormat, RetrievalOptionsCommon, RetrievalOptionsHybrid, RetrievalOptions, DocumentGenerateRequest, DocumentGenerateResponse, DocumentSummaryRequest, DocumentSummaryResponse, ChatSessionCreateResponse, DocumentChatRequest, DocumentChatResponse.
+- Classes: KeywordsMode, RetrievalMode, OutputFormat, RetrievalOptionsCommon, RetrievalOptionsGraph, RetrievalOptionsHybrid, RetrievalOptions, DocumentGenerateRequest, DocumentGenerateResponse, DocumentSummaryRequest, DocumentSummaryResponse, ChatSessionCreateResponse, DocumentChatRequest, DocumentChatResponse.
 - Functions: none.
 
 Project alignment:
@@ -88,6 +88,15 @@ class RetrievalOptionsHybrid(BaseModel):
     hybridAlpha: float = Field(default=0.5, ge=0.0, le=1.0)
 
 
+class RetrievalOptionsGraph(BaseModel):
+    """RetrievalOptionsGraph component.
+
+    Graph traversal controls used by Neo4j-backed retrieval mode.
+    """
+
+    maxHops: int = Field(default=2, ge=1, le=6)
+
+
 class RetrievalOptions(BaseModel):
     """RetrievalOptions component.
     
@@ -95,10 +104,20 @@ class RetrievalOptions(BaseModel):
     It is intended to be composed through dependency injection and exercised by
     unit/integration tests with stable behavioral contracts.
     
-    Notable attributes: common, hybrid.
+    Notable attributes: common, graph, hybrid.
     """
     common: RetrievalOptionsCommon = RetrievalOptionsCommon()
+    graph: RetrievalOptionsGraph = RetrievalOptionsGraph()
     hybrid: RetrievalOptionsHybrid = RetrievalOptionsHybrid()
+
+
+def _default_summary_retrieval_options() -> RetrievalOptions:
+    """Create summary-friendly retrieval defaults with permissive evidence thresholding."""
+    return RetrievalOptions(
+        common=RetrievalOptionsCommon(topK=8, minScore=0.0),
+        graph=RetrievalOptionsGraph(),
+        hybrid=RetrievalOptionsHybrid(),
+    )
 
 
 class DocumentGenerateRequest(BaseModel):
@@ -142,10 +161,14 @@ class DocumentSummaryRequest(BaseModel):
     It is intended to be composed through dependency injection and exercised by
     unit/integration tests with stable behavioral contracts.
     
-    Notable attributes: documentIds, keywords, outputFormat, generationOptions.
+    Notable attributes: documentIds, keywords, keywordsMode, retrievalMode, retrievalOptions, summaryWordCount, outputFormat, generationOptions.
     """
     documentIds: list[str] | None = None
     keywords: list[str] = Field(default_factory=list)
+    keywordsMode: KeywordsMode = KeywordsMode.metadata_only
+    retrievalMode: RetrievalMode = RetrievalMode.vector
+    retrievalOptions: RetrievalOptions = Field(default_factory=_default_summary_retrieval_options)
+    summaryWordCount: int | None = Field(default=None, ge=1)
     outputFormat: str = Field(default="md")
     generationOptions: dict = Field(default_factory=dict)
 

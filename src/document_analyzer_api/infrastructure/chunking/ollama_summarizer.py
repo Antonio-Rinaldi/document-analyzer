@@ -73,7 +73,7 @@ class OllamaSummarizer(TextSummarizerPort):
             f"Context:\n{context_text}\n\n"
             f"Target:\n{target_text}\n"
         )
-        async with httpx.AsyncClient(timeout=60.0) as client:
+        async with httpx.AsyncClient(timeout=60.0, trust_env=False) as client:
             response = await client.post(
                 f"{self._base_url}/api/generate",
                 json={"model": self._model, "prompt": final_prompt, "stream": False},

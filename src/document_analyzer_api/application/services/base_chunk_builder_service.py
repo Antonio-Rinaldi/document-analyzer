@@ -46,7 +46,7 @@ class BaseChunkBuilderService:
                 A value compatible with `list[BaseChunk]`.
         """
         chunks: list[BaseChunk] = []
-        for section in document.sections:
+        for chapter_index, section in enumerate(document.sections):
             if config.granularity == ChunkGranularity.chapter:
                 chunks.append(
                     BaseChunk(
@@ -54,15 +54,20 @@ class BaseChunkBuilderService:
                         section_id=section.section_id,
                         text=section.text.strip(),
                         context_text=section.text,
-                        metadata={"sectionTitle": section.title, "granularity": config.granularity.value},
+                        metadata=self._build_chunk_metadata(
+                            chapter_id=section.section_id,
+                            chapter_title=section.title,
+                            chapter_index=chapter_index,
+                            paragraph_index=0,
+                            paragraph_chunk_index=0,
+                            granularity=config.granularity,
+                        ),
                     )
                 )
                 continue
 
             if config.granularity == ChunkGranularity.paragraph:
-                paragraphs = [p.strip() for p in re.split(r"\n\s*\n", section.text) if p.strip()]
-                if not paragraphs and section.text.strip():
-                    paragraphs = [section.text.strip()]
+                paragraphs = self._split_paragraphs(section.text)
                 for idx, paragraph in enumerate(paragraphs):
                     chunks.append(
                         BaseChunk(
@@ -70,12 +75,27 @@ class BaseChunkBuilderService:
                             section_id=section.section_id,
                             text=paragraph,
                             context_text=section.text,
-                            metadata={"sectionTitle": section.title, "granularity": config.granularity.value},
+                            metadata=self._build_chunk_metadata(
+                                chapter_id=section.section_id,
+                                chapter_title=section.title,
+                                chapter_index=chapter_index,
+                                paragraph_index=idx,
+                                paragraph_chunk_index=0,
+                                granularity=config.granularity,
+                            ),
                         )
                     )
                 continue
 
-            chunks.extend(self._build_sub_paragraph_chunks(section.section_id, section.title, section.text, config))
+            chunks.extend(
+                self._build_sub_paragraph_chunks(
+                    section_id=section.section_id,
+                    section_title=section.title,
+                    chapter_index=chapter_index,
+                    text=section.text,
+                    config=config,
+                )
+            )
 
         return chunks
 
@@ -83,6 +103,7 @@ class BaseChunkBuilderService:
         self,
         section_id: str,
         section_title: str,
+        chapter_index: int,
         text: str,
         config: ChunkingConfig,
     ) -> list[BaseChunk]:
@@ -103,30 +124,69 @@ class BaseChunkBuilderService:
             Returns:
                 A value compatible with `list[BaseChunk]`.
         """
-        words = [word for word in text.split() if word]
-        if not words:
-            return []
-
         target = max(config.target_tokens, 1)
         overlap = max(min(config.overlap_tokens, target - 1), 0)
         step = max(target - overlap, 1)
 
         chunks: list[BaseChunk] = []
-        index = 0
         chunk_idx = 0
-        while index < len(words):
-            piece = " ".join(words[index : index + target])
-            chunks.append(
-                BaseChunk(
-                    chunk_id=f"{section_id}:{chunk_idx}",
-                    section_id=section_id,
-                    text=piece,
-                    context_text=text,
-                    metadata={"sectionTitle": section_title, "granularity": config.granularity.value},
+        for paragraph_index, paragraph_text in enumerate(self._split_paragraphs(text)):
+            words = [word for word in paragraph_text.split() if word]
+            index = 0
+            paragraph_chunk_index = 0
+            while index < len(words):
+                piece = " ".join(words[index : index + target])
+                chunks.append(
+                    BaseChunk(
+                        chunk_id=f"{section_id}:{chunk_idx}",
+                        section_id=section_id,
+                        text=piece,
+                        context_text=text,
+                        metadata=self._build_chunk_metadata(
+                            chapter_id=section_id,
+                            chapter_title=section_title,
+                            chapter_index=chapter_index,
+                            paragraph_index=paragraph_index,
+                            paragraph_chunk_index=paragraph_chunk_index,
+                            granularity=config.granularity,
+                        ),
+                    )
                 )
-            )
-            chunk_idx += 1
-            index += step
+                chunk_idx += 1
+                paragraph_chunk_index += 1
+                index += step
 
         return chunks
+
+    @staticmethod
+    def _split_paragraphs(text: str) -> list[str]:
+        """Return trimmed non-empty paragraphs from section text with safe fallback."""
+        paragraphs = [paragraph.strip() for paragraph in re.split(r"\n\s*\n", text) if paragraph.strip()]
+        if paragraphs:
+            return paragraphs
+        fallback = text.strip()
+        return [fallback] if fallback else []
+
+    @staticmethod
+    def _build_chunk_metadata(
+        *,
+        chapter_id: str,
+        chapter_title: str,
+        chapter_index: int,
+        paragraph_index: int,
+        paragraph_chunk_index: int,
+        granularity: ChunkGranularity,
+    ) -> dict[str, str | int]:
+        """Build hierarchy-aware metadata consumed by persistence and graph retrieval adapters."""
+        paragraph_id = f"{chapter_id}:p{paragraph_index}"
+        return {
+            "sectionTitle": chapter_title,
+            "chapterId": chapter_id,
+            "chapterTitle": chapter_title,
+            "chapterIndex": chapter_index,
+            "paragraphId": paragraph_id,
+            "paragraphIndex": paragraph_index,
+            "paragraphChunkIndex": paragraph_chunk_index,
+            "granularity": granularity.value,
+        }
 

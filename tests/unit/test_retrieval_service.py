@@ -26,6 +26,7 @@ from document_analyzer_api.infrastructure.retrieval.local_retrieval_backends imp
     LocalGraphRetrievalBackend,
     LocalHybridRetrievalBackend,
     LocalVectorRetrievalBackend,
+    _graphish_connectivity_bonus,
 )
 
 
@@ -209,4 +210,19 @@ def test_include_sources_returns_chunk_level_citations(tmp_path: Path) -> None:
     assert result.citations
     assert result.citations[0].chunk_id
     assert result.citations[0].document_id
+
+
+def test_graphish_connectivity_bonus_uses_connections_paths_and_depth() -> None:
+    """Weight graph metadata using neighbor count, path count, and inverse minimum depth."""
+    bonus = _graphish_connectivity_bonus(
+        {
+            "connections": ["c1", "c2", "c3"],
+            "graphPathCount": 6,
+            "graphMinDepth": 2,
+        }
+    )
+
+    assert bonus > 0.0
+    assert round(bonus, 2) == 6.50
+
 

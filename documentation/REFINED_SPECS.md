@@ -26,8 +26,7 @@ Out of scope for V1:
 
 Implementation policy:
 
-- Local deterministic adapters are allowed during first implementation pass to validate contracts and orchestration.
-- After all planned V1 features are completed with local adapters, a second pass is mandatory to replace local adapters with real integrations requested for V1 runtime:
+- Runtime uses real integrations only:
   - MongoDB repositories
   - MongoDB chat session repository with TTL
   - Neo4j repositories
@@ -159,6 +158,7 @@ Creates a new summary/synthesis document synchronously.
   - `null` => `400`
 - `keywords`: optional
 - `keywordsMode`: `metadata_only` (default) | `filter` | `rank_boost`
+- `summaryWordCount`: optional positive integer target length hint for summary generation (no upper cap)
 - `outputFormat`: `md` | `markdown` | `txt`
 - `generationOptions`: provider-specific options (for V1: Ollama schema)
 - Retrieval overrides and mode (see Retrieval section)
@@ -166,6 +166,16 @@ Creates a new summary/synthesis document synchronously.
 ### Response
 
 - Presigned URL only.
+
+Summary generation behavior:
+
+- Build retrieval request from `documentIds`, `keywords`, `keywordsMode`, `retrievalMode`, and `retrievalOptions`.
+- Retrieve chunk evidence from retrieval backends (Mongo/Neo4j via selected mode).
+- Generate final summary text with LLM over retrieved chunks.
+- When `summaryWordCount` is provided, include it as explicit prompt guidance (`approximately N words`).
+- If no evidence is found, use strict insufficient-evidence text.
+- Summary requests default to permissive retrieval thresholding (`retrievalOptions.common.minScore=0.0`) to maximize
+  evidence coverage unless caller overrides it.
 
 ## 4.3.1 GET /api/v1/documents/capabilities
 
@@ -200,6 +210,8 @@ One-off question answering over selected documents.
 - For audio output, response is direct downloadable binary stream (wav by default).
 - For image output, response returns integrated JSON payload with generated image content and answer.
 - For `text+image`, response returns text answer plus integrated image payload.
+- If image providers are unavailable or return unsupported routes (for example HTTP 404), the API still returns `200`
+  with answer/citations and an `image` payload containing `mimeType=image/unsupported` plus diagnostic warning text.
 
 ## 4.5 Chat Endpoints
 
@@ -248,6 +260,19 @@ Notes:
   - `chunkGranularity`
   - source span information (chapter/paragraph/offset range)
   - source excerpt reference when using `contextual_summary`
+- Hierarchy metadata should include stable graph keys:
+  - `chapterId`, `chapterTitle`, `chapterIndex`
+  - `paragraphId`, `paragraphIndex`
+
+Neo4j graph shape for V1 retrieval:
+
+- `(:Document)-[:HAS_CHAPTER]->(:Chapter)`
+- `(:Chapter)-[:HAS_PARAGRAPH]->(:Paragraph)`
+- `(:Paragraph)-[:HAS_CHUNK]->(:Chunk)`
+- Ordering edges:
+  - `(:Chapter)-[:NEXT]->(:Chapter)` within a document
+  - `(:Paragraph)-[:NEXT]->(:Paragraph)` within a chapter
+  - `(:Chunk)-[:NEXT]->(:Chunk)` within a paragraph
 
 ## 5.2 Document Metadata (for list)
 
@@ -295,7 +320,13 @@ Citations:
 - `minScore`: `0.2`
 - `retrievalMode`: `vector`
 - `includeSources`: `false`
+- `graph.maxHops`: `2`
 - `hybridAlpha`: `0.5` (when hybrid mode is selected)
+
+Neo4j graph traversal implementation constraint:
+
+- `graph.maxHops` must be normalized to a positive bounded integer and rendered as a literal in Cypher
+  variable-length patterns (`*1..N`); Neo4j does not support parameter placeholders for that range expression.
 
 ## 7.3 Output Defaults
 
@@ -375,7 +406,6 @@ Design with interfaces/ports so future changes are low-risk:
 - `PROVIDER_RETRY_COUNT`
 - `PROVIDER_TIMEOUT_SECONDS`
 - `PROVIDER_BACKOFF_SECONDS`
-- `ADAPTER_MODE` (`local` or `real`)
 - `MONGODB_URI`
 - `MONGODB_DATABASE`
 - `MONGODB_VECTOR_INDEX_NAME`
@@ -387,6 +417,7 @@ Design with interfaces/ports so future changes are low-risk:
 - `S3_SECRET_KEY`
 - `S3_BUCKET_RAW`
 - `S3_BUCKET_OUTPUT`
+- `S3_OUTPUT_PRESIGN_TTL_SECONDS`
 - `OLLAMA_BASE_URL`
 - `OLLAMA_EMBEDDING_MODEL`
 - `OLLAMA_TEXT_MODEL`

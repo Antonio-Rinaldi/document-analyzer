@@ -246,43 +246,69 @@ def _rank_records(records: list[dict[str, Any]], request: RetrievalRequest, mode
     """
     ranked: list[RetrievalHit] = []
     for record in records:
-        if request.document_ids is not None and record.get("document_id") not in request.document_ids:
-            continue
-
-        content = record.get("content", "")
-        metadata = record.get("metadata", {})
-        if not isinstance(metadata, dict):
-            metadata = {}
-
-        if request.keywords and request.keywords_mode == KeywordsMode.filter:
-            if not _contains_all_keywords(content, metadata, request.keywords):
-                continue
-
-        score = _similarity(request.query, content)
-        if mode == "graph":
-            section_title = str(metadata.get("sectionTitle", "")).lower()
-            if section_title and section_title in request.query.lower():
-                score += 0.25
-            score += 0.05 * _graphish_connectivity_bonus(metadata)
-
-        if request.keywords and request.keywords_mode == KeywordsMode.rank_boost:
-            score += 0.05 * _keyword_match_count(content, metadata, request.keywords)
-
-        if score < request.min_score:
-            continue
-
-        ranked.append(
-            RetrievalHit(
-                document_id=record.get("document_id", ""),
-                chunk_id=record.get("chunk_id", ""),
-                content=content,
-                score=score,
-                metadata=metadata,
-            )
-        )
+        hit = _rank_record(record=record, request=request, mode=mode)
+        if hit is not None:
+            ranked.append(hit)
 
     ranked.sort(key=lambda item: item.score, reverse=True)
     return ranked[: request.top_k]
+
+
+def _rank_record(record: dict[str, Any], request: RetrievalRequest, mode: str) -> RetrievalHit | None:
+    """Rank one retrieval record and return a hit only when all filters and score thresholds pass."""
+    if not _record_matches_document_scope(record=record, request=request):
+        return None
+    content = str(record.get("content", ""))
+    metadata = _normalize_metadata(record.get("metadata"))
+    if _is_filtered_by_keywords(content=content, metadata=metadata, request=request):
+        return None
+    score = _score_record(content=content, metadata=metadata, request=request, mode=mode)
+    if score < request.min_score:
+        return None
+    return RetrievalHit(
+        document_id=str(record.get("document_id", "")),
+        chunk_id=str(record.get("chunk_id", "")),
+        content=content,
+        score=score,
+        metadata=metadata,
+    )
+
+
+def _record_matches_document_scope(record: dict[str, Any], request: RetrievalRequest) -> bool:
+    """Check whether a record belongs to the caller-selected document scope."""
+    if request.document_ids is None:
+        return True
+    return record.get("document_id") in request.document_ids
+
+
+def _normalize_metadata(raw_metadata: Any) -> dict[str, Any]:
+    """Normalize arbitrary metadata payloads to dictionaries expected by ranking helpers."""
+    return raw_metadata if isinstance(raw_metadata, dict) else {}
+
+
+def _is_filtered_by_keywords(content: str, metadata: dict[str, Any], request: RetrievalRequest) -> bool:
+    """Apply strict keyword filter mode semantics."""
+    if not request.keywords or request.keywords_mode != KeywordsMode.filter:
+        return False
+    return not _contains_all_keywords(content, metadata, request.keywords)
+
+
+def _score_record(content: str, metadata: dict[str, Any], request: RetrievalRequest, mode: str) -> float:
+    """Compute ranking score from lexical similarity plus mode-specific and keyword boosts."""
+    score = _similarity(request.query, content)
+    if mode == "graph":
+        score += _graph_mode_score_boost(metadata=metadata, query=request.query)
+    if request.keywords and request.keywords_mode == KeywordsMode.rank_boost:
+        score += 0.05 * _keyword_match_count(content, metadata, request.keywords)
+    return score
+
+
+def _graph_mode_score_boost(*, metadata: dict[str, Any], query: str) -> float:
+    """Return graph-specific ranking boost derived from section title and connectivity metadata."""
+    section_title = str(metadata.get("sectionTitle", "")).lower()
+    section_title_boost = 0.25 if section_title and section_title in query.lower() else 0.0
+    connectivity_boost = 0.05 * _graphish_connectivity_bonus(metadata)
+    return section_title_boost + connectivity_boost
 
 
 def _contains_all_keywords(content: str, metadata: dict[str, Any], keywords: list[str]) -> bool:
@@ -353,25 +379,35 @@ def _similarity(query: str, content: str) -> float:
     return overlap / math.sqrt(len(query_tokens) * len(content_tokens))
 
 
-def _graphish_connectivity_bonus(metadata: dict[str, Any]) -> int:
+def _graphish_connectivity_bonus(metadata: dict[str, Any]) -> float:
     """Synchronous execution path for `_graphish_connectivity_bonus`.
     
     This callable is implemented in `src/document_analyzer_api/infrastructure/retrieval/local_retrieval_backends.py` and contributes to module-level behavior
     with explicit and testable execution semantics.
     
         Behavior:
-            Coordinates helper calls (get, isinstance, len) to satisfy the callable contract.
+            Coordinates helper calls (float, get, isinstance, len, min) to satisfy the callable contract.
     
         Args:
             metadata: Input parameter accepted by `_graphish_connectivity_bonus`.
     
         Returns:
-            A value compatible with `int`.
+            A value compatible with `float`.
     """
     connections = metadata.get("connections")
-    if isinstance(connections, list):
-        return len(connections)
-    return 0
+    connection_count = len(connections) if isinstance(connections, list) else 0
+    graph_path_count = min(_to_non_negative_int(metadata.get("graphPathCount")), 20)
+    graph_min_depth = _to_non_negative_int(metadata.get("graphMinDepth"))
+    depth_bonus = 0.5 if graph_min_depth <= 0 else 1.0 / float(graph_min_depth)
+    return float(connection_count) + (0.5 * float(graph_path_count)) + depth_bonus
+
+
+def _to_non_negative_int(value: Any) -> int:
+    """Convert arbitrary metadata values into a non-negative integer."""
+    try:
+        return max(int(value), 0)
+    except (TypeError, ValueError):
+        return 0
 
 
 def _tokenize(text: str) -> set[str]:

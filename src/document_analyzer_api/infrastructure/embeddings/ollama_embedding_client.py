@@ -50,6 +50,66 @@ class OllamaEmbeddingClient(EmbeddingClientPort):
         self._base_url = base_url.rstrip("/")
         self._model = model
 
+    @staticmethod
+    def _extract_vector(payload: dict) -> list[float]:
+        """Extract a single vector from payload variants used by older providers."""
+        if isinstance(payload.get("embedding"), list):
+            return payload["embedding"]
+
+        embeddings = payload.get("embeddings")
+        if isinstance(embeddings, list) and embeddings:
+            first = embeddings[0]
+            if isinstance(first, list):
+                return first
+        return []
+
+    @staticmethod
+    def _is_embedding_matrix(value: object) -> bool:
+        """Return whether a value is a list of numeric vectors."""
+        return isinstance(value, list) and all(
+            isinstance(vector, list)
+            and all(isinstance(number, (int, float)) for number in vector)
+            for vector in value
+        )
+
+    def _normalize_embeddings(self, payload: dict, expected_count: int) -> list[list[float]]:
+        """Normalize provider payloads and enforce one embedding per input text."""
+        matrix = payload.get("embeddings")
+        if self._is_embedding_matrix(matrix):
+            if len(matrix) != expected_count:
+                raise RuntimeError(
+                    "Ollama embeddings cardinality mismatch at /api/embeddings: "
+                    f"expected={expected_count}, received={len(matrix)}"
+                )
+            return [[float(value) for value in vector] for vector in matrix]
+
+        vector = self._extract_vector(payload)
+        if expected_count == 1 and vector:
+            return [[float(value) for value in vector]]
+
+        raise RuntimeError(
+            "Ollama embeddings response did not contain a valid embeddings array "
+            f"for {expected_count} input text(s) at /api/embeddings."
+        )
+
+    async def _embed(self, client: httpx.AsyncClient, texts: list[str]) -> list[list[float]]:
+        """Call Ollama embeddings endpoint used by runtime ingestion."""
+        response = await client.post(
+            f"{self._base_url}/api/embeddings",
+            json={"model": self._model, "input": texts},
+        )
+        try:
+            response.raise_for_status()
+        except httpx.HTTPStatusError as exc:
+            body = response.text.strip()
+            raise RuntimeError(
+                f"Ollama embeddings failed for model '{self._model}' at /api/embeddings: "
+                f"HTTP {response.status_code} | body={body}"
+            ) from exc
+
+        payload = response.json()
+        return self._normalize_embeddings(payload, len(texts))
+
     async def embed_texts(self, texts: list[str]) -> list[list[float]]:
         """Asynchronous execution path for `embed_texts`.
         
@@ -65,15 +125,9 @@ class OllamaEmbeddingClient(EmbeddingClientPort):
             Returns:
                 A value compatible with `list[list[float]]`.
         """
-        vectors: list[list[float]] = []
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            for text in texts:
-                response = await client.post(
-                    f"{self._base_url}/api/embeddings",
-                    json={"model": self._model, "prompt": text},
-                )
-                response.raise_for_status()
-                payload = response.json()
-                vectors.append(payload.get("embedding", []))
-        return vectors
+        if not texts:
+            return []
+
+        async with httpx.AsyncClient(timeout=30.0, trust_env=False) as client:
+            return await self._embed(client, texts)
 

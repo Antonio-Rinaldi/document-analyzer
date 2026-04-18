@@ -1,36 +1,18 @@
 services:
-  api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    env_file:
-      - .env
-    ports:
-      - "8000:8000"
-    depends_on:
-      - mongodb
-      - neo4j
-      - minio
-      - ollama
-      - jaeger
-
-  api-real:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    env_file:
-      - .env.real
-    ports:
-      - "8000:8000"
-    profiles:
-      - real
-    depends_on:
-      - mongodb
-      - neo4j
-      - minio
-      - ollama
-      - tts-api
-      - jaeger
+  # document-analyzer:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   env_file:
+  #     - .env
+  #   ports:
+  #     - "8000:8000"
+  #   depends_on:
+  #     - mongodb
+  #     - neo4j
+  #     - minio
+  #     - ollama
+  #     - jaeger
 
   mongodb:
     image: mongo:8.2
@@ -38,7 +20,7 @@ services:
       - "27017:27017"
 
   neo4j:
-    image: neo4j:6
+    image: neo4j:5.26.0
     environment:
       NEO4J_AUTH: neo4j/neo4jpassword
     ports:
@@ -68,19 +50,5 @@ services:
       - "16686:16686"
       - "4317:4317"
       - "4318:4318"
-
-  tts-api:
-    image: python:3.13-slim
-    working_dir: /app
-    volumes:
-      - ../llm-tts-api:/app
-    command: >
-      sh -lc "pip install --no-cache-dir -e . &&
-      uvicorn llm_tts_api.main:app --host 0.0.0.0 --port 8010"
-    profiles:
-      - real
-    ports:
-      - "8010:8010"
-
 
 

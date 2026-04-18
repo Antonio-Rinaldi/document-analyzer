@@ -1,0 +1,7 @@
+/.data/
+/.env*
+!/.env.example
+/.venv/
+/src/document_analyzer_api.egg-info/
+/resources/input/
+/resources/output/

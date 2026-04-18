@@ -32,6 +32,15 @@ from document_analyzer_api.infrastructure.persistence.local_document_metadata_re
 )
 
 
+class _ShortEmbeddingClient:
+    """Test double that intentionally returns fewer vectors than requested texts."""
+
+    async def embed_texts(self, texts: list[str]) -> list[list[float]]:
+        """Return a single vector regardless of the number of inputs."""
+        _ = texts
+        return [[0.1, 0.2, 0.3]]
+
+
 def test_processing_pipeline_commits_to_both_repositories(tmp_path: Path) -> None:
     """Synchronous execution path for `test_processing_pipeline_commits_to_both_repositories`.
     
@@ -80,4 +89,35 @@ def test_processing_pipeline_commits_to_both_repositories(tmp_path: Path) -> Non
     assert neo4j_records[0]["status"] == "committed"
     assert mongo_records[0]["metadata"]["chunkingStrategy"] == "meaningful"
     assert docs[0]["id"] == document_id
+
+
+def test_processing_pipeline_raises_on_embedding_cardinality_mismatch(tmp_path: Path) -> None:
+    """Raise a descriptive validation error when embeddings and chunk counts diverge."""
+    pipeline = DocumentProcessingPipelineService(
+        parser=SimpleEpubParser(),
+        base_chunk_builder=BaseChunkBuilderService(),
+        chunking_service=ChunkingService(summarizer=DeterministicSummarizer()),
+        embedding_client=_ShortEmbeddingClient(),
+        repositories=[LocalChunkRepository(root_path=str(tmp_path), backend_name="mongo")],
+        metadata_repository=LocalDocumentMetadataRepository(root_path=str(tmp_path)),
+        temp_ttl_seconds=600,
+    )
+
+    try:
+        asyncio.run(
+            pipeline.process(
+                file_name="book.epub",
+                content=b"Chapter one.\n\nChapter two.",
+                chunking_config=ChunkingConfig(strategy=ChunkingStrategyName.meaningful),
+            )
+        )
+    except ValueError as exc:
+        message = str(exc)
+        assert "Embedding cardinality mismatch" in message
+        assert "chunks=" in message
+        assert "embeddings=" in message
+        return
+
+    assert False, "Expected ValueError for mismatched embedding cardinality"
+
 

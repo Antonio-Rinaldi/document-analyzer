@@ -3,7 +3,7 @@
 This module belongs to the composition/bootstrap layer of Document Analyzer.
 
 Purpose:
-- Composes runtime dependencies for both local and real adapter modes.
+- Composes runtime dependencies for production integrations.
 
 Defined symbols:
 - Classes: AppContainer.
@@ -30,47 +30,56 @@ from ..application.services.image_service import ImageService
 from ..application.services.retrieval_service import RetrievalService
 from ..application.services.health_service import HealthService
 from ..config.settings import Settings
-from ..infrastructure.chunking.deterministic_summarizer import DeterministicSummarizer
+from ..domain.ports.health import DependencyHealthPort
 from ..infrastructure.chunking.ollama_summarizer import OllamaSummarizer
-from ..infrastructure.embeddings.deterministic_embedding_client import DeterministicEmbeddingClient
 from ..infrastructure.embeddings.ollama_embedding_client import OllamaEmbeddingClient
 from ..infrastructure.health.minio_health_adapter import MinioHealthAdapter
 from ..infrastructure.health.mongo_health_adapter import MongoHealthAdapter
 from ..infrastructure.health.neo4j_health_adapter import Neo4jHealthAdapter
 from ..infrastructure.health.ollama_health_adapter import OllamaHealthAdapter
-from ..infrastructure.modalities.local_image_provider import LocalImageProvider
-from ..infrastructure.modalities.local_tts_provider import LocalTTSProvider
+from ..infrastructure.health.http_route_health_adapter import HttpRouteHealthAdapter
 from ..infrastructure.modalities.http_image_provider import HttpImageProvider
 from ..infrastructure.modalities.http_tts_provider import HttpTTSProvider
 from ..infrastructure.modalities.ollama_image_provider import OllamaImageProvider
 from ..infrastructure.parsing.markitdown_document_creator import MarkItDownDocumentCreator
 from ..infrastructure.parsing.markitdown_document_parser import MarkItDownDocumentParser
-from ..infrastructure.persistence.local_chunk_repository import LocalChunkRepository
-from ..infrastructure.persistence.local_chat_session_repository import LocalChatSessionRepository
-from ..infrastructure.persistence.local_document_metadata_repository import LocalDocumentMetadataRepository
 from ..infrastructure.persistence.mongo_chat_session_repository import MongoChatSessionRepository
 from ..infrastructure.persistence.mongo_chunk_repository import MongoChunkRepository
 from ..infrastructure.persistence.mongo_document_metadata_repository import MongoDocumentMetadataRepository
 from ..infrastructure.persistence.neo4j_chunk_repository import Neo4jChunkRepository
-from ..infrastructure.retrieval.local_retrieval_backends import LocalGraphRetrievalBackend
-from ..infrastructure.retrieval.local_retrieval_backends import LocalHybridRetrievalBackend
-from ..infrastructure.retrieval.local_retrieval_backends import LocalVectorRetrievalBackend
 from ..infrastructure.retrieval.mongo_vector_retrieval_backend import MongoVectorRetrievalBackend
 from ..infrastructure.retrieval.neo4j_graph_retrieval_backend import Neo4jGraphRetrievalBackend
 from ..infrastructure.retrieval.hybrid_retrieval_backend import HybridRetrievalBackend
 from ..infrastructure.resilience.provider_wrappers import RetryEmbeddingClient
 from ..infrastructure.resilience.provider_wrappers import RetrySummarizer
-from ..infrastructure.storage.local_document_storage import LocalDocumentStorage
-from ..infrastructure.storage.local_output_storage import LocalOutputStorage
 from ..infrastructure.storage.s3_document_storage import S3DocumentStorage
 from ..infrastructure.storage.s3_output_storage import S3OutputStorage
-from ..infrastructure.text_generation.local_text_generation_client import LocalTextGenerationClient
 from ..infrastructure.text_generation.ollama_text_generation_client import OllamaTextGenerationClient
 from ..observability.traced_services import (
+    TracedAudioService,
     TracedChatService,
+    TracedDocumentIngestionService,
     TracedDocumentGenerationService,
     TracedDocumentProcessingPipelineService,
+    TracedDocumentQueryService,
+    TracedDocumentSummaryService,
+    TracedImageService,
     TracedRetrievalService,
+)
+from ..observability.traced_ports import (
+    TracedChatSessionRepository,
+    TracedChunkRepository,
+    TracedDocumentCreator,
+    TracedDocumentMetadataRepository,
+    TracedDocumentParser,
+    TracedDocumentStorage,
+    TracedEmbeddingClient,
+    TracedImageProvider,
+    TracedOutputStorage,
+    TracedRetrievalBackend,
+    TracedTextGenerationClient,
+    TracedTextSummarizer,
+    TracedTTSProvider,
 )
 
 
@@ -113,13 +122,7 @@ class AppContainer:
             Returns:
                 A value compatible with `'AppContainer'`.
         """
-        retrieval_backends = (
-            LocalVectorRetrievalBackend(root_path=settings.storage_root_path),
-            LocalGraphRetrievalBackend(root_path=settings.storage_root_path),
-            LocalHybridRetrievalBackend(root_path=settings.storage_root_path),
-        )
-
-        dependencies = [
+        dependencies: list[DependencyHealthPort] = [
             MongoHealthAdapter(uri=settings.mongodb_uri, timeout_seconds=settings.dependency_timeout_seconds),
             Neo4jHealthAdapter(
                 uri=settings.neo4j_uri,
@@ -136,80 +139,112 @@ class AppContainer:
             OllamaHealthAdapter(base_url=settings.ollama_base_url, timeout_seconds=settings.dependency_timeout_seconds),
         ]
 
-        if settings.adapter_mode == "real":
-            storage = S3DocumentStorage(
-                endpoint=settings.s3_endpoint,
-                access_key=settings.s3_access_key,
-                secret_key=settings.s3_secret_key,
-                bucket=settings.s3_bucket_raw,
-                done_extension=settings.done_extension,
-            )
-            metadata_repository = MongoDocumentMetadataRepository(
-                uri=settings.mongodb_uri,
-                database=settings.mongodb_database,
-            )
-            repositories = [
-                MongoChunkRepository(uri=settings.mongodb_uri, database=settings.mongodb_database),
-                Neo4jChunkRepository(
-                    uri=settings.neo4j_uri,
-                    user=settings.neo4j_user,
-                    password=settings.neo4j_password,
+        dependencies.extend(
+            [
+                HttpRouteHealthAdapter(
+                    name="tts_api",
+                    base_url=settings.tts_api_base_url,
+                    path="/ready",
+                    timeout_seconds=settings.dependency_timeout_seconds,
+                    method="GET",
+                ),
+                HttpRouteHealthAdapter(
+                    name="image_api",
+                    base_url=settings.ollama_base_url,
+                    path="/v1/images/generations",
+                    timeout_seconds=settings.dependency_timeout_seconds,
+                    payload={
+                        "model": settings.ollama_image_model,
+                        "prompt": "health check",
+                    },
+                ),
+                HttpRouteHealthAdapter(
+                    name="ollama_embeddings",
+                    base_url=settings.ollama_base_url,
+                    path="/api/embeddings",
+                    timeout_seconds=settings.dependency_timeout_seconds,
+                    payload={
+                        "model": settings.ollama_embedding_model,
+                        "input": ["health check"],
+                    },
                 ),
             ]
-            summarizer = OllamaSummarizer(
-                base_url=settings.ollama_base_url,
-                model=settings.ollama_text_model,
-            )
-            embedding_client = OllamaEmbeddingClient(
-                base_url=settings.ollama_base_url,
-                model=settings.ollama_embedding_model,
-            )
-            output_storage = S3OutputStorage(
-                endpoint=settings.s3_endpoint,
-                access_key=settings.s3_access_key,
-                secret_key=settings.s3_secret_key,
-                bucket=settings.s3_bucket_output,
-            )
-            text_generation_client = OllamaTextGenerationClient(
-                base_url=settings.ollama_base_url,
-                model=settings.ollama_text_model,
-            )
-            chat_repository = MongoChatSessionRepository(
-                uri=settings.mongodb_uri,
-                database=settings.mongodb_database,
-            )
-            tts_provider = HttpTTSProvider(
-                base_url=settings.tts_api_base_url,
-                model=settings.default_tts_model,
-                voice=settings.default_tts_voice,
-            )
-            image_fallback_provider = HttpImageProvider(
-                base_url=settings.image_api_base_url,
-                model=settings.image_model,
-            )
-            image_provider = OllamaImageProvider(
-                base_url=settings.ollama_base_url,
-                model=settings.ollama_image_model,
-                fallback=image_fallback_provider,
-            )
-        else:
-            storage = LocalDocumentStorage(root_path=settings.storage_root_path, done_extension=settings.done_extension)
-            metadata_repository = LocalDocumentMetadataRepository(root_path=settings.storage_root_path)
-            repositories = [
-                LocalChunkRepository(root_path=settings.storage_root_path, backend_name="mongo"),
-                LocalChunkRepository(root_path=settings.storage_root_path, backend_name="neo4j"),
-            ]
-            summarizer = DeterministicSummarizer()
-            embedding_client = DeterministicEmbeddingClient()
-            output_storage = LocalOutputStorage(root_path=settings.storage_root_path)
-            text_generation_client = LocalTextGenerationClient()
-            chat_repository = LocalChatSessionRepository(root_path=settings.storage_root_path)
-            tts_provider = LocalTTSProvider()
-            image_provider = LocalImageProvider()
+        )
+
+        storage = S3DocumentStorage(
+            endpoint=settings.s3_endpoint,
+            access_key=settings.s3_access_key,
+            secret_key=settings.s3_secret_key,
+            bucket=settings.s3_bucket_raw,
+            done_extension=settings.done_extension,
+        )
+        metadata_repository = MongoDocumentMetadataRepository(
+            uri=settings.mongodb_uri,
+            database=settings.mongodb_database,
+        )
+        repositories = [
+            MongoChunkRepository(uri=settings.mongodb_uri, database=settings.mongodb_database),
+            Neo4jChunkRepository(
+                uri=settings.neo4j_uri,
+                user=settings.neo4j_user,
+                password=settings.neo4j_password,
+            ),
+        ]
+        summarizer = OllamaSummarizer(
+            base_url=settings.ollama_base_url,
+            model=settings.ollama_text_model,
+        )
+        embedding_client = OllamaEmbeddingClient(
+            base_url=settings.ollama_base_url,
+            model=settings.ollama_embedding_model,
+        )
+        output_storage = S3OutputStorage(
+            endpoint=settings.s3_endpoint,
+            access_key=settings.s3_access_key,
+            secret_key=settings.s3_secret_key,
+            bucket=settings.s3_bucket_output,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        presign_ttl_seconds=settings.s3_output_presign_ttl_seconds,
+        )
+        text_generation_client = OllamaTextGenerationClient(
+            base_url=settings.ollama_base_url,
+            model=settings.ollama_text_model,
+        )
+        chat_repository = MongoChatSessionRepository(
+            uri=settings.mongodb_uri,
+            database=settings.mongodb_database,
+        )
+        tts_provider = HttpTTSProvider(
+            base_url=settings.tts_api_base_url,
+            model=settings.default_tts_model,
+            voice=settings.default_tts_voice,
+        )
+        image_fallback_provider = HttpImageProvider(
+            base_url=settings.image_api_base_url,
+            model=settings.image_model,
+        )
+        image_provider = OllamaImageProvider(
+            base_url=settings.ollama_base_url,
+            model=settings.ollama_image_model,
+            fallback=image_fallback_provider,
+        )
+
+        storage = TracedDocumentStorage(storage)
+        metadata_repository = TracedDocumentMetadataRepository(metadata_repository)
+        repositories = [
+            TracedChunkRepository(repositories[0], backend_name="mongo"),
+            TracedChunkRepository(repositories[1], backend_name="neo4j"),
+        ]
+        summarizer = TracedTextSummarizer(summarizer)
+        embedding_client = TracedEmbeddingClient(embedding_client)
+        output_storage = TracedOutputStorage(output_storage)
+        text_generation_client = TracedTextGenerationClient(text_generation_client)
+        chat_repository = TracedChatSessionRepository(chat_repository)
+        tts_provider = TracedTTSProvider(tts_provider)
+        image_provider = TracedImageProvider(image_provider)
 
         base_chunk_builder_service = BaseChunkBuilderService()
-        parser = MarkItDownDocumentParser()
-        document_creator = MarkItDownDocumentCreator()
+        parser = TracedDocumentParser(MarkItDownDocumentParser())
+        document_creator = TracedDocumentCreator(MarkItDownDocumentCreator())
         retrying_summarizer = RetrySummarizer(
             summarizer,
             retries=settings.provider_retry_count,
@@ -223,20 +258,25 @@ class AppContainer:
             backoff_seconds=settings.provider_backoff_seconds,
         )
 
-        if settings.adapter_mode == "real":
-            vector_backend = MongoVectorRetrievalBackend(
-                uri=settings.mongodb_uri,
-                database=settings.mongodb_database,
-                embedding_client=retrying_embedding_client,
-                vector_index_name=settings.mongodb_vector_index_name,
-            )
-            graph_backend = Neo4jGraphRetrievalBackend(
-                uri=settings.neo4j_uri,
-                user=settings.neo4j_user,
-                password=settings.neo4j_password,
-            )
-            hybrid_backend = HybridRetrievalBackend(vector_backend=vector_backend, graph_backend=graph_backend)
-            retrieval_backends = (vector_backend, graph_backend, hybrid_backend)
+        vector_backend = MongoVectorRetrievalBackend(
+            uri=settings.mongodb_uri,
+            database=settings.mongodb_database,
+            embedding_client=retrying_embedding_client,
+            vector_index_name=settings.mongodb_vector_index_name,
+        )
+        graph_backend = Neo4jGraphRetrievalBackend(
+            uri=settings.neo4j_uri,
+            user=settings.neo4j_user,
+            password=settings.neo4j_password,
+        )
+        hybrid_backend = HybridRetrievalBackend(vector_backend=vector_backend, graph_backend=graph_backend)
+        retrieval_backends = (vector_backend, graph_backend, hybrid_backend)
+
+        retrieval_backends = (
+            TracedRetrievalBackend(retrieval_backends[0], backend_name="vector"),
+            TracedRetrievalBackend(retrieval_backends[1], backend_name="graph"),
+            TracedRetrievalBackend(retrieval_backends[2], backend_name="hybrid"),
+        )
 
         chunking_service = ChunkingService(summarizer=retrying_summarizer)
         retrieval_service_core = RetrievalService(
@@ -245,18 +285,23 @@ class AppContainer:
             hybrid_backend=retrieval_backends[2],
         )
         retrieval_service = TracedRetrievalService(retrieval_service_core)
-        document_query_service = DocumentQueryService(metadata_repository=metadata_repository)
+        document_query_service = TracedDocumentQueryService(
+            DocumentQueryService(metadata_repository=metadata_repository)
+        )
         generation_service_core = DocumentGenerationService(
             retrieval_service=retrieval_service,
             text_generation_client=text_generation_client,
         )
         generation_service = TracedDocumentGenerationService(generation_service_core)
-        audio_service = AudioService(generation_service=generation_service, tts_provider=tts_provider)
-        image_service = ImageService(generation_service=generation_service, image_provider=image_provider)
-        summary_service = DocumentSummaryService(
-            query_service=document_query_service,
-            output_storage=output_storage,
-            document_creator=document_creator,
+        audio_service = TracedAudioService(AudioService(generation_service=generation_service, tts_provider=tts_provider))
+        image_service = TracedImageService(ImageService(generation_service=generation_service, image_provider=image_provider))
+        summary_service = TracedDocumentSummaryService(
+            DocumentSummaryService(
+                retrieval_service=retrieval_service,
+                text_generation_client=text_generation_client,
+                output_storage=output_storage,
+                document_creator=document_creator,
+            )
         )
         chat_service_core = ChatService(
             repository=chat_repository,
@@ -279,10 +324,12 @@ class AppContainer:
         return cls(
             settings=settings,
             health_service=HealthService(dependencies=dependencies),
-            ingestion_service=DocumentIngestionService(
-                storage=storage,
-                pipeline=processing_pipeline,
-                supported_extensions=parser.supported_extensions(),
+            ingestion_service=TracedDocumentIngestionService(
+                DocumentIngestionService(
+                    storage=storage,
+                    pipeline=processing_pipeline,
+                    supported_extensions=parser.supported_extensions(),
+                )
             ),
             document_query_service=document_query_service,
             retrieval_service=retrieval_service,

@@ -65,19 +65,50 @@ class HttpImageProvider(ImageProviderPort):
             Returns:
                 A value compatible with `dict`.
         """
-        with httpx.Client(timeout=60.0) as client:
-            response = client.post(
-                f"{self._base_url}/v1/images/generations",
-                json={"model": self._model, "prompt": text},
-            )
-            response.raise_for_status()
-            payload = response.json()
-            data = payload.get("data", [])
-            if data:
-                item = data[0]
-                if "b64_json" in item:
-                    return {"mimeType": "image/png", "dataBase64": item["b64_json"], "promptUsed": text[:200]}
-                if "url" in item:
-                    return {"mimeType": "image/url", "url": item["url"], "promptUsed": text[:200]}
-            return {"mimeType": "image/unknown", "promptUsed": text[:200]}
+        try:
+            with httpx.Client(timeout=60.0) as client:
+                response = client.post(
+                    f"{self._base_url}/v1/images/generations",
+                    json={"model": self._model, "prompt": text},
+                )
+                response.raise_for_status()
+                payload = response.json()
+        except httpx.HTTPStatusError as exc:
+            status_code = exc.response.status_code if exc.response is not None else "unknown"
+            return self._unsupported_payload(text, warning=f"Image provider returned HTTP {status_code}")
+        except httpx.HTTPError as exc:
+            return self._unsupported_payload(text, warning=f"Image provider call failed: {exc.__class__.__name__}")
+
+        data = payload.get("data", []) if isinstance(payload, dict) else []
+        if data:
+            item = data[0]
+            if isinstance(item, dict) and "b64_json" in item:
+                return {
+                    "mimeType": "image/png",
+                    "dataBase64": item["b64_json"],
+                    "promptUsed": text[:200],
+                    "provider": "http_image",
+                }
+            if isinstance(item, dict) and "url" in item:
+                return {
+                    "mimeType": "image/url",
+                    "url": item["url"],
+                    "promptUsed": text[:200],
+                    "provider": "http_image",
+                }
+        return {
+            "mimeType": "image/unknown",
+            "promptUsed": text[:200],
+            "provider": "http_image",
+        }
+
+    @staticmethod
+    def _unsupported_payload(text: str, *, warning: str) -> dict:
+        """Build a stable payload when the upstream HTTP image route is unavailable."""
+        return {
+            "mimeType": "image/unsupported",
+            "promptUsed": text[:200],
+            "provider": "http_image",
+            "warning": warning,
+        }
 

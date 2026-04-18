@@ -594,11 +594,22 @@ components:
           maximum: 1
           default: 0.5
 
+    RetrievalOptionsGraph:
+      type: object
+      properties:
+        maxHops:
+          type: integer
+          minimum: 1
+          maximum: 6
+          default: 2
+
     RetrievalOptions:
       type: object
       properties:
         common:
           $ref: '#/components/schemas/RetrievalOptionsCommon'
+        graph:
+          $ref: '#/components/schemas/RetrievalOptionsGraph'
         hybrid:
           $ref: '#/components/schemas/RetrievalOptionsHybrid'
 
@@ -684,6 +695,22 @@ components:
           items:
             type: string
           default: []
+        keywordsMode:
+          type: string
+          enum: [metadata_only, filter, rank_boost]
+          default: metadata_only
+        retrievalMode:
+          type: string
+          enum: [vector, graph, hybrid]
+          default: vector
+        retrievalOptions:
+          $ref: '#/components/schemas/RetrievalOptions'
+          description: Summary flow defaults `common.minScore` to `0.0` when omitted.
+        summaryWordCount:
+          type: integer
+          minimum: 1
+          nullable: true
+          description: Optional target summary length guidance in words.
         outputFormat:
           type: string
           default: md
@@ -754,7 +781,7 @@ components:
 
     ImagePayload:
       type: object
-      required: [mimeType, dataBase64]
+      required: [mimeType]
       properties:
         mimeType:
           type: string
@@ -762,5 +789,17 @@ components:
         dataBase64:
           type: string
           description: Base64-encoded image payload.
+        url:
+          type: string
+          description: Optional external URL when provider returns a hosted image.
+        promptUsed:
+          type: string
+          description: Prompt excerpt used for image generation.
+        provider:
+          type: string
+          description: Provider label that produced the image payload.
+        warning:
+          type: string
+          description: Optional warning when provider is unavailable and payload is degraded.
 
 

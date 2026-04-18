@@ -63,6 +63,7 @@ class DocumentGenerationService:
         min_score: float,
         hybrid_alpha: float,
         include_sources: bool,
+        graph_max_hops: int = 2,
     ) -> tuple[str, list[dict]]:
         """Asynchronous execution path for `generate`.
         
@@ -81,6 +82,7 @@ class DocumentGenerationService:
                 top_k: Maximum number of retrieval hits retained for context assembly.
                 min_score: Minimum score threshold used to discard low-confidence hits.
                 hybrid_alpha: Fusion weight for hybrid retrieval blending.
+                graph_max_hops: Maximum traversal depth used by graph retrieval mode.
                 include_sources: Flag controlling citation extraction in response payloads.
         
             Returns:
@@ -95,6 +97,7 @@ class DocumentGenerationService:
             top_k=top_k,
             min_score=min_score,
             hybrid_alpha=hybrid_alpha,
+            graph_max_hops=graph_max_hops,
             include_sources=include_sources,
         )
         result = await self._retrieval_service.retrieve(request)

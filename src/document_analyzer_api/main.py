@@ -16,6 +16,9 @@ Project alignment:
 """
 
 import logging
+import os
+from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
 
@@ -30,6 +33,29 @@ from .observability.tracing import init_tracing, shutdown_tracing
 
 
 API_V1_PREFIX = "/api/v1"
+
+
+def _load_env_file(path: Path) -> None:
+    """Load key/value pairs from a dotenv-style file into ``os.environ``."""
+    if not path.exists() or not path.is_file():
+        return
+
+    for line in path.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#") or "=" not in stripped:
+            continue
+        key, value = stripped.split("=", 1)
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        if key:
+            os.environ[key] = value
+
+
+def _load_default_env_files() -> None:
+    """Load project-level ``.env`` and ``.env.local`` files when present."""
+    project_root = Path(__file__).resolve().parents[2]
+    _load_env_file(project_root / ".env")
+    _load_env_file(project_root / ".env.local")
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -53,7 +79,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     init_tracing(app_settings)
     container = AppContainer.from_settings(app_settings)
 
-    app = FastAPI(title="Document Analyzer API", version="0.1.0")
+    @asynccontextmanager
+    async def lifespan(_: FastAPI):
+        try:
+            yield
+        finally:
+            shutdown_tracing()
+
+    app = FastAPI(title="Document Analyzer API", version="0.1.0", lifespan=lifespan)
     app.state.container = container
     app.add_middleware(RequestLoggingMiddleware)
 
@@ -61,10 +94,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(health_router, prefix=API_V1_PREFIX)
     app.include_router(documents_router, prefix=API_V1_PREFIX)
     app.include_router(metrics_router, prefix=API_V1_PREFIX)
-    app.add_event_handler("shutdown", shutdown_tracing)
     return app
 
 
+_load_default_env_files()
 app = create_app()
 
 

@@ -51,6 +51,8 @@ Rules:
 - Preserve EPUB hierarchy metadata in chunks.
 - Language metadata is per chunk.
 - Ensure Mongo and Neo4j ingestion consistency per successful document processing.
+- For Neo4j variable-length relationship traversal (`*min..max`), render hop bounds as validated literal integers in the
+  Cypher string; do not pass hop depth as a Cypher query parameter.
 
 ## 5) API Conventions
 

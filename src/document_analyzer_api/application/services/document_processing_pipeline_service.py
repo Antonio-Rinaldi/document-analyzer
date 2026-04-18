@@ -17,7 +17,7 @@ Project alignment:
 
 import uuid
 
-from ...domain.models.chunking import ChunkingConfig
+from ...domain.models.chunking import ChunkingConfig, FinalChunk
 from ...domain.models.persistence import DocumentMetadata, PersistedChunk
 from ...domain.ports.chunk_repository import ChunkRepositoryPort
 from ...domain.ports.document_metadata_repository import DocumentMetadataRepositoryPort
@@ -76,45 +76,26 @@ class DocumentProcessingPipelineService:
         self._temp_ttl_seconds = temp_ttl_seconds
 
     async def process(self, file_name: str, content: bytes, chunking_config: ChunkingConfig) -> str:
-        """Asynchronous execution path for `process`.
-        
-        This callable is implemented in `src/document_analyzer_api/application/services/document_processing_pipeline_service.py` and contributes to module-level behavior
-        with explicit and testable execution semantics.
-        
-            Behavior:
-                Coordinates helper calls (DocumentMetadata, PersistedChunk, append, apply_strategy) to satisfy the callable contract.
-        
-            Args:
-                file_name: Input parameter accepted by `process`.
-                content: Raw payload bytes/text processed or transformed by this callable.
-                chunking_config: Input parameter accepted by `process`.
-        
-            Returns:
-                A value compatible with `str`.
+        """Process one uploaded file through parse, chunk, embed, and dual-store persistence.
+
+        The method validates that embedding cardinality exactly matches the number of
+        final chunks so provider payload inconsistencies fail fast with explicit
+        context instead of surfacing as index errors.
         """
         document_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, file_name))
         parsed = await self._parser.parse(document_name=file_name, content=content)
         base_chunks = self._base_chunk_builder.build_chunks(parsed, chunking_config)
         final_chunks = await self._chunking_service.apply_strategy(base_chunks, chunking_config)
 
-        texts = [chunk.content for chunk in final_chunks]
+        texts = [str(chunk.content) for chunk in final_chunks]
         embeddings = await self._embedding_client.embed_texts(texts)
-
-        persisted_chunks = [
-            PersistedChunk(
-                document_id=document_id,
-                chunk_id=chunk.chunk_id,
-                content=chunk.content,
-                embedding=embeddings[idx],
-                language="unknown",
-                metadata={
-                    **chunk.metadata,
-                    "chunkingStrategy": chunking_config.strategy.value,
-                    "chunkGranularity": chunking_config.granularity.value,
-                },
-            )
-            for idx, chunk in enumerate(final_chunks)
-        ]
+        persisted_chunks = self._build_persisted_chunks(
+            document_id=document_id,
+            file_name=file_name,
+            final_chunks=final_chunks,
+            embeddings=embeddings,
+            chunking_config=chunking_config,
+        )
 
         staged_repositories: list[ChunkRepositoryPort] = []
         try:
@@ -134,4 +115,45 @@ class DocumentProcessingPipelineService:
             for repository in staged_repositories:
                 await repository.rollback_document(document_id)
             raise
+
+    def _build_persisted_chunks(
+        self,
+        *,
+        document_id: str,
+        file_name: str,
+        final_chunks: list[FinalChunk],
+        embeddings: list[list[float]],
+        chunking_config: ChunkingConfig,
+    ) -> list[PersistedChunk]:
+        """Create persisted chunks while enforcing a strict chunk-to-embedding contract."""
+        self._validate_embedding_alignment(
+            file_name=file_name,
+            chunk_count=len(final_chunks),
+            embedding_count=len(embeddings),
+        )
+        return [
+            PersistedChunk(
+                document_id=document_id,
+                chunk_id=chunk.chunk_id,
+                content=chunk.content,
+                embedding=embedding,
+                language="unknown",
+                metadata={
+                    **chunk.metadata,
+                    "chunkingStrategy": chunking_config.strategy.value,
+                    "chunkGranularity": chunking_config.granularity.value,
+                },
+            )
+            for chunk, embedding in zip(final_chunks, embeddings)
+        ]
+
+    @staticmethod
+    def _validate_embedding_alignment(*, file_name: str, chunk_count: int, embedding_count: int) -> None:
+        """Raise a deterministic error when provider embeddings do not match chunk count."""
+        if chunk_count == embedding_count:
+            return
+        raise ValueError(
+            "Embedding cardinality mismatch during ingestion "
+            f"for file '{file_name}': chunks={chunk_count}, embeddings={embedding_count}."
+        )
 

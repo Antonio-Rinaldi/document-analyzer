@@ -16,7 +16,7 @@ Project alignment:
 """
 
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 def _env_int(name: str, default: int) -> int:
@@ -93,67 +93,50 @@ class Settings:
     It is intended to be composed through dependency injection and exercised by
     unit/integration tests with stable behavioral contracts.
     
-    Notable attributes: adapter_mode, mongodb_uri, mongodb_database, mongodb_vector_index_name, neo4j_uri, neo4j_user, neo4j_password, s3_endpoint.
+    Notable attributes: mongodb_uri, mongodb_database, mongodb_vector_index_name, neo4j_uri, neo4j_user, neo4j_password, s3_endpoint.
     """
-    adapter_mode: str = os.getenv("ADAPTER_MODE", "local")
-    mongodb_uri: str = os.getenv("MONGODB_URI", "mongodb://mongodb:27017")
-    mongodb_database: str = os.getenv("MONGODB_DATABASE", "document_analyzer")
-    mongodb_vector_index_name: str = os.getenv("MONGODB_VECTOR_INDEX_NAME", "chunk_embedding_index")
-    neo4j_uri: str = os.getenv("NEO4J_URI", "bolt://neo4j:7687")
-    neo4j_user: str = os.getenv("NEO4J_USER", "neo4j")
-    neo4j_password: str = os.getenv("NEO4J_PASSWORD", "neo4jpassword")
-    s3_endpoint: str = os.getenv("S3_ENDPOINT", "minio:9000")
-    s3_access_key: str = os.getenv("S3_ACCESS_KEY", "minioadmin")
-    s3_secret_key: str = os.getenv("S3_SECRET_KEY", "minioadmin")
-    s3_bucket_raw: str = os.getenv("S3_BUCKET_RAW", "documents-raw")
-    s3_bucket_output: str = os.getenv("S3_BUCKET_OUTPUT", "documents-output")
-    ollama_base_url: str = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434")
-    ollama_embedding_model: str = os.getenv("OLLAMA_EMBEDDING_MODEL", "nomic-embed-text")
-    ollama_text_model: str = os.getenv("OLLAMA_TEXT_MODEL", "qwen3.5:9b")
-    dependency_timeout_seconds: float = float(os.getenv("DEPENDENCY_TIMEOUT_SECONDS", "2.0"))
+    mongodb_uri: str = field(default_factory=lambda: os.getenv("MONGODB_URI", "mongodb://mongodb:27017"))
+    mongodb_database: str = field(default_factory=lambda: os.getenv("MONGODB_DATABASE", "document_analyzer"))
+    mongodb_vector_index_name: str = field(default_factory=lambda: os.getenv("MONGODB_VECTOR_INDEX_NAME", "chunk_embedding_index"))
+    neo4j_uri: str = field(default_factory=lambda: os.getenv("NEO4J_URI", "bolt://neo4j:7687"))
+    neo4j_user: str = field(default_factory=lambda: os.getenv("NEO4J_USER", "neo4j"))
+    neo4j_password: str = field(default_factory=lambda: os.getenv("NEO4J_PASSWORD", "neo4jpassword"))
+    s3_endpoint: str = field(default_factory=lambda: os.getenv("S3_ENDPOINT", "minio:9000"))
+    s3_access_key: str = field(default_factory=lambda: os.getenv("S3_ACCESS_KEY", "minioadmin"))
+    s3_secret_key: str = field(default_factory=lambda: os.getenv("S3_SECRET_KEY", "minioadmin"))
+    s3_bucket_raw: str = field(default_factory=lambda: os.getenv("S3_BUCKET_RAW", "documents-raw"))
+    s3_bucket_output: str = field(default_factory=lambda: os.getenv("S3_BUCKET_OUTPUT", "documents-output"))
+    s3_output_presign_ttl_seconds: int = field(default_factory=lambda: _env_int("S3_OUTPUT_PRESIGN_TTL_SECONDS", 3600))
+    ollama_base_url: str = field(default_factory=lambda: os.getenv("OLLAMA_BASE_URL", "http://ollama:11434"))
+    ollama_embedding_model: str = field(default_factory=lambda: os.getenv("OLLAMA_EMBEDDING_MODEL", "nomic-embed-text"))
+    ollama_text_model: str = field(default_factory=lambda: os.getenv("OLLAMA_TEXT_MODEL", "qwen3.5:9b"))
+    dependency_timeout_seconds: float = field(default_factory=lambda: _env_float("DEPENDENCY_TIMEOUT_SECONDS", 2.0))
 
-    storage_root_path: str = os.getenv("STORAGE_ROOT_PATH", ".data/raw")
-    done_extension: str = os.getenv("DONE_EXTENSION", ".done")
-    max_files_per_request: int = _env_int("MAX_FILES_PER_REQUEST", 0)
-    max_file_size_bytes: int = _env_int("MAX_FILE_SIZE_BYTES", 0)
-    max_total_payload_bytes: int = _env_int("MAX_TOTAL_PAYLOAD_BYTES", 0)
-    temp_chunk_ttl_seconds: int = _env_int("TEMP_CHUNK_TTL_SECONDS", 600)
-    chat_history_ttl_seconds: int = _env_int("CHAT_HISTORY_TTL_SECONDS", 604800)
-    chat_compaction_max_messages: int = _env_int("CHAT_COMPACTION_MAX_MESSAGES", 20)
-    default_top_k: int = _env_int("DEFAULT_TOP_K", 8)
-    default_min_score: float = _env_float("DEFAULT_MIN_SCORE", 0.2)
-    default_hybrid_alpha: float = _env_float("DEFAULT_HYBRID_ALPHA", 0.5)
-    default_audio_format: str = os.getenv("DEFAULT_AUDIO_FORMAT", "wav")
-    default_tts_model: str = os.getenv("DEFAULT_TTS_MODEL", "Qwen/Qwen3-TTS-12Hz-0.6B-Base")
-    default_tts_voice: str = os.getenv("DEFAULT_TTS_VOICE", "alloy")
-    tts_api_base_url: str = os.getenv("TTS_API_BASE_URL", "http://localhost:8010")
-    image_api_base_url: str = os.getenv("IMAGE_API_BASE_URL", "http://localhost:8002")
-    image_model: str = os.getenv("IMAGE_MODEL", "image-default")
-    ollama_image_model: str = os.getenv("OLLAMA_IMAGE_MODEL", "llava")
-    provider_retry_count: int = _env_int("PROVIDER_RETRY_COUNT", 2)
-    provider_timeout_seconds: float = _env_float("PROVIDER_TIMEOUT_SECONDS", 2.0)
-    provider_backoff_seconds: float = _env_float("PROVIDER_BACKOFF_SECONDS", 0.05)
-    tracing_enabled: bool = _env_bool("TRACING_ENABLED", True)
-    tracing_service_name: str = os.getenv("TRACING_SERVICE_NAME", "document-analyzer-api")
-    tracing_otlp_endpoint: str = os.getenv("TRACING_OTLP_ENDPOINT", "jaeger:4317")
-    tracing_sample_ratio: float = _env_float("TRACING_SAMPLE_RATIO", 1.0)
-
-    def is_real_mode(self) -> bool:
-        """Synchronous execution path for `is_real_mode`.
-        
-        This callable is implemented in `src/document_analyzer_api/config/settings.py` and contributes to module-level behavior
-        with explicit and testable execution semantics.
-        
-            Behavior:
-                Executes the callable contract for this module concern.
-        
-            Args:
-                None.
-        
-            Returns:
-                A value compatible with `bool`.
-        """
-        return self.adapter_mode == "real"
+    storage_root_path: str = field(default_factory=lambda: os.getenv("STORAGE_ROOT_PATH", ".data/raw"))
+    done_extension: str = field(default_factory=lambda: os.getenv("DONE_EXTENSION", ".done"))
+    max_files_per_request: int = field(default_factory=lambda: _env_int("MAX_FILES_PER_REQUEST", 0))
+    max_file_size_bytes: int = field(default_factory=lambda: _env_int("MAX_FILE_SIZE_BYTES", 0))
+    max_total_payload_bytes: int = field(default_factory=lambda: _env_int("MAX_TOTAL_PAYLOAD_BYTES", 0))
+    temp_chunk_ttl_seconds: int = field(default_factory=lambda: _env_int("TEMP_CHUNK_TTL_SECONDS", 600))
+    chat_history_ttl_seconds: int = field(default_factory=lambda: _env_int("CHAT_HISTORY_TTL_SECONDS", 604800))
+    chat_compaction_max_messages: int = field(default_factory=lambda: _env_int("CHAT_COMPACTION_MAX_MESSAGES", 20))
+    default_top_k: int = field(default_factory=lambda: _env_int("DEFAULT_TOP_K", 8))
+    default_min_score: float = field(default_factory=lambda: _env_float("DEFAULT_MIN_SCORE", 0.2))
+    default_hybrid_alpha: float = field(default_factory=lambda: _env_float("DEFAULT_HYBRID_ALPHA", 0.5))
+    default_audio_format: str = field(default_factory=lambda: os.getenv("DEFAULT_AUDIO_FORMAT", "wav"))
+    default_tts_model: str = field(default_factory=lambda: os.getenv("DEFAULT_TTS_MODEL", "Qwen/Qwen3-TTS-12Hz-0.6B-Base"))
+    default_tts_voice: str = field(default_factory=lambda: os.getenv("DEFAULT_TTS_VOICE", "alloy"))
+    tts_api_base_url: str = field(default_factory=lambda: os.getenv("TTS_API_BASE_URL", "http://localhost:8010"))
+    image_api_base_url: str = field(default_factory=lambda: os.getenv("IMAGE_API_BASE_URL", "http://localhost:8002"))
+    image_model: str = field(default_factory=lambda: os.getenv("IMAGE_MODEL", "image-default"))
+    ollama_image_model: str = field(default_factory=lambda: os.getenv("OLLAMA_IMAGE_MODEL", "llava"))
+    provider_retry_count: int = field(default_factory=lambda: _env_int("PROVIDER_RETRY_COUNT", 2))
+    provider_timeout_seconds: float = field(default_factory=lambda: _env_float("PROVIDER_TIMEOUT_SECONDS", 2.0))
+    provider_backoff_seconds: float = field(default_factory=lambda: _env_float("PROVIDER_BACKOFF_SECONDS", 0.05))
+    tracing_enabled: bool = field(default_factory=lambda: _env_bool("TRACING_ENABLED", True))
+    tracing_service_name: str = field(default_factory=lambda: os.getenv("TRACING_SERVICE_NAME", "document-analyzer-api"))
+    tracing_otlp_endpoint: str = field(default_factory=lambda: os.getenv("TRACING_OTLP_ENDPOINT", "jaeger:4317"))
+    tracing_sample_ratio: float = field(default_factory=lambda: _env_float("TRACING_SAMPLE_RATIO", 1.0))
 
     def validate_runtime(self) -> None:
         """Synchronous execution path for `validate_runtime`.
@@ -170,20 +153,17 @@ class Settings:
             Returns:
                 A value compatible with `None`.
         """
-        if self.adapter_mode not in {"local", "real"}:
-            raise ValueError("ADAPTER_MODE must be 'local' or 'real'")
-
         if self.provider_retry_count < 0:
             raise ValueError("PROVIDER_RETRY_COUNT must be >= 0")
         if self.provider_timeout_seconds <= 0:
             raise ValueError("PROVIDER_TIMEOUT_SECONDS must be > 0")
         if self.provider_backoff_seconds < 0:
             raise ValueError("PROVIDER_BACKOFF_SECONDS must be >= 0")
+        if self.s3_output_presign_ttl_seconds <= 0:
+            raise ValueError("S3_OUTPUT_PRESIGN_TTL_SECONDS must be > 0")
         if self.tracing_sample_ratio < 0 or self.tracing_sample_ratio > 1:
             raise ValueError("TRACING_SAMPLE_RATIO must be between 0 and 1")
 
-        if not self.is_real_mode():
-            return
 
         required_values = {
             "MONGODB_URI": self.mongodb_uri,

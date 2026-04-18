@@ -59,6 +59,7 @@ class ImageService:
         min_score: float,
         hybrid_alpha: float,
         include_sources: bool,
+        graph_max_hops: int = 2,
     ) -> tuple[str, dict, list[dict]]:
         """Asynchronous execution path for `generate_image_answer`.
         
@@ -78,6 +79,7 @@ class ImageService:
                 min_score: Minimum score threshold used to discard low-confidence hits.
                 hybrid_alpha: Fusion weight for hybrid retrieval blending.
                 include_sources: Flag controlling citation extraction in response payloads.
+                graph_max_hops: Maximum traversal depth used by graph retrieval mode.
         
             Returns:
                 A value compatible with `tuple[str, dict, list[dict]]`.
@@ -92,6 +94,7 @@ class ImageService:
             min_score=min_score,
             hybrid_alpha=hybrid_alpha,
             include_sources=include_sources,
+            graph_max_hops=graph_max_hops,
         )
         image_payload = self._image_provider.generate_from_text(answer)
         return answer, image_payload, citations

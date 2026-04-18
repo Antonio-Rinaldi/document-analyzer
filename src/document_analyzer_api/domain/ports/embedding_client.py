@@ -28,19 +28,11 @@ class EmbeddingClientPort(Protocol):
     Notable attributes: no explicit annotated fields.
     """
     async def embed_texts(self, texts: list[str]) -> list[list[float]]:
-        """Asynchronous execution path for `embed_texts`.
-        
-        This callable is implemented in `src/document_analyzer_api/domain/ports/embedding_client.py` and contributes to module-level behavior
-        with explicit and testable execution semantics.
-        
-            Behavior:
-                Executes the callable contract for this module concern.
-        
-            Args:
-                texts: Input parameter accepted by `embed_texts`.
-        
-            Returns:
-                A value compatible with `list[list[float]]`.
+        """Return embeddings aligned 1:1 with input texts.
+
+        Implementations must preserve ordering and return exactly one vector per
+        input text. Callers rely on this cardinality to persist chunk embeddings
+        without ambiguity.
         """
         ...
 

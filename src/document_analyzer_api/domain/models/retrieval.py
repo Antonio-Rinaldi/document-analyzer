@@ -56,7 +56,7 @@ class RetrievalRequest:
     It is intended to be composed through dependency injection and exercised by
     unit/integration tests with stable behavioral contracts.
     
-    Notable attributes: query, retrieval_mode, document_ids, keywords, keywords_mode, top_k, min_score, hybrid_alpha.
+    Notable attributes: query, retrieval_mode, document_ids, keywords, keywords_mode, top_k, min_score, hybrid_alpha, graph_max_hops.
     """
     query: str
     retrieval_mode: RetrievalMode = RetrievalMode.vector
@@ -66,6 +66,7 @@ class RetrievalRequest:
     top_k: int = 8
     min_score: float = 0.2
     hybrid_alpha: float = 0.5
+    graph_max_hops: int = 2
     include_sources: bool = False
 
 

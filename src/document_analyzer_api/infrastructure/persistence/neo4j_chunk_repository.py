@@ -18,7 +18,9 @@ Project alignment:
 from __future__ import annotations
 
 import asyncio
+import json
 from datetime import UTC, datetime, timedelta
+from typing import Any
 
 from ...domain.models.persistence import PersistedChunk
 from ...domain.ports.chunk_repository import ChunkRepositoryPort
@@ -127,26 +129,131 @@ class Neo4jChunkRepository(ChunkRepositoryPort):
         expires_at = datetime.now(UTC) + timedelta(seconds=ttl_seconds) if ttl_seconds > 0 else None
         with self._driver.session() as session:
             for chunk in chunks:
-                session.run(
-                    """
-                    MERGE (d:Document {id: $document_id})
-                    MERGE (c:Chunk {id: $chunk_id})
-                    SET c.content = $content,
-                        c.embedding = $embedding,
-                        c.language = $language,
-                        c.metadata = $metadata,
-                        c.status = 'staged',
-                        c.expiresAt = $expires_at
-                    MERGE (d)-[:HAS_CHUNK]->(c)
-                    """,
+                self._upsert_chunk_hierarchy(
+                    session=session,
                     document_id=document_id,
-                    chunk_id=chunk.chunk_id,
-                    content=chunk.content,
-                    embedding=chunk.embedding,
-                    language=chunk.language,
-                    metadata=chunk.metadata,
-                    expires_at=expires_at.isoformat() if expires_at else None,
+                    chunk=chunk,
+                    expires_at=expires_at,
                 )
+            self._create_next_relationships(session=session, document_id=document_id)
+
+    def _upsert_chunk_hierarchy(
+        self,
+        *,
+        session: Any,
+        document_id: str,
+        chunk: PersistedChunk,
+        expires_at: datetime | None,
+    ) -> None:
+        """Persist a chunk and its chapter/paragraph hierarchy using deterministic metadata keys."""
+        hierarchy = self._extract_hierarchy(chunk=chunk)
+        session.run(
+            """
+            MERGE (d:Document {id: $document_id})
+            MERGE (ch:Chapter {id: $chapter_id})
+            SET ch.documentId = $document_id,
+                ch.title = $chapter_title,
+                ch.chapterIndex = $chapter_index
+            MERGE (d)-[:HAS_CHAPTER]->(ch)
+            MERGE (p:Paragraph {id: $paragraph_id})
+            SET p.documentId = $document_id,
+                p.chapterId = $chapter_id,
+                p.paragraphIndex = $paragraph_index
+            MERGE (ch)-[:HAS_PARAGRAPH]->(p)
+            MERGE (c:Chunk {id: $chunk_id})
+            SET c.documentId = $document_id,
+                c.chapterId = $chapter_id,
+                c.paragraphId = $paragraph_id,
+                c.paragraphChunkIndex = $paragraph_chunk_index,
+                c.content = $content,
+                c.embedding = $embedding,
+                c.language = $language,
+                c.metadataJson = $metadata_json,
+                c.status = 'staged',
+                c.expiresAt = $expires_at
+            MERGE (p)-[:HAS_CHUNK]->(c)
+            """,
+            document_id=document_id,
+            chapter_id=hierarchy["chapter_id"],
+            chapter_title=hierarchy["chapter_title"],
+            chapter_index=hierarchy["chapter_index"],
+            paragraph_id=hierarchy["paragraph_id"],
+            paragraph_index=hierarchy["paragraph_index"],
+            paragraph_chunk_index=hierarchy["paragraph_chunk_index"],
+            chunk_id=chunk.chunk_id,
+            content=chunk.content,
+            embedding=chunk.embedding,
+            language=chunk.language,
+            metadata_json=self._serialize_metadata(chunk.metadata),
+            expires_at=expires_at.isoformat() if expires_at else None,
+        )
+
+    def _create_next_relationships(self, *, session: Any, document_id: str) -> None:
+        """Create deterministic NEXT edges across chapter, paragraph, and chunk sequences."""
+        session.run(
+            """
+            MATCH (d:Document {id: $document_id})-[:HAS_CHAPTER]->(ch:Chapter)
+            WITH ch ORDER BY ch.chapterIndex ASC, ch.id ASC
+            WITH collect(ch) AS chapters
+            UNWIND range(0, size(chapters) - 2) AS idx
+            MERGE (chapters[idx])-[:NEXT]->(chapters[idx + 1])
+            """,
+            document_id=document_id,
+        )
+        session.run(
+            """
+            MATCH (d:Document {id: $document_id})-[:HAS_CHAPTER]->(ch:Chapter)-[:HAS_PARAGRAPH]->(p:Paragraph)
+            WITH ch, p ORDER BY p.paragraphIndex ASC, p.id ASC
+            WITH ch, collect(p) AS paragraphs
+            UNWIND range(0, size(paragraphs) - 2) AS idx
+            MERGE (paragraphs[idx])-[:NEXT]->(paragraphs[idx + 1])
+            """,
+            document_id=document_id,
+        )
+        session.run(
+            """
+            MATCH (d:Document {id: $document_id})-[:HAS_CHAPTER]->(:Chapter)-[:HAS_PARAGRAPH]->(p:Paragraph)-[:HAS_CHUNK]->(c:Chunk)
+            WITH p, c ORDER BY c.paragraphChunkIndex ASC, c.id ASC
+            WITH p, collect(c) AS chunks
+            UNWIND range(0, size(chunks) - 2) AS idx
+            MERGE (chunks[idx])-[:NEXT]->(chunks[idx + 1])
+            """,
+            document_id=document_id,
+        )
+
+    @staticmethod
+    def _serialize_metadata(metadata: dict[str, Any]) -> str:
+        """Serialize chunk metadata into a JSON string compatible with Neo4j property storage.
+
+        Neo4j node properties only support primitives and arrays of primitives; nested maps are not valid
+        property values. This adapter persists the complete metadata structure as a compact JSON string so
+        retrieval backends can reconstruct the original dictionary without losing nested fields.
+        """
+        return json.dumps(metadata, ensure_ascii=True, separators=(",", ":"), default=str)
+
+    @staticmethod
+    def _extract_hierarchy(chunk: PersistedChunk) -> dict[str, str | int]:
+        """Resolve hierarchy identifiers from chunk metadata with deterministic defaults."""
+        metadata = chunk.metadata if isinstance(chunk.metadata, dict) else {}
+        chapter_id = str(metadata.get("chapterId") or metadata.get("sectionId") or chunk.chunk_id.split(":")[0])
+        chapter_title = str(metadata.get("chapterTitle") or metadata.get("sectionTitle") or chapter_id)
+        paragraph_id = str(metadata.get("paragraphId") or f"{chapter_id}:p0")
+        return {
+            "chapter_id": chapter_id,
+            "chapter_title": chapter_title,
+            "chapter_index": Neo4jChunkRepository._to_int(metadata.get("chapterIndex"), default=0),
+            "paragraph_id": paragraph_id,
+            "paragraph_index": Neo4jChunkRepository._to_int(metadata.get("paragraphIndex"), default=0),
+            "paragraph_chunk_index": Neo4jChunkRepository._to_int(metadata.get("paragraphChunkIndex"), default=0),
+        }
+
+    @staticmethod
+    def _to_int(value: Any, *, default: int) -> int:
+        """Convert metadata values to integer while preserving a safe fallback."""
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            return default
 
     def _commit_sync(self, document_id: str) -> None:
         """Synchronous execution path for `_commit_sync`.
@@ -166,7 +273,7 @@ class Neo4jChunkRepository(ChunkRepositoryPort):
         with self._driver.session() as session:
             session.run(
                 """
-                MATCH (d:Document {id: $document_id})-[:HAS_CHUNK]->(c:Chunk)
+                MATCH (d:Document {id: $document_id})-[:HAS_CHAPTER]->(:Chapter)-[:HAS_PARAGRAPH]->(:Paragraph)-[:HAS_CHUNK]->(c:Chunk)
                 SET c.status = 'committed', c.expiresAt = null
                 """,
                 document_id=document_id,
@@ -190,8 +297,32 @@ class Neo4jChunkRepository(ChunkRepositoryPort):
         with self._driver.session() as session:
             session.run(
                 """
-                MATCH (d:Document {id: $document_id})-[:HAS_CHUNK]->(c:Chunk)
+                MATCH (d:Document {id: $document_id})-[:HAS_CHAPTER]->(:Chapter)-[:HAS_PARAGRAPH]->(:Paragraph)-[:HAS_CHUNK]->(c:Chunk)
                 DETACH DELETE c
+                """,
+                document_id=document_id,
+            )
+            session.run(
+                """
+                MATCH (d:Document {id: $document_id})-[:HAS_CHAPTER]->(ch:Chapter)-[:HAS_PARAGRAPH]->(p:Paragraph)
+                WHERE NOT (p)-[:HAS_CHUNK]->(:Chunk)
+                DETACH DELETE p
+                """,
+                document_id=document_id,
+            )
+            session.run(
+                """
+                MATCH (d:Document {id: $document_id})-[:HAS_CHAPTER]->(ch:Chapter)
+                WHERE NOT (ch)-[:HAS_PARAGRAPH]->(:Paragraph)
+                DETACH DELETE ch
+                """,
+                document_id=document_id,
+            )
+            session.run(
+                """
+                MATCH (d:Document {id: $document_id})
+                WHERE NOT (d)-[:HAS_CHAPTER]->(:Chapter)
+                DETACH DELETE d
                 """,
                 document_id=document_id,
             )

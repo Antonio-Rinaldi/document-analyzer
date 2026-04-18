@@ -1,0 +1,84 @@
+### Ollama endpoint collection used by document-analyzer
+
+@ollamaBase = http://localhost:11434
+@ollamaImageUrl = https://example.invalid/image.png
+
+### ------------------------------------------------------------
+### Health / discovery
+### ------------------------------------------------------------
+
+### Tags (used by readiness health adapter)
+GET {{ollamaBase}}/api/tags
+Accept: application/json
+
+### ------------------------------------------------------------
+### Embeddings (used by OllamaEmbeddingClient)
+### ------------------------------------------------------------
+
+### Batch embeddings endpoint
+POST {{ollamaBase}}/api/embeddings
+Content-Type: application/json
+Accept: application/json
+
+{
+  "input": [
+    "The cat sat on the mat.",
+    "The dog sat on the log."
+  ],
+  "model": "qwen3-embedding:4b"
+}
+
+### ------------------------------------------------------------
+### Text generation (used by text generation + contextual summarizer)
+### ------------------------------------------------------------
+
+### Generate answer text (non-stream)
+POST {{ollamaBase}}/api/generate
+Content-Type: application/json
+Accept: application/json
+
+{
+  "model": "gemma4:e4b",
+  "prompt": "Answer in one sentence: who sits on the mat?",
+  "stream": false
+}
+
+### Generate summary-style text (non-stream)
+POST {{ollamaBase}}/api/generate
+Content-Type: application/json
+Accept: application/json
+
+{
+  "model": "gemma4:e4b",
+  "prompt": "Summarize this in neutral encyclopedic style: The hero arrives, faces danger, and wins.",
+  "stream": false
+}
+
+### ------------------------------------------------------------
+### Image generation (used by OllamaImageProvider)
+### ------------------------------------------------------------
+
+### OpenAI-compatible image generation endpoint
+POST {{ollamaBase}}/v1/images/generations
+Content-Type: application/json
+Accept: application/json
+
+{
+  "model": "gemma4:e4b",
+  "prompt": "A dramatic fantasy castle at dusk, cinematic composition"
+}
+
+>> ./resources/output/ollama_image_generation_response.json
+
+> {%
+  if (response.body && response.body.data && response.body.data.length > 0 && response.body.data[0].url) {
+    client.global.set("ollamaImageUrl", response.body.data[0].url);
+  }
+%}
+
+### Download generated image when response provides data[0].url
+GET {{ollamaImageUrl}}
+Accept: image/*
+
+>> ./resources/output/ollama_generated_image.bin
+

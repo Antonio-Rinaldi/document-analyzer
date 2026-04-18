@@ -20,14 +20,15 @@ The service follows clean architecture with explicit ports/adapters:
 - **Ports and adapters**: storage, parser, creator, retrieval backends, and AI providers are isolated behind interfaces.
 - **Strategy**: retrieval mode (`vector` / `graph` / `hybrid`) is selected per request.
 - **Pipeline**: ingestion flow is parse -> chunk -> transform -> embed -> persist.
-- **Fail-fast config**: `Settings.validate_runtime()` validates adapter mode and required real-mode env.
+- **Fail-fast config**: `Settings.validate_runtime()` validates required runtime env for real integrations.
 - **Dependency injection**: composition is centralized in `bootstrap/container.py`.
 
 ## Document Processing Pipeline
 
 ### 1) Ingestion
 
-Implemented in `src/document_analyzer_api/api/routes/documents.py` and `application/services/document_ingestion_service.py`:
+Implemented in `src/document_analyzer_api/api/routes/documents.py` and
+`application/services/document_ingestion_service.py`:
 
 - validates multipart request limits (count/size/total payload)
 - validates extension against MarkItDown-supported inputs
@@ -41,17 +42,17 @@ Implemented in `infrastructure/parsing/markitdown_document_parser.py` and chunki
 - parses supported file types through MarkItDown into normalized text
 - keeps section-aware structure for downstream chunking
 - supports chunking strategy selection:
-  - `meaningful`
-  - `contextual_summary` (with optional custom prompt criteria)
+    - `meaningful`
+    - `contextual_summary` (with optional custom prompt criteria)
 
 ### 3) Persistence + Retrieval
 
 - stages chunk writes with TTL and commits only on full-file success
 - writes chunks to MongoDB and Neo4j
 - supports retrieval modes:
-  - `vector`
-  - `graph`
-  - `hybrid`
+    - `vector`
+    - `graph`
+    - `hybrid`
 
 ## Summary Output Formats
 
@@ -61,7 +62,7 @@ Implemented in `infrastructure/parsing/markitdown_document_parser.py` and chunki
 - `markdown`
 - `txt`
 
-Response returns a presigned-style URL (local or S3-backed depending on adapter mode).
+Response returns a presigned-style URL from configured output storage.
 
 ## Endpoints
 
@@ -81,6 +82,7 @@ Response returns a presigned-style URL (local or S3-backed depending on adapter 
 Detailed contract file:
 
 - `documentation/openapi/openapi.v1.yaml`
+- IntelliJ HTTP collection: `document-analyzer.http`
 
 ## Project Structure
 
@@ -104,7 +106,7 @@ pip install -e ".[dev]"
 ## Run
 
 ```bash
-uvicorn document_analyzer_api.main:app --host 0.0.0.0 --port 8000 --workers 1
+uvicorn document_analyzer_api.main:app --host 0.0.0.0 --port 8010 --workers 1
 ```
 
 ```bash
@@ -114,7 +116,7 @@ python -m document_analyzer_api.main
 ## Docker Compose
 
 ```bash
-docker compose up --build
+docker compose up -d --build 
 ```
 
 Tracing UI (Jaeger):
@@ -122,27 +124,25 @@ Tracing UI (Jaeger):
 - `http://localhost:16686`
 - OTLP gRPC ingest endpoint: `jaeger:4317` inside compose network
 
-## Real Mode
+## Environment Files
 
-Real mode switches adapters to real dependencies (`ADAPTER_MODE=real`):
+The application loads runtime configuration automatically from:
 
-- MongoDB (metadata, chunks, chat history)
-- Neo4j (graph chunks + graph retrieval)
-- MinIO/S3 (raw files + outputs)
-- Ollama (embeddings, generation, image)
-- `../llm-tts-api` for TTS
-- Jaeger (`jaegertracing/all-in-one`) for trace inspection
+1. `.env`
+2. `.env.local` (overrides `.env` when keys overlap)
 
-Useful starting point:
+`.env.example` is only a template and is not loaded by the application.
+
+Create your local env file from the template:
 
 ```bash
-cp .env.real.example .env.real
+cp .env.example .env
 ```
 
-Smoke test (gated):
+Optional local overrides:
 
 ```bash
-RUN_REAL_E2E=1 python -m pytest -m real_e2e
+cp .env.example .env.local
 ```
 
 ## Testing

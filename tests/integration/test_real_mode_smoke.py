@@ -43,7 +43,6 @@ def _real_settings() -> Settings:
             A value compatible with `Settings`.
     """
     return Settings(
-        adapter_mode="real",
         mongodb_uri=os.getenv("MONGODB_URI", "mongodb://localhost:27017"),
         mongodb_database=os.getenv("MONGODB_DATABASE", "document_analyzer"),
         neo4j_uri=os.getenv("NEO4J_URI", "bolt://localhost:7687"),

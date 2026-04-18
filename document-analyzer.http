@@ -1,0 +1,287 @@
+### Document Analyzer IntelliJ HTTP Collection
+### Run requests top-to-bottom for a full flow.
+
+@baseUrl = http://localhost:8010
+@sessionId = replace-me
+@documentId = replace-me
+
+### ------------------------------------------------------------
+### Health and readiness
+### ------------------------------------------------------------
+
+### Liveness
+GET {{baseUrl}}/api/v1/health
+Accept: application/json
+
+### Readiness (200 when dependencies are healthy, 503 when degraded)
+GET {{baseUrl}}/api/v1/ready
+Accept: application/json
+
+### Prometheus metrics
+GET {{baseUrl}}/api/v1/metrics
+Accept: text/plain
+
+### ------------------------------------------------------------
+### Document discovery and ingestion
+### ------------------------------------------------------------
+
+### Runtime capabilities (input extensions + summary output formats)
+GET {{baseUrl}}/api/v1/documents/capabilities
+Accept: application/json
+
+### List documents (initial state)
+GET {{baseUrl}}/api/v1/documents?offset=0&limit=50
+Accept: application/json
+
+### Ingest EPUB from resources/input with default chunking
+POST {{baseUrl}}/api/v1/documents
+Content-Type: multipart/form-data; boundary=BoundaryA
+Accept: application/json
+
+--BoundaryA
+Content-Disposition: form-data; name="files"; filename="vampirehunterdvolume1.epub"
+Content-Type: application/epub+zip
+
+< ./resources/input/vampirehunterdvolume1.epub
+--BoundaryA--
+
+### Ingest same EPUB with contextual summary chunking and a Wikipedia-style focus prompt
+POST {{baseUrl}}/api/v1/documents
+Content-Type: multipart/form-data; boundary=BoundaryB
+Accept: application/json
+
+--BoundaryB
+Content-Disposition: form-data; name="files"; filename="vampirehunterdvolume1-contextual.epub"
+Content-Type: application/epub+zip
+
+< ./resources/input/vampirehunterdvolume1.epub
+--BoundaryB
+Content-Disposition: form-data; name="chunking"
+Content-Type: application/json
+
+{"strategy":"contextual_summary","granularity":"paragraph","strategyOptions":{"contextualSummary":{"prompt":"Extract only major plot beats, character roles, timeline, and outcomes in neutral encyclopedic style."}}}
+--BoundaryB--
+
+### List documents after ingest and capture first document id
+GET {{baseUrl}}/api/v1/documents?offset=0&limit=50
+Accept: application/json
+
+> {%
+  if (response.body && response.body.items && response.body.items.length > 0) {
+    client.global.set("documentId", response.body.items[0].id);
+  }
+%}
+
+### ------------------------------------------------------------
+### Summary endpoint
+### ------------------------------------------------------------
+
+### Create markdown summary for all documents in Wikipedia-style story narrative and save response metadata
+POST {{baseUrl}}/api/v1/documents/summary
+Content-Type: application/json
+Accept: application/json
+
+{
+  "keywords": [
+    "wikipedia style",
+    "plot summary",
+    "story arc",
+    "main characters",
+    "chronological events"
+  ],
+  "keywordsMode": "rank_boost",
+  "retrievalMode": "hybrid",
+  "retrievalOptions": {
+    "common": {"topK": 8, "minScore": 0.0},
+    "hybrid": {"hybridAlpha": 0.6}
+  },
+  "summaryWordCount": 350,
+  "outputFormat": "md",
+  "generationOptions": {}
+}
+
+>> ./resources/output/summary_wikipedia_all_response.json
+
+### Create plain text summary for selected document id in Wikipedia-style narrative and save response metadata
+POST {{baseUrl}}/api/v1/documents/summary
+Content-Type: application/json
+Accept: application/json
+
+{
+  "documentIds": ["{{documentId}}"],
+  "keywords": [
+    "wikipedia style",
+    "book plot",
+    "encyclopedic narrative",
+    "story timeline",
+    "ending"
+  ],
+  "keywordsMode": "rank_boost",
+  "retrievalMode": "graph",
+  "retrievalOptions": {
+    "common": {"topK": 8, "minScore": 0.0},
+    "graph": {"maxHops": 3}
+  },
+  "summaryWordCount": 180,
+  "outputFormat": "txt",
+  "generationOptions": {}
+}
+
+>> ./resources/output/summary_wikipedia_selected_response.json
+
+### ------------------------------------------------------------
+### Generate endpoint
+### ------------------------------------------------------------
+
+### Generate non-stream text answer with citations
+POST {{baseUrl}}/api/v1/documents/generate
+Content-Type: application/json
+Accept: application/json
+
+{
+  "question": "Talk me about vampire hunter D",
+  "keywords": ["vampire", "hunter"],
+  "keywordsMode": "rank_boost",
+  "retrievalMode": "vector",
+  "retrievalOptions": {
+    "common": {"topK": 8, "minScore": 0.0},
+    "hybrid": {"hybridAlpha": 0.5}
+  },
+  "outputFormat": "text",
+  "includeSources": true,
+  "stream": false,
+  "generationOptions": {}
+}
+
+### Generate streaming text answer (Ollama-style NDJSON)
+POST {{baseUrl}}/api/v1/documents/generate
+Content-Type: application/json
+Accept: application/x-ndjson
+
+{
+  "question": "Tell me the key events.",
+  "retrievalMode": "hybrid",
+  "retrievalOptions": {
+    "common": {"topK": 6, "minScore": 0.0},
+    "hybrid": {"hybridAlpha": 0.6}
+  },
+  "outputFormat": "text",
+  "includeSources": false,
+  "stream": true,
+  "generationOptions": {}
+}
+
+### Generate audio answer (binary wav)
+POST {{baseUrl}}/api/v1/documents/generate
+Content-Type: application/json
+Accept: audio/wav
+
+{
+  "question": "Read the main outcome.",
+  "retrievalMode": "vector",
+  "retrievalOptions": {
+    "common": {"topK": 8, "minScore": 0.0},
+    "hybrid": {"hybridAlpha": 0.5}
+  },
+  "outputFormat": "audio",
+  "includeSources": false,
+  "stream": false,
+  "generationOptions": {}
+}
+
+### Generate image+text answer
+POST {{baseUrl}}/api/v1/documents/generate
+Content-Type: application/json
+Accept: application/json
+
+{
+  "question": "Talk me about vampire hunter D, who is D? Why is he always killing vampires?",
+  "retrievalMode": "graph",
+  "retrievalOptions": {
+    "common": {"topK": 8, "minScore": 0.0},
+    "hybrid": {"hybridAlpha": 0.5}
+  },
+  "outputFormat": "text+image",
+  "includeSources": true,
+  "stream": false,
+  "generationOptions": {}
+}
+
+### ------------------------------------------------------------
+### Chat session lifecycle
+### ------------------------------------------------------------
+
+### Create chat session
+POST {{baseUrl}}/api/v1/chat/sessions
+Accept: application/json
+
+> {%
+  if (response.body && response.body.sessionId) {
+    client.global.set("sessionId", response.body.sessionId);
+  }
+%}
+
+### Chat non-stream text
+POST {{baseUrl}}/api/v1/documents/chat
+Content-Type: application/json
+Accept: application/json
+
+{
+  "sessionId": "{{sessionId}}",
+  "question": "What happened after the hero entered the castle?",
+  "retrievalMode": "vector",
+  "retrievalOptions": {
+    "common": {"topK": 8, "minScore": 0.0},
+    "hybrid": {"hybridAlpha": 0.5}
+  },
+  "outputFormat": "text",
+  "includeSources": true,
+  "stream": false,
+  "compactContext": false,
+  "generationOptions": {}
+}
+
+### Chat streaming text with on-demand context compaction
+POST {{baseUrl}}/api/v1/documents/chat
+Content-Type: application/json
+Accept: application/x-ndjson
+
+{
+  "sessionId": "{{sessionId}}",
+  "question": "Continue with the consequences.",
+  "retrievalMode": "hybrid",
+  "retrievalOptions": {
+    "common": {"topK": 6, "minScore": 0.0},
+    "hybrid": {"hybridAlpha": 0.5}
+  },
+  "outputFormat": "text",
+  "includeSources": false,
+  "stream": true,
+  "compactContext": true,
+  "generationOptions": {}
+}
+
+### Chat audio response
+POST {{baseUrl}}/api/v1/documents/chat
+Content-Type: application/json
+Accept: audio/wav
+
+{
+  "sessionId": "{{sessionId}}",
+  "question": "Read a short recap.",
+  "retrievalMode": "vector",
+  "retrievalOptions": {
+    "common": {"topK": 8, "minScore": 0.0},
+    "hybrid": {"hybridAlpha": 0.5}
+  },
+  "outputFormat": "audio",
+  "includeSources": false,
+  "stream": false,
+  "compactContext": false,
+  "generationOptions": {}
+}
+
+### Delete chat session
+DELETE {{baseUrl}}/api/v1/chat/sessions/{{sessionId}}
+Accept: application/json
+

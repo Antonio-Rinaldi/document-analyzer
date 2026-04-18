@@ -16,6 +16,7 @@ Project alignment:
 """
 
 import hashlib
+import logging
 from pathlib import Path
 from dataclasses import dataclass
 from enum import Enum
@@ -23,6 +24,9 @@ from enum import Enum
 from ...domain.models.chunking import ChunkingConfig
 from ...domain.ports.document_storage import DocumentStoragePort, UploadedFileData
 from .document_processing_pipeline_service import DocumentProcessingPipelineService
+
+
+logger = logging.getLogger(__name__)
 
 
 class IngestionStatus(str, Enum):
@@ -153,26 +157,27 @@ class DocumentIngestionService:
             try:
                 result = await self._ingest_one(item, chunking_config)
             except Exception as exc:
-                result = IngestionResult(name=item.name, status=IngestionStatus.failed, error=str(exc))
+                logger.exception(
+                    "Document ingestion failed | file=%s error=%s",
+                    item.name,
+                    exc,
+                )
+                result = IngestionResult(
+                    name=item.name,
+                    status=IngestionStatus.failed,
+                    error=self._format_ingestion_error(exc),
+                )
             results.append(result)
         return results
 
+    @staticmethod
+    def _format_ingestion_error(exc: Exception) -> str:
+        """Build a stable ingestion error message, including a fallback for blank exceptions."""
+        message = str(exc).strip()
+        return message or exc.__class__.__name__
+
     async def _ingest_one(self, file_data: UploadedFileData, chunking_config: ChunkingConfig) -> IngestionResult:
-        """Asynchronous execution path for `_ingest_one`.
-        
-        This callable is implemented in `src/document_analyzer_api/application/services/document_ingestion_service.py` and contributes to module-level behavior
-        with explicit and testable execution semantics.
-        
-            Behavior:
-                Coordinates helper calls (IngestionResult, Path, has_done_marker, hexdigest) to satisfy the callable contract.
-        
-            Args:
-                file_data: Input parameter accepted by `_ingest_one`.
-                chunking_config: Input parameter accepted by `_ingest_one`.
-        
-            Returns:
-                A value compatible with `IngestionResult`.
-        """
+        """Process one file with duplicate detection, parse pipeline execution, and done-marker semantics."""
         extension = Path(file_data.name).suffix.lower()
         if extension not in self._supported_extensions:
             return IngestionResult(
@@ -181,7 +186,7 @@ class DocumentIngestionService:
                 error=f"Unsupported file extension '{extension or '<none>'}'",
             )
 
-        incoming_hash = hashlib.sha256(file_data.content).hexdigest()
+        incoming_hash = hashlib.sha256(memoryview(file_data.content)).hexdigest()
         object_exists = await self._storage.object_exists(file_data.name)
 
         if object_exists:

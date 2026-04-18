@@ -17,9 +17,14 @@ Project alignment:
 
 import uuid
 
-from .document_query_service import DocumentQueryService
+from ...domain.models.retrieval import KeywordsMode, RetrievalMode, RetrievalRequest
 from ...domain.ports.document_creator import DocumentCreatorPort
 from ...domain.ports.output_storage import OutputStoragePort
+from ...domain.ports.text_generation_client import TextGenerationClientPort
+from .retrieval_service import RetrievalService
+
+
+INSUFFICIENT_EVIDENCE_MESSAGE = "I cannot find enough support in selected documents."
 
 
 class DocumentSummaryService:
@@ -33,7 +38,8 @@ class DocumentSummaryService:
     """
     def __init__(
         self,
-        query_service: DocumentQueryService,
+        retrieval_service: RetrievalService,
+        text_generation_client: TextGenerationClientPort,
         output_storage: OutputStoragePort,
         document_creator: DocumentCreatorPort,
     ) -> None:
@@ -46,14 +52,16 @@ class DocumentSummaryService:
                 Executes the callable contract for this module concern.
         
             Args:
-                query_service: Input parameter accepted by `__init__`.
+                retrieval_service: Input parameter accepted by `__init__`.
+                text_generation_client: Input parameter accepted by `__init__`.
                 output_storage: Input parameter accepted by `__init__`.
                 document_creator: Input parameter accepted by `__init__`.
         
             Returns:
                 A value compatible with `None`.
         """
-        self._query_service = query_service
+        self._retrieval_service = retrieval_service
+        self._text_generation_client = text_generation_client
         self._output_storage = output_storage
         self._document_creator = document_creator
 
@@ -75,7 +83,20 @@ class DocumentSummaryService:
         """
         return self._document_creator.supported_output_formats()
 
-    async def create_summary(self, document_ids: list[str] | None, keywords: list[str], output_format: str) -> str:
+    async def create_summary(
+        self,
+        *,
+        document_ids: list[str] | None,
+        keywords: list[str],
+        keywords_mode: str,
+        retrieval_mode: str,
+        top_k: int,
+        min_score: float,
+        hybrid_alpha: float,
+        graph_max_hops: int,
+        summary_word_count: int | None,
+        output_format: str,
+    ) -> str:
         """Asynchronous execution path for `create_summary`.
         
         This callable is implemented in `src/document_analyzer_api/application/services/document_summary_service.py` and contributes to module-level behavior
@@ -87,25 +108,43 @@ class DocumentSummaryService:
             Args:
                 document_ids: Optional subset of documents used to scope the operation.
                 keywords: Optional keyword list used for retrieval metadata/filtering/boosting.
+                keywords_mode: Keyword strategy selector (`metadata_only`, `filter`, `rank_boost`).
+                retrieval_mode: Retrieval backend mode (`vector`, `graph`, or `hybrid`).
+                top_k: Maximum number of retrieval hits retained for context assembly.
+                min_score: Minimum score threshold used to discard low-confidence hits.
+                hybrid_alpha: Fusion weight for hybrid retrieval blending.
+                graph_max_hops: Maximum traversal depth used by graph retrieval mode.
+                summary_word_count: Optional target length guidance (in words) for summary generation.
                 output_format: Input parameter accepted by `create_summary`.
         
             Returns:
                 A value compatible with `str`.
         """
-        items, _ = await self._query_service.list_documents(offset=0, limit=10000)
-        selected = items
-        if document_ids is not None:
-            selected = [item for item in items if item.id in document_ids]
-
-        base_text = "\n\n".join(item.description for item in selected if item.description)
-        if not base_text:
-            base_text = "No document content available for summary."
-        if keywords:
-            base_text += f"\n\nKeywords focus: {', '.join(keywords)}"
+        summary_query = self._build_summary_query(keywords)
+        retrieval_request = RetrievalRequest(
+            query=summary_query,
+            retrieval_mode=RetrievalMode(retrieval_mode),
+            document_ids=document_ids,
+            keywords=keywords,
+            keywords_mode=KeywordsMode(keywords_mode),
+            top_k=top_k,
+            min_score=min_score,
+            hybrid_alpha=hybrid_alpha,
+            graph_max_hops=graph_max_hops,
+            include_sources=False,
+        )
+        result = await self._retrieval_service.retrieve(retrieval_request)
+        summary_text = INSUFFICIENT_EVIDENCE_MESSAGE
+        if result.hits:
+            summary_prompt = self._build_summary_prompt(keywords, summary_word_count)
+            summary_text = await self._text_generation_client.generate_answer(
+                question=summary_prompt,
+                context_chunks=[hit.content for hit in result.hits],
+            )
 
         stem = f"summary-{uuid.uuid4().hex}"
         created = await self._document_creator.create(
-            summary_text=base_text,
+            summary_text=summary_text,
             output_format=output_format,
             filename_stem=stem,
         )
@@ -114,5 +153,27 @@ class DocumentSummaryService:
             filename=created.filename,
             content=created.content,
             content_type=content_type,
+        )
+
+    @staticmethod
+    def _build_summary_query(keywords: list[str]) -> str:
+        """Build retrieval query text for summary evidence discovery."""
+        if keywords:
+            return " ".join(keywords)
+        return "Provide a complete factual summary of the selected documents."
+
+    @staticmethod
+    def _build_summary_prompt(keywords: list[str], summary_word_count: int | None) -> str:
+        """Build a neutral summary instruction consumed by text-generation adapters."""
+        focus = f" Focus on: {', '.join(keywords)}." if keywords else ""
+        length_instruction = (
+            f" Target length: approximately {summary_word_count} words."
+            if summary_word_count is not None
+            else ""
+        )
+        return (
+            "Create an encyclopedic summary of the selected documents. "
+            "Cover major plot beats, character roles, and chronological progression with neutral tone."
+            f"{focus}{length_instruction}"
         )
 

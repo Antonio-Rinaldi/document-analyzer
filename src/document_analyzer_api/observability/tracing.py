@@ -7,7 +7,7 @@ Purpose:
 
 Defined symbols:
 - Classes: none.
-- Functions: init_tracing, shutdown_tracing, start_span, set_span_attribute, traced_async.
+- Functions: init_tracing, shutdown_tracing, start_span, set_span_attribute, traced_async, traced_sync.
 
 Project alignment:
 - Functional expectations are described in `documentation/REFINED_SPECS.md`.
@@ -201,11 +201,41 @@ def traced_async(
                     A value compatible with `T`.
             """
             with start_span(span_name):
+                set_span_attribute("span.name", span_name)
                 if attribute_builder is not None:
-                    attributes = attribute_builder(*args, **kwargs)
+                    try:
+                        attributes = attribute_builder(*args, **kwargs)
+                    except Exception:
+                        attributes = {}
                     for key, value in attributes.items():
                         set_span_attribute(key, value)
                 return await func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
+
+def traced_sync(
+    span_name: str,
+    *,
+    attribute_builder: Callable[..., dict[str, Any]] | None = None,
+) -> Callable[[Callable[..., T]], Callable[..., T]]:
+    """Decorate a sync callable with one nested span and dynamic attributes."""
+
+    def decorator(func: Callable[..., T]) -> Callable[..., T]:
+        @wraps(func)
+        def wrapper(*args: Any, **kwargs: Any) -> T:
+            with start_span(span_name):
+                set_span_attribute("span.name", span_name)
+                if attribute_builder is not None:
+                    try:
+                        attributes = attribute_builder(*args, **kwargs)
+                    except Exception:
+                        attributes = {}
+                    for key, value in attributes.items():
+                        set_span_attribute(key, value)
+                return func(*args, **kwargs)
 
         return wrapper
 

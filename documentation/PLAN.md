@@ -22,7 +22,7 @@ Deliver a production-grade internal Document Analyzer V1 with:
 - [x] M7: Chat sessions, TTL, and context compaction.
 - [x] M8: Modalities (audio/image) and streaming behavior.
 - [x] M9: Observability, tests, and hardening.
-- [ ] M10: Replace local adapters with requested real integrations.
+- [x] M10: Replace local adapters with requested real integrations.
 - [x] M11: MarkItDown format integration for ingestion and summary output.
 - [x] M12: Runtime capability discoverability and spec alignment.
 - [x] M13: Detailed OpenAPI contract documentation.
@@ -31,6 +31,11 @@ Deliver a production-grade internal Document Analyzer V1 with:
 - [x] M16: Narrative, method-specific technical docstrings (non-template style).
 - [x] M17: Full-project manual-quality narrative docstring pass.
 - [x] M18: Narrative docstring pass stabilization (non-template, self-safe tooling).
+- [x] M19: IntelliJ HTTP endpoint collection and README linkage.
+- [x] M20: Hierarchical Neo4j knowledge graph v1 (Document->Chapter->Paragraph->Chunk) + graph traversal depth controls.
+- [x] M21: Neo4j graph phase 2 hardening (hierarchy-only reads/writes + NEXT sequencing + path-depth ranking).
+- [x] M22: Image modality resilience hardening (provider 404/failure degradation without endpoint 500).
+- [x] M23: Summary endpoint RAG+LLM orchestration (retrieval-driven evidence synthesis).
 
 ## 2) Phase-by-Phase Plan
 
@@ -51,15 +56,15 @@ Deliver a production-grade internal Document Analyzer V1 with:
   integrated image payload behavior for generate/chat.
 - Phase 9 completed: structured request logging middleware, Prometheus-style `/api/v1/metrics` endpoint, tracing hooks
   in core services, and provider retry/timeout wrappers were added and validated by tests.
-- Phase 10 in progress: adapter mode switch (`local`/`real`) is active; real adapters are now wired for S3 storage,
+- Phase 10 completed: runtime now uses a single real-integrations path wired for S3 storage,
   MongoDB metadata/chunks, Neo4j chunks, Ollama embedding/summarization, Ollama text generation + real retrieval
-  backends, MongoDB chat sessions (TTL), and HTTP-based audio/image providers. Gated `real_e2e` coverage now includes
-  startup smoke plus full ingest/list/generate/summary/chat/session lifecycle flow scaffolding. Real-mode execution
-  tooling is now in place (`.env.real.example`, compose `real` profile, and `scripts/run_real_mode_smoke.sh`).
+  backends, MongoDB chat sessions (TTL), and HTTP-based audio/image providers. Gated `real_e2e` coverage includes
+  startup smoke plus full ingest/list/generate/summary/chat/session lifecycle flow scaffolding. Runtime execution
+  tooling is in place (`.env.example`/`.env` runtime setup and `scripts/run_real_mode_smoke.sh`).
   MongoDB real retrieval now uses `$vectorSearch` (with lexical fallback when index is unavailable) and runtime
   configuration includes `MONGODB_VECTOR_INDEX_NAME`; compose dependencies were aligned to MongoDB 8.2 and Neo4j 6.
   Real-mode TTS now targets sibling `epub/llm-tts-api`, and image generation prefers Ollama with fallback provider.
-  Remaining work: execute and validate these real-mode flows against running dependencies and finalize production
+  Remaining work: execute and validate these flows against running dependencies and finalize production
   hardening defaults.
 - Phase 11 completed (2026-04-14): document parsing now uses Microsoft MarkItDown in ingestion, input validation is
   extension-driven from MarkItDown capabilities, and summary output now supports MarkItDown-aligned output formats
@@ -83,6 +88,86 @@ Deliver a production-grade internal Document Analyzer V1 with:
   confirmation.
 - Phase 18 completed (2026-04-14): docstring pass tooling was stabilized to avoid self-rewrite regressions and to keep
   narrative, non-template wording consistent across repeated full-repository runs.
+- Phase 19 completed (2026-04-14): created `document-analyzer.http` with endpoint-by-endpoint IntelliJ requests
+  (health, readiness, metrics, ingest, list, capabilities, summary, generate variants, chat lifecycle) and linked it
+  from `README.md`.
+- Operational continuation (2026-04-14): added targeted observability instrumentation tests in
+  `tests/unit/test_observability_instrumentation.py` (metered async/sync + traced sync attribute-builder fallback),
+  switched real-profile `tts-api` compose service to Docker build mode using sibling `../llm-tts-api/Dockerfile`,
+  and aligned container defaults to `TTS_VOICE_MAP_FILE=/app/config/voice_map.container.json`.
+- Validation snapshot (2026-04-14): targeted suites passed for
+  `tests/unit/test_observability_instrumentation.py`, `tests/integration/test_health_endpoints.py`,
+  `tests/unit/test_settings.py`, plus `../llm-tts-api/tests/test_config.py`,
+  `../llm-tts-api/tests/test_startup_preload.py`, and `../llm-tts-api/tests/test_audio_speech.py`.
+- Operational continuation (2026-04-15): removed runtime legacy branches and mode toggles from configuration and
+  composition paths. `document-analyzer` now runs a single real-integrations implementation (MongoDB, Neo4j, MinIO,
+  Ollama, HTTP TTS/image providers), and legacy embedding endpoint fallbacks were removed in favor of the modern
+  `/api/embeddings` flow used by runtime ingestion.
+- Operational continuation (2026-04-15): S3 summary output now returns a real presigned download URL instead of an
+  internal `s3://` locator; runtime configuration now includes `S3_OUTPUT_PRESIGN_TTL_SECONDS`, with startup
+  validation and focused unit coverage for presigned URL generation.
+- Operational continuation (2026-04-17): per-file ingestion failures now emit error logs with full stack traces in
+  `DocumentIngestionService.ingest_files` before returning structured API failure entries, improving production
+  diagnostics for errors like `INGESTION_FAILED` without changing response contracts.
+- Operational continuation (2026-04-17): ingestion pipeline now enforces strict chunk-to-embedding cardinality before
+  persistence to prevent index-based crashes when provider payloads are malformed. `OllamaEmbeddingClient` validates
+  `/api/embeddings` response shape/count, and regression coverage was added for cardinality mismatch and invalid
+  payload behavior.
+- Operational continuation (2026-04-17): endpoint integration tests were stabilized to run deterministically with
+  local/deterministic adapters via an in-test container override in `tests/integration/test_documents_endpoints.py`,
+  avoiding external Ollama/TTS/image endpoint dependencies while preserving API contract assertions.
+- Validation snapshot (2026-04-17): passed `tests/integration/test_documents_endpoints.py`,
+  `tests/integration/test_health_endpoints.py`, `tests/unit/test_ollama_embedding_client.py`,
+  `tests/unit/test_document_processing_pipeline_service.py`, `tests/unit/test_settings.py`, and full
+  `python3 -m pytest -q tests -m 'not real_e2e'`.
+- Operational continuation (2026-04-17): hardened real ingestion embedding execution by introducing
+  `OLLAMA_EMBEDDING_BATCH_SIZE` and batched `/api/embeddings` requests in `OllamaEmbeddingClient`, preventing very
+  large single-request payloads from returning malformed provider responses during large-book ingestion.
+- Operational continuation (2026-04-17): embedding payload normalization now also accepts OpenAI-compatible
+  `data[].embedding` responses while preserving strict one-vector-per-input cardinality checks.
+- Operational continuation (2026-04-17): added safe diagnostic logging in `OllamaEmbeddingClient` for
+  `/api/embeddings` HTTP failures, non-JSON responses, cardinality mismatches, and invalid payload shapes, including
+  payload structure hints (keys/types/lengths) and expected batch count without logging raw chunk text.
+- Operational continuation (2026-04-17): `OllamaEmbeddingClient` now detects single-embedding payload shape
+  (`{"embedding": ...}`) returned for batched input and automatically falls back to scalar per-text embedding calls,
+  with explicit fallback logs and unit regression coverage.
+- Operational continuation (2026-04-17): removed scalar fallback and aligned runtime embedding calls to Ollama
+  `/api/embed` batched semantics as the direct integration path. Empty/single-vector `embedding` payloads now fail fast
+  with diagnostics so model/endpoint mismatches are explicit instead of silently retried.
+- Operational continuation (2026-04-17): increased provider execution timeout defaults for real ingestion
+  (`PROVIDER_TIMEOUT_SECONDS=60.0`) and documented timeout tuning in env templates/README to prevent premature
+  `asyncio.wait_for` cancellation during embedding-heavy book ingestion.
+- Operational continuation (2026-04-17): retry wrapper timeout failures now surface descriptive timeout messages
+  (attempt index + timeout budget), and ingestion error mapping guarantees a non-empty per-file `error` field even when
+  providers raise exceptions with blank string payloads (for example bare `TimeoutError`).
+- Operational continuation (2026-04-18): Neo4j chunk persistence now writes a hierarchy graph
+  (`Document -> Chapter -> Paragraph -> Chunk`) with stable chapter/paragraph metadata keys produced during chunk
+  building, while preserving a compatibility `Document -> Chunk` edge for read fallback. Graph retrieval now applies
+  bounded hop traversal (`graph.maxHops`, default `2`) and injects path/connectivity metadata for graph ranking.
+- Operational continuation (2026-04-18): removed Neo4j legacy `Document -> Chunk` compatibility edges and fallback
+  reads. Persistence now maintains hierarchy-only topology plus deterministic `NEXT` ordering edges for chapters,
+  paragraphs, and paragraph-local chunks. Graph retrieval traversal now expands across containment + `NEXT` edges and
+  emits `connections`, `graphPathCount`, and `graphMinDepth` metadata for graph-aware ranking heuristics.
+- Operational continuation (2026-04-18): image providers were hardened to avoid uncaught `httpx` exceptions in
+  `/documents/generate` and `/documents/chat` image flows. Upstream 404/HTTP failures now return structured
+  `image/unsupported` payloads with warnings, preserving answer delivery and preventing modality-path runtime 500s.
+- Operational continuation (2026-04-18): `/documents/summary` now uses retrieval-driven evidence assembly and
+  text-generation synthesis instead of metadata-description concatenation. API schema/routes now pass
+  `keywordsMode`/`retrievalMode`/`retrievalOptions` through to summary orchestration, and integration/unit coverage
+  validates generated summary content is RAG-backed.
+- Validation snapshot (2026-04-18): passed `tests/unit/test_document_summary_service.py`,
+  `tests/integration/test_documents_endpoints.py`, and `tests/unit/test_observability_instrumentation.py` after
+  summary RAG orchestration rollout, including retrieval-controls coverage for `/documents/summary`.
+- Operational continuation (2026-04-18): fixed Neo4j graph retrieval Cypher generation to render
+  `graph.maxHops` as a validated literal in variable-length path traversal (`*1..N`) instead of a query parameter,
+  resolving runtime `CypherSyntaxError` failures in `/documents/summary` graph/hybrid retrieval paths; added unit
+  regression coverage for hop normalization, literal query generation, and no-parameter `session.run` execution.
+- Operational continuation (2026-04-18): `/documents/summary` now accepts optional `summaryWordCount` and threads it
+  through route/service/observability layers as prompt-level length guidance (`approximately N words`) while preserving
+  additive backward compatibility and strict insufficient-evidence fallback behavior.
+- Operational continuation (2026-04-18): removed the `/documents/summary.summaryWordCount` upper validation cap so
+  large positive targets are accepted while preserving lower-bound validation (`>= 1`) and backward-compatible prompt
+  guidance behavior.
 
 ## Phase 1 - Foundation
 
@@ -239,7 +324,7 @@ Scope:
 Acceptance:
 
 - V1 endpoints run end-to-end with real MongoDB, Neo4j, Ollama, and MinIO integrations.
-- Local adapters remain available only for tests/dev profile.
+- Runtime composition uses real integrations only.
 - Contract behavior remains backward-compatible with the previously validated local pass.
 
 ## 3) Testing Strategy

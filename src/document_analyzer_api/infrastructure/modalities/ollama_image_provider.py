@@ -68,43 +68,77 @@ class OllamaImageProvider(ImageProviderPort):
             Returns:
                 A value compatible with `dict`.
         """
+        primary_error: Exception | None = None
         try:
             with httpx.Client(timeout=60.0) as client:
                 response = client.post(
                     f"{self._base_url}/v1/images/generations",
                     json={"model": self._model, "prompt": text},
                 )
-                if response.status_code < 400:
-                    payload = response.json()
-                    data = payload.get("data", [])
-                    if data:
-                        item = data[0]
-                        if "b64_json" in item:
-                            return {
-                                "mimeType": "image/png",
-                                "dataBase64": item["b64_json"],
-                                "promptUsed": text[:200],
-                                "provider": "ollama",
-                            }
-                        if "url" in item:
-                            return {
-                                "mimeType": "image/url",
-                                "url": item["url"],
-                                "promptUsed": text[:200],
-                                "provider": "ollama",
-                            }
-        except Exception:
-            pass
+                response.raise_for_status()
+                payload = response.json()
+                data = payload.get("data", [])
+                if data:
+                    item = data[0]
+                    if "b64_json" in item:
+                        return {
+                            "mimeType": "image/png",
+                            "dataBase64": item["b64_json"],
+                            "promptUsed": text[:200],
+                            "provider": "ollama",
+                        }
+                    if "url" in item:
+                        return {
+                            "mimeType": "image/url",
+                            "url": item["url"],
+                            "promptUsed": text[:200],
+                            "provider": "ollama",
+                        }
+        except Exception as exc:
+            primary_error = exc
 
         if self._fallback is not None:
-            fallback_payload = self._fallback.generate_from_text(text)
+            try:
+                fallback_payload = self._fallback.generate_from_text(text)
+            except Exception as fallback_error:
+                return self._unsupported_payload(
+                    text,
+                    primary_error=primary_error,
+                    fallback_error=fallback_error,
+                )
             fallback_payload.setdefault("provider", "fallback")
+            if primary_error is not None:
+                fallback_payload.setdefault(
+                    "warning",
+                    f"Ollama image generation unavailable: {self._describe_exception(primary_error)}",
+                )
             return fallback_payload
 
+        return self._unsupported_payload(text, primary_error=primary_error, fallback_error=None)
+
+    @staticmethod
+    def _unsupported_payload(
+        text: str,
+        *,
+        primary_error: Exception | None,
+        fallback_error: Exception | None,
+    ) -> dict:
+        """Build a stable response payload when primary/fallback image providers are unavailable."""
+        warning_parts = ["Ollama image generation endpoint unavailable"]
+        if primary_error is not None:
+            warning_parts.append(f"primary={OllamaImageProvider._describe_exception(primary_error)}")
+        if fallback_error is not None:
+            warning_parts.append(f"fallback={OllamaImageProvider._describe_exception(fallback_error)}")
         return {
             "mimeType": "image/unsupported",
             "promptUsed": text[:200],
             "provider": "ollama",
-            "warning": "Ollama image generation endpoint unavailable",
+            "warning": "; ".join(warning_parts),
         }
+
+    @staticmethod
+    def _describe_exception(error: Exception) -> str:
+        """Return a concise stable exception description for warning payloads and diagnostics."""
+        message = str(error).strip()
+        return f"{error.__class__.__name__}({message})" if message else error.__class__.__name__
 

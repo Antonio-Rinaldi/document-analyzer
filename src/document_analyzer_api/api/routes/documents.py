@@ -26,6 +26,8 @@ from ...domain.models.chunking import ChunkGranularity as DomainChunkGranularity
 from ...domain.models.chunking import ChunkingConfig, ChunkingStrategyName
 from ...domain.models.chunking import DEFAULT_CONTEXTUAL_SUMMARY_PROMPT
 from ...domain.ports.document_storage import UploadedFileData
+from ...observability.metrics import metered_async
+from ...observability.tracing import traced_async
 from ..schemas.generation import (
     ChatSessionCreateResponse,
     DocumentChatRequest,
@@ -50,6 +52,8 @@ router = APIRouter(tags=["documents"])
 
 
 @router.post("/documents", response_model=DocumentIngestResponse)
+@traced_async("operation.documents.ingest", attribute_builder=lambda request, files, chunking=None: {"files.count": len(files)})
+@metered_async("operation.documents", "ingest")
 async def ingest_documents(
     request: Request,
     files: list[UploadFile] = File(...),
@@ -100,6 +104,11 @@ async def ingest_documents(
 
 
 @router.get("/documents", response_model=DocumentListResponse)
+@traced_async(
+    "operation.documents.list",
+    attribute_builder=lambda request, offset=0, limit=50: {"pagination.offset": offset, "pagination.limit": limit},
+)
+@metered_async("operation.documents", "list")
 async def list_documents(
     request: Request,
     offset: int = Query(default=0, ge=0),
@@ -131,6 +140,8 @@ async def list_documents(
 
 
 @router.get("/documents/capabilities", response_model=DocumentCapabilitiesResponse)
+@traced_async("operation.documents.capabilities")
+@metered_async("operation.documents", "capabilities")
 async def documents_capabilities(request: Request) -> DocumentCapabilitiesResponse:
     """Asynchronous execution path for `documents_capabilities`.
     
@@ -155,6 +166,15 @@ async def documents_capabilities(request: Request) -> DocumentCapabilitiesRespon
 
 
 @router.post("/documents/generate", response_model=None)
+@traced_async(
+    "operation.documents.generate",
+    attribute_builder=lambda request, payload: {
+        "output.format": payload.outputFormat.value,
+        "retrieval.mode": payload.retrievalMode.value,
+        "stream": payload.stream,
+    },
+)
+@metered_async("operation.documents", "generate")
 async def generate_document_answer(
     request: Request,
     payload: DocumentGenerateRequest,
@@ -188,6 +208,7 @@ async def generate_document_answer(
             min_score=payload.retrievalOptions.common.minScore,
             hybrid_alpha=payload.retrievalOptions.hybrid.hybridAlpha,
             include_sources=payload.includeSources,
+            graph_max_hops=payload.retrievalOptions.graph.maxHops,
         )
         return JSONResponse(status_code=200, content={"answer": answer, "citations": citations, "image": image_payload})
 
@@ -202,6 +223,7 @@ async def generate_document_answer(
             min_score=payload.retrievalOptions.common.minScore,
             hybrid_alpha=payload.retrievalOptions.hybrid.hybridAlpha,
             include_sources=payload.includeSources,
+            graph_max_hops=payload.retrievalOptions.graph.maxHops,
         )
         return JSONResponse(status_code=200, content={"answer": answer, "citations": citations, "image": image_payload})
 
@@ -220,6 +242,16 @@ async def generate_document_answer(
 
 
 @router.post("/documents/summary", response_model=DocumentSummaryResponse)
+@traced_async(
+    "operation.documents.summary",
+    attribute_builder=lambda request, payload: {
+        "output.format": payload.outputFormat,
+        "documents.count": len(payload.documentIds or []),
+        "retrieval.mode": payload.retrievalMode.value,
+        "summary.word_count": payload.summaryWordCount or 0,
+    },
+)
+@metered_async("operation.documents", "summary")
 async def create_documents_summary(
     request: Request,
     payload: DocumentSummaryRequest,
@@ -250,12 +282,21 @@ async def create_documents_summary(
     url = await request.app.state.container.summary_service.create_summary(
         document_ids=payload.documentIds,
         keywords=payload.keywords,
+        keywords_mode=payload.keywordsMode.value,
+        retrieval_mode=payload.retrievalMode.value,
+        top_k=payload.retrievalOptions.common.topK,
+        min_score=payload.retrievalOptions.common.minScore,
+        hybrid_alpha=payload.retrievalOptions.hybrid.hybridAlpha,
+        graph_max_hops=payload.retrievalOptions.graph.maxHops,
+        summary_word_count=payload.summaryWordCount,
         output_format=normalized_output,
     )
     return DocumentSummaryResponse(url=url)
 
 
 @router.post("/chat/sessions", response_model=ChatSessionCreateResponse)
+@traced_async("operation.chat.create_session")
+@metered_async("operation.chat", "create_session")
 async def create_chat_session(request: Request) -> ChatSessionCreateResponse:
     """Asynchronous execution path for `create_chat_session`.
     
@@ -276,6 +317,8 @@ async def create_chat_session(request: Request) -> ChatSessionCreateResponse:
 
 
 @router.delete("/chat/sessions/{session_id}")
+@traced_async("operation.chat.delete_session", attribute_builder=lambda request, session_id: {"session_id": session_id})
+@metered_async("operation.chat", "delete_session")
 async def delete_chat_session(request: Request, session_id: str) -> JSONResponse:
     """Asynchronous execution path for `delete_chat_session`.
     
@@ -298,6 +341,16 @@ async def delete_chat_session(request: Request, session_id: str) -> JSONResponse
 
 
 @router.post("/documents/chat", response_model=None)
+@traced_async(
+    "operation.documents.chat",
+    attribute_builder=lambda request, payload: {
+        "session_id": payload.sessionId,
+        "output.format": payload.outputFormat.value,
+        "retrieval.mode": payload.retrievalMode.value,
+        "stream": payload.stream,
+    },
+)
+@metered_async("operation.documents", "chat")
 async def chat_documents(
     request: Request,
     payload: DocumentChatRequest,
@@ -329,6 +382,7 @@ async def chat_documents(
             min_score=payload.retrievalOptions.common.minScore,
             hybrid_alpha=payload.retrievalOptions.hybrid.hybridAlpha,
             include_sources=payload.includeSources,
+            graph_max_hops=payload.retrievalOptions.graph.maxHops,
             compact_context=payload.compactContext,
         )
     except ValueError as exc:
@@ -574,6 +628,7 @@ async def _resolve_text_answer(request: Request, payload: DocumentGenerateReques
         min_score=payload.retrievalOptions.common.minScore,
         hybrid_alpha=payload.retrievalOptions.hybrid.hybridAlpha,
         include_sources=payload.includeSources,
+        graph_max_hops=payload.retrievalOptions.graph.maxHops,
     )
 
 
@@ -603,6 +658,7 @@ async def _audio_response_from_generate(request: Request, payload: DocumentGener
         min_score=payload.retrievalOptions.common.minScore,
         hybrid_alpha=payload.retrievalOptions.hybrid.hybridAlpha,
         include_sources=payload.includeSources,
+        graph_max_hops=payload.retrievalOptions.graph.maxHops,
         audio_format=request.app.state.container.settings.default_audio_format,
     )
     return Response(

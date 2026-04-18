@@ -20,8 +20,102 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
+from document_analyzer_api.application.services.audio_service import AudioService
+from document_analyzer_api.application.services.base_chunk_builder_service import BaseChunkBuilderService
+from document_analyzer_api.application.services.chat_service import ChatService
+from document_analyzer_api.application.services.chunking_service import ChunkingService
+from document_analyzer_api.application.services.document_generation_service import DocumentGenerationService
+from document_analyzer_api.application.services.document_ingestion_service import DocumentIngestionService
+from document_analyzer_api.application.services.document_processing_pipeline_service import DocumentProcessingPipelineService
+from document_analyzer_api.application.services.document_query_service import DocumentQueryService
+from document_analyzer_api.application.services.document_summary_service import DocumentSummaryService
+from document_analyzer_api.application.services.health_service import HealthService
+from document_analyzer_api.application.services.image_service import ImageService
+from document_analyzer_api.application.services.retrieval_service import RetrievalService
+from document_analyzer_api.bootstrap.container import AppContainer
 from document_analyzer_api.config.settings import Settings
+from document_analyzer_api.infrastructure.chunking.deterministic_summarizer import DeterministicSummarizer
+from document_analyzer_api.infrastructure.embeddings.deterministic_embedding_client import DeterministicEmbeddingClient
+from document_analyzer_api.infrastructure.modalities.local_image_provider import LocalImageProvider
+from document_analyzer_api.infrastructure.modalities.local_tts_provider import LocalTTSProvider
+from document_analyzer_api.infrastructure.parsing.markitdown_document_creator import MarkItDownDocumentCreator
+from document_analyzer_api.infrastructure.parsing.markitdown_document_parser import MarkItDownDocumentParser
+from document_analyzer_api.infrastructure.persistence.local_chat_session_repository import LocalChatSessionRepository
+from document_analyzer_api.infrastructure.persistence.local_chunk_repository import LocalChunkRepository
+from document_analyzer_api.infrastructure.persistence.local_document_metadata_repository import LocalDocumentMetadataRepository
+from document_analyzer_api.infrastructure.retrieval.local_retrieval_backends import (
+    LocalGraphRetrievalBackend,
+    LocalHybridRetrievalBackend,
+    LocalVectorRetrievalBackend,
+)
+from document_analyzer_api.infrastructure.storage.local_document_storage import LocalDocumentStorage
+from document_analyzer_api.infrastructure.storage.local_output_storage import LocalOutputStorage
+from document_analyzer_api.infrastructure.text_generation.local_text_generation_client import LocalTextGenerationClient
 from document_analyzer_api.main import create_app
+
+
+def _build_local_test_container(settings: Settings) -> AppContainer:
+    """Build a deterministic in-process container for integration endpoint tests."""
+    parser = MarkItDownDocumentParser()
+    base_chunk_builder_service = BaseChunkBuilderService()
+    chunking_service = ChunkingService(summarizer=DeterministicSummarizer())
+    metadata_repository = LocalDocumentMetadataRepository(root_path=settings.storage_root_path)
+    repositories = [
+        LocalChunkRepository(root_path=settings.storage_root_path, backend_name="mongo"),
+        LocalChunkRepository(root_path=settings.storage_root_path, backend_name="neo4j"),
+    ]
+    processing_pipeline = DocumentProcessingPipelineService(
+        parser=parser,
+        base_chunk_builder=base_chunk_builder_service,
+        chunking_service=chunking_service,
+        embedding_client=DeterministicEmbeddingClient(),
+        repositories=repositories,
+        metadata_repository=metadata_repository,
+        temp_ttl_seconds=settings.temp_chunk_ttl_seconds,
+    )
+    ingestion_service = DocumentIngestionService(
+        storage=LocalDocumentStorage(root_path=settings.storage_root_path, done_extension=settings.done_extension),
+        pipeline=processing_pipeline,
+        supported_extensions=parser.supported_extensions(),
+    )
+    retrieval_service = RetrievalService(
+        vector_backend=LocalVectorRetrievalBackend(root_path=settings.storage_root_path),
+        graph_backend=LocalGraphRetrievalBackend(root_path=settings.storage_root_path),
+        hybrid_backend=LocalHybridRetrievalBackend(root_path=settings.storage_root_path),
+    )
+    document_query_service = DocumentQueryService(metadata_repository=metadata_repository)
+    generation_service = DocumentGenerationService(
+        retrieval_service=retrieval_service,
+        text_generation_client=LocalTextGenerationClient(),
+    )
+    summary_service = DocumentSummaryService(
+        retrieval_service=retrieval_service,
+        text_generation_client=LocalTextGenerationClient(),
+        output_storage=LocalOutputStorage(root_path=settings.storage_root_path),
+        document_creator=MarkItDownDocumentCreator(),
+    )
+    chat_service = ChatService(
+        repository=LocalChatSessionRepository(root_path=settings.storage_root_path),
+        generation_service=generation_service,
+        chat_ttl_seconds=settings.chat_history_ttl_seconds,
+        max_messages_before_compaction=settings.chat_compaction_max_messages,
+    )
+    audio_service = AudioService(generation_service=generation_service, tts_provider=LocalTTSProvider())
+    image_service = ImageService(generation_service=generation_service, image_provider=LocalImageProvider())
+    return AppContainer(
+        settings=settings,
+        health_service=HealthService(dependencies=[]),
+        ingestion_service=ingestion_service,
+        document_query_service=document_query_service,
+        retrieval_service=retrieval_service,
+        generation_service=generation_service,
+        summary_service=summary_service,
+        chat_service=chat_service,
+        audio_service=audio_service,
+        image_service=image_service,
+        base_chunk_builder_service=base_chunk_builder_service,
+        chunking_service=chunking_service,
+    )
 
 
 def _make_app(tmp_path: Path) -> FastAPI:
@@ -39,7 +133,11 @@ def _make_app(tmp_path: Path) -> FastAPI:
         Returns:
             A value compatible with `FastAPI`.
     """
-    return create_app(Settings(storage_root_path=str(tmp_path)))
+    settings = Settings(storage_root_path=str(tmp_path))
+    app = create_app(settings)
+    # Keep endpoint integration tests deterministic and self-contained.
+    app.state.container = _build_local_test_container(settings)
+    return app
 
 
 def test_list_documents_default_pagination(tmp_path: Path) -> None:
@@ -351,6 +449,69 @@ def test_documents_summary_returns_local_url(tmp_path: Path) -> None:
     assert response.status_code == 200
     payload = response.json()
     assert payload["url"].startswith("local://output/")
+    output_name = payload["url"].removeprefix("local://output/")
+    output_content = (tmp_path / "output" / output_name).read_text(encoding="utf-8")
+    assert "Based on selected documents:" in output_content
+    assert "Keywords focus:" not in output_content
+
+
+def test_documents_summary_accepts_retrieval_controls(tmp_path: Path) -> None:
+    """Validate summary request retrieval controls are accepted and drive generated output flow."""
+    app = _make_app(tmp_path)
+    files = [(
+        "files",
+        ("book.txt", b"The hero enters the castle and fights the dragon.", "text/plain"),
+    )]
+
+    with TestClient(app) as client:
+        ingest = client.post("/api/v1/documents", files=files)
+        response = client.post(
+            "/api/v1/documents/summary",
+            json={
+                "keywords": ["hero", "dragon"],
+                "keywordsMode": "rank_boost",
+                "retrievalMode": "hybrid",
+                "retrievalOptions": {
+                    "common": {"topK": 6, "minScore": 0.0},
+                    "hybrid": {"hybridAlpha": 0.6},
+                },
+                "summaryWordCount": 180,
+                "outputFormat": "md",
+            },
+        )
+
+    assert ingest.status_code == 200
+    assert response.status_code == 200
+    summary_url = response.json()["url"]
+    summary_name = summary_url.removeprefix("local://output/")
+    summary_text = (tmp_path / "output" / summary_name).read_text(encoding="utf-8")
+    assert "Based on selected documents:" in summary_text
+
+
+def test_documents_summary_accepts_large_word_count(tmp_path: Path) -> None:
+    """Validate summaryWordCount accepts large positive values without request validation failures."""
+    app = _make_app(tmp_path)
+    files = [("files", ("book.txt", b"Hero enters castle and defeats dragon.", "text/plain"))]
+
+    with TestClient(app) as client:
+        ingest = client.post("/api/v1/documents", files=files)
+        response = client.post(
+            "/api/v1/documents/summary",
+            json={
+                "keywords": ["hero", "dragon"],
+                "retrievalMode": "hybrid",
+                "retrievalOptions": {
+                    "common": {"topK": 6, "minScore": 0.0},
+                    "hybrid": {"hybridAlpha": 0.6},
+                },
+                "summaryWordCount": 20000,
+                "outputFormat": "md",
+            },
+        )
+
+    assert ingest.status_code == 200
+    assert response.status_code == 200
+    assert response.json()["url"].startswith("local://output/")
 
 
 def test_documents_generate_non_stream_returns_answer_and_citations(tmp_path: Path) -> None:

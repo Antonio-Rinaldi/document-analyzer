@@ -74,7 +74,7 @@ class OllamaTextGenerationClient(TextGenerationClientPort):
             f"Question:\n{question}\n\n"
             f"Context:\n{context}\n"
         )
-        async with httpx.AsyncClient(timeout=60.0) as client:
+        async with httpx.AsyncClient(timeout=60.0, trust_env=False) as client:
             response = await client.post(
                 f"{self._base_url}/api/generate",
                 json={"model": self._model, "prompt": prompt, "stream": False},

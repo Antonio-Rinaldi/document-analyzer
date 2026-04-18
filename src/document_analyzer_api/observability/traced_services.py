@@ -17,12 +17,19 @@ Project alignment:
 
 from __future__ import annotations
 
+from ..application.services.audio_service import AudioService
 from ..application.services.chat_service import ChatService
+from ..application.services.document_ingestion_service import DocumentIngestionService, IngestionResult
+from ..application.services.document_query_service import DocumentQueryService
+from ..application.services.document_summary_service import DocumentSummaryService
 from ..application.services.document_generation_service import DocumentGenerationService
 from ..application.services.document_processing_pipeline_service import DocumentProcessingPipelineService
+from ..application.services.image_service import ImageService
 from ..application.services.retrieval_service import RetrievalService
 from ..domain.models.chunking import ChunkingConfig
 from ..domain.models.retrieval import RetrievalRequest, RetrievalResult
+from ..domain.ports.document_storage import UploadedFileData
+from .metrics import metered_async
 from .tracing import traced_async
 
 
@@ -60,6 +67,7 @@ class TracedDocumentProcessingPipelineService(DocumentProcessingPipelineService)
             "chunking_strategy": chunking_config.strategy.value,
         },
     )
+    @metered_async("service.document_processing_pipeline", "process")
     async def process(self, file_name: str, content: bytes, chunking_config: ChunkingConfig) -> str:
         """Asynchronous execution path for `process`.
         
@@ -114,6 +122,7 @@ class TracedRetrievalService(RetrievalService):
             "top_k": request.top_k,
         },
     )
+    @metered_async("service.retrieval", "retrieve")
     async def retrieve(self, request: RetrievalRequest) -> RetrievalResult:
         """Asynchronous execution path for `retrieve`.
         
@@ -161,11 +170,13 @@ class TracedDocumentGenerationService(DocumentGenerationService):
 
     @traced_async(
         "document.generate",
-        attribute_builder=lambda self, question, document_ids, keywords, keywords_mode, retrieval_mode, top_k, min_score, hybrid_alpha, include_sources: {
+        attribute_builder=lambda self, question, document_ids, keywords, keywords_mode, retrieval_mode, top_k, min_score, hybrid_alpha, include_sources, graph_max_hops=2: {
             "retrieval_mode": retrieval_mode,
             "include_sources": include_sources,
+            "graph.max_hops": graph_max_hops,
         },
     )
+    @metered_async("service.generation", "generate")
     async def generate(
         self,
         *,
@@ -178,6 +189,7 @@ class TracedDocumentGenerationService(DocumentGenerationService):
         min_score: float,
         hybrid_alpha: float,
         include_sources: bool,
+        graph_max_hops: int = 2,
     ) -> tuple[str, list[dict]]:
         """Asynchronous execution path for `generate`.
         
@@ -197,6 +209,7 @@ class TracedDocumentGenerationService(DocumentGenerationService):
                 min_score: Minimum score threshold used to discard low-confidence hits.
                 hybrid_alpha: Fusion weight for hybrid retrieval blending.
                 include_sources: Flag controlling citation extraction in response payloads.
+                graph_max_hops: Maximum traversal depth used by graph retrieval mode.
         
             Returns:
                 A value compatible with `tuple[str, list[dict]]`.
@@ -211,6 +224,7 @@ class TracedDocumentGenerationService(DocumentGenerationService):
             min_score=min_score,
             hybrid_alpha=hybrid_alpha,
             include_sources=include_sources,
+            graph_max_hops=graph_max_hops,
         )
 
 
@@ -241,6 +255,8 @@ class TracedChatService(ChatService):
         """
         self._inner = inner
 
+    @traced_async("document.chat.session.create")
+    @metered_async("service.chat", "create_session")
     async def create_session(self) -> str:
         """Asynchronous execution path for `create_session`.
         
@@ -258,6 +274,8 @@ class TracedChatService(ChatService):
         """
         return await self._inner.create_session()
 
+    @traced_async("document.chat.session.delete", attribute_builder=lambda self, session_id: {"session_id": session_id})
+    @metered_async("service.chat", "delete_session")
     async def delete_session(self, session_id: str) -> bool:
         """Asynchronous execution path for `delete_session`.
         
@@ -277,10 +295,12 @@ class TracedChatService(ChatService):
 
     @traced_async(
         "document.chat",
-        attribute_builder=lambda self, session_id, question, document_ids, keywords, keywords_mode, retrieval_mode, top_k, min_score, hybrid_alpha, include_sources, compact_context: {
+        attribute_builder=lambda self, session_id, question, document_ids, keywords, keywords_mode, retrieval_mode, top_k, min_score, hybrid_alpha, include_sources, graph_max_hops, compact_context: {
             "session_id": session_id,
+            "graph.max_hops": graph_max_hops,
         },
     )
+    @metered_async("service.chat", "chat")
     async def chat(
         self,
         *,
@@ -294,6 +314,7 @@ class TracedChatService(ChatService):
         min_score: float,
         hybrid_alpha: float,
         include_sources: bool,
+        graph_max_hops: int,
         compact_context: bool,
     ) -> tuple[str, list[dict]]:
         """Asynchronous execution path for `chat`.
@@ -315,6 +336,7 @@ class TracedChatService(ChatService):
                 min_score: Minimum score threshold used to discard low-confidence hits.
                 hybrid_alpha: Fusion weight for hybrid retrieval blending.
                 include_sources: Flag controlling citation extraction in response payloads.
+                graph_max_hops: Maximum traversal depth used by graph retrieval mode.
                 compact_context: Flag requesting immediate context compaction in chat flows.
         
             Returns:
@@ -331,9 +353,296 @@ class TracedChatService(ChatService):
             min_score=min_score,
             hybrid_alpha=hybrid_alpha,
             include_sources=include_sources,
+            graph_max_hops=graph_max_hops,
             compact_context=compact_context,
         )
 
 
+class TracedDocumentIngestionService(DocumentIngestionService):
+    """TracedDocumentIngestionService application service.
+    
+    This class is defined in `src/document_analyzer_api/observability/traced_services.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
+    """
+
+    def __init__(self, inner: DocumentIngestionService) -> None:
+        """Synchronous execution path for `__init__`.
+        
+        This callable is implemented in `src/document_analyzer_api/observability/traced_services.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
+        
+            Behavior:
+                Executes the callable contract for this module concern.
+        
+            Args:
+                inner: Input parameter accepted by `__init__`.
+        
+            Returns:
+                A value compatible with `None`.
+        """
+        self._inner = inner
+
+    @property
+    def supported_extensions(self) -> tuple[str, ...]:
+        return self._inner.supported_extensions
+
+    @traced_async(
+        "document.ingest",
+        attribute_builder=lambda self, files, chunking_config: {
+            "files.count": len(files),
+            "chunking.strategy": chunking_config.strategy.value,
+        },
+    )
+    @metered_async("service.ingestion", "ingest_files")
+    async def ingest_files(self, files: list[UploadedFileData], chunking_config: ChunkingConfig) -> list[IngestionResult]:
+        return await self._inner.ingest_files(files, chunking_config)
 
 
+class TracedDocumentQueryService(DocumentQueryService):
+    """TracedDocumentQueryService application service.
+    
+    This class is defined in `src/document_analyzer_api/observability/traced_services.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
+    """
+
+    def __init__(self, inner: DocumentQueryService) -> None:
+        """Synchronous execution path for `__init__`.
+        
+        This callable is implemented in `src/document_analyzer_api/observability/traced_services.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
+        
+            Behavior:
+                Executes the callable contract for this module concern.
+        
+            Args:
+                inner: Input parameter accepted by `__init__`.
+        
+            Returns:
+                A value compatible with `None`.
+        """
+        self._inner = inner
+
+    @traced_async(
+        "document.query.list",
+        attribute_builder=lambda self, offset, limit: {"pagination.offset": offset, "pagination.limit": limit},
+    )
+    @metered_async("service.document_query", "list_documents")
+    async def list_documents(self, offset: int, limit: int):
+        return await self._inner.list_documents(offset=offset, limit=limit)
+
+
+class TracedDocumentSummaryService(DocumentSummaryService):
+    """TracedDocumentSummaryService application service.
+    
+    This class is defined in `src/document_analyzer_api/observability/traced_services.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
+    """
+
+    def __init__(self, inner: DocumentSummaryService) -> None:
+        """Synchronous execution path for `__init__`.
+        
+        This callable is implemented in `src/document_analyzer_api/observability/traced_services.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
+        
+            Behavior:
+                Executes the callable contract for this module concern.
+        
+            Args:
+                inner: Input parameter accepted by `__init__`.
+        
+            Returns:
+                A value compatible with `None`.
+        """
+        self._inner = inner
+
+    @property
+    def supported_output_formats(self) -> tuple[str, ...]:
+        return self._inner.supported_output_formats
+
+    @traced_async(
+        "document.summary.create",
+        attribute_builder=lambda self, document_ids, keywords, keywords_mode, retrieval_mode, top_k, min_score, hybrid_alpha, graph_max_hops, summary_word_count, output_format: {
+            "documents.count": len(document_ids or []),
+            "keywords.count": len(keywords),
+            "retrieval.mode": retrieval_mode,
+            "retrieval.top_k": top_k,
+            "retrieval.min_score": min_score,
+            "retrieval.hybrid_alpha": hybrid_alpha,
+            "retrieval.graph_max_hops": graph_max_hops,
+            "summary.word_count": summary_word_count or 0,
+            "output.format": output_format,
+        },
+    )
+    @metered_async("service.document_summary", "create_summary")
+    async def create_summary(
+        self,
+        *,
+        document_ids: list[str] | None,
+        keywords: list[str],
+        keywords_mode: str,
+        retrieval_mode: str,
+        top_k: int,
+        min_score: float,
+        hybrid_alpha: float,
+        graph_max_hops: int,
+        summary_word_count: int | None,
+        output_format: str,
+    ) -> str:
+        return await self._inner.create_summary(
+            document_ids=document_ids,
+            keywords=keywords,
+            keywords_mode=keywords_mode,
+            retrieval_mode=retrieval_mode,
+            top_k=top_k,
+            min_score=min_score,
+            hybrid_alpha=hybrid_alpha,
+            graph_max_hops=graph_max_hops,
+            summary_word_count=summary_word_count,
+            output_format=output_format,
+        )
+
+
+class TracedAudioService(AudioService):
+    """TracedAudioService application service.
+    
+    This class is defined in `src/document_analyzer_api/observability/traced_services.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
+    """
+
+    def __init__(self, inner: AudioService) -> None:
+        """Synchronous execution path for `__init__`.
+        
+        This callable is implemented in `src/document_analyzer_api/observability/traced_services.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
+        
+            Behavior:
+                Executes the callable contract for this module concern.
+        
+            Args:
+                inner: Input parameter accepted by `__init__`.
+        
+            Returns:
+                A value compatible with `None`.
+        """
+        self._inner = inner
+
+    @traced_async(
+        "document.audio.generate",
+        attribute_builder=lambda self, question, document_ids, keywords, keywords_mode, retrieval_mode, top_k, min_score, hybrid_alpha, include_sources, graph_max_hops, audio_format: {
+            "retrieval.mode": retrieval_mode,
+            "audio.format": audio_format,
+            "keywords.count": len(keywords),
+            "graph.max_hops": graph_max_hops,
+        },
+    )
+    @metered_async("service.audio", "generate_audio_answer")
+    async def generate_audio_answer(
+        self,
+        *,
+        question: str,
+        document_ids: list[str] | None,
+        keywords: list[str],
+        keywords_mode: str,
+        retrieval_mode: str,
+        top_k: int,
+        min_score: float,
+        hybrid_alpha: float,
+        include_sources: bool,
+        graph_max_hops: int,
+        audio_format: str,
+    ) -> tuple[bytes, list[dict]]:
+        return await self._inner.generate_audio_answer(
+            question=question,
+            document_ids=document_ids,
+            keywords=keywords,
+            keywords_mode=keywords_mode,
+            retrieval_mode=retrieval_mode,
+            top_k=top_k,
+            min_score=min_score,
+            hybrid_alpha=hybrid_alpha,
+            include_sources=include_sources,
+            graph_max_hops=graph_max_hops,
+            audio_format=audio_format,
+        )
+
+    def render_audio(self, text: str, audio_format: str) -> bytes:
+        return self._inner.render_audio(text=text, audio_format=audio_format)
+
+
+class TracedImageService(ImageService):
+    """TracedImageService application service.
+    
+    This class is defined in `src/document_analyzer_api/observability/traced_services.py` and encapsulates a single cohesive concern.
+    It is intended to be composed through dependency injection and exercised by
+    unit/integration tests with stable behavioral contracts.
+    
+    Notable attributes: no explicit annotated fields.
+    """
+
+    def __init__(self, inner: ImageService) -> None:
+        """Synchronous execution path for `__init__`.
+        
+        This callable is implemented in `src/document_analyzer_api/observability/traced_services.py` and contributes to module-level behavior
+        with explicit and testable execution semantics.
+        
+            Behavior:
+                Executes the callable contract for this module concern.
+        
+            Args:
+                inner: Input parameter accepted by `__init__`.
+        
+            Returns:
+                A value compatible with `None`.
+        """
+        self._inner = inner
+
+    @traced_async(
+        "document.image.generate",
+        attribute_builder=lambda self, question, document_ids, keywords, keywords_mode, retrieval_mode, top_k, min_score, hybrid_alpha, include_sources, graph_max_hops: {
+            "retrieval.mode": retrieval_mode,
+            "keywords.count": len(keywords),
+            "graph.max_hops": graph_max_hops,
+        },
+    )
+    @metered_async("service.image", "generate_image_answer")
+    async def generate_image_answer(
+        self,
+        *,
+        question: str,
+        document_ids: list[str] | None,
+        keywords: list[str],
+        keywords_mode: str,
+        retrieval_mode: str,
+        top_k: int,
+        min_score: float,
+        hybrid_alpha: float,
+        include_sources: bool,
+        graph_max_hops: int,
+    ) -> tuple[str, dict, list[dict]]:
+        return await self._inner.generate_image_answer(
+            question=question,
+            document_ids=document_ids,
+            keywords=keywords,
+            keywords_mode=keywords_mode,
+            retrieval_mode=retrieval_mode,
+            top_k=top_k,
+            min_score=min_score,
+            hybrid_alpha=hybrid_alpha,
+            include_sources=include_sources,
+            graph_max_hops=graph_max_hops,
+        )
+
+    def render_image(self, text: str) -> dict:
+        return self._inner.render_image(text)

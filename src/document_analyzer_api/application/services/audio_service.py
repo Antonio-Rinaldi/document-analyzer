@@ -60,6 +60,7 @@ class AudioService:
         hybrid_alpha: float,
         include_sources: bool,
         audio_format: str,
+        graph_max_hops: int = 2,
     ) -> tuple[bytes, list[dict]]:
         """Asynchronous execution path for `generate_audio_answer`.
         
@@ -79,6 +80,7 @@ class AudioService:
                 min_score: Minimum score threshold used to discard low-confidence hits.
                 hybrid_alpha: Fusion weight for hybrid retrieval blending.
                 include_sources: Flag controlling citation extraction in response payloads.
+                graph_max_hops: Maximum traversal depth used by graph retrieval mode.
                 audio_format: Input parameter accepted by `generate_audio_answer`.
         
             Returns:
@@ -94,6 +96,7 @@ class AudioService:
             min_score=min_score,
             hybrid_alpha=hybrid_alpha,
             include_sources=include_sources,
+            graph_max_hops=graph_max_hops,
         )
         audio_bytes = self._tts_provider.synthesize(text=answer, audio_format=audio_format)
         return audio_bytes, citations

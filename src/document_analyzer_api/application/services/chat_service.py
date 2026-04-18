@@ -111,6 +111,7 @@ class ChatService:
         hybrid_alpha: float,
         include_sources: bool,
         compact_context: bool,
+        graph_max_hops: int = 2,
     ) -> tuple[str, list[dict]]:
         """Asynchronous execution path for `chat`.
         
@@ -131,6 +132,7 @@ class ChatService:
                 min_score: Minimum score threshold used to discard low-confidence hits.
                 hybrid_alpha: Fusion weight for hybrid retrieval blending.
                 include_sources: Flag controlling citation extraction in response payloads.
+                graph_max_hops: Maximum traversal depth used by graph retrieval mode.
                 compact_context: Flag requesting immediate context compaction in chat flows.
         
             Returns:
@@ -155,6 +157,7 @@ class ChatService:
             min_score=min_score,
             hybrid_alpha=hybrid_alpha,
             include_sources=include_sources,
+            graph_max_hops=graph_max_hops,
         )
 
         session.messages.append(ChatMessage(role=ChatRole.assistant, content=answer))

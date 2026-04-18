@@ -60,6 +60,11 @@ def test_build_chunks_paragraph_granularity() -> None:
     assert len(chunks) == 2
     assert chunks[0].text == "Paragraph one."
     assert chunks[1].text == "Paragraph two."
+    assert chunks[0].metadata["chapterId"] == "ch1"
+    assert chunks[0].metadata["paragraphId"] == "ch1:p0"
+    assert chunks[0].metadata["paragraphChunkIndex"] == 0
+    assert chunks[1].metadata["paragraphId"] == "ch1:p1"
+    assert chunks[1].metadata["paragraphChunkIndex"] == 0
 
 
 def test_build_chunks_chapter_granularity() -> None:
@@ -127,4 +132,6 @@ def test_build_chunks_sub_paragraph_tokens() -> None:
     assert len(chunks) >= 3
     assert chunks[0].text == "one two three four"
     assert chunks[1].text.startswith("four five")
+    assert chunks[0].metadata["paragraphChunkIndex"] == 0
+    assert chunks[1].metadata["paragraphChunkIndex"] == 1
 

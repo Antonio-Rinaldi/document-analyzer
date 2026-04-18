@@ -16,6 +16,7 @@ Project alignment:
 """
 
 import asyncio
+from datetime import timedelta
 from io import BytesIO
 
 
@@ -35,6 +36,7 @@ class S3OutputStorage:
         access_key: str,
         secret_key: str,
         bucket: str,
+        presign_ttl_seconds: int,
     ) -> None:
         """Synchronous execution path for `__init__`.
         
@@ -56,6 +58,7 @@ class S3OutputStorage:
         from minio import Minio
 
         self._bucket = bucket
+        self._presign_ttl = timedelta(seconds=presign_ttl_seconds)
         self._client = Minio(endpoint, access_key=access_key, secret_key=secret_key, secure=False)
 
     async def write_output(self, filename: str, content: bytes, content_type: str | None = None) -> str:
@@ -76,7 +79,15 @@ class S3OutputStorage:
                 A value compatible with `str`.
         """
         await asyncio.to_thread(self._write_sync, filename, content, content_type)
-        return f"s3://{self._bucket}/{filename}"
+        return await asyncio.to_thread(self._presigned_download_url, filename)
+
+    def _presigned_download_url(self, filename: str) -> str:
+        """Build a presigned download URL for one stored output object."""
+        return self._client.presigned_get_object(
+            self._bucket,
+            filename,
+            expires=self._presign_ttl,
+        )
 
     def _ensure_bucket(self) -> None:
         """Synchronous execution path for `_ensure_bucket`.
