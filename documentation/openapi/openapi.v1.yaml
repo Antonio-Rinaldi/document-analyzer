@@ -711,6 +711,15 @@ components:
           minimum: 1
           nullable: true
           description: Optional target summary length guidance in words.
+        summaryPrompt:
+          type: string
+          minLength: 1
+          nullable: true
+          description: Optional custom instruction that guides summary style/content.
+        includeSummary:
+          type: boolean
+          default: false
+          description: When true, include generated summary text inline in `summaryText`.
         outputFormat:
           type: string
           default: md
@@ -726,6 +735,10 @@ components:
         url:
           type: string
           description: Local/S3-style output location.
+        summaryText:
+          type: string
+          nullable: true
+          description: Generated summary text when `includeSummary=true` is requested.
 
     ChatSessionCreateResponse:
       type: object

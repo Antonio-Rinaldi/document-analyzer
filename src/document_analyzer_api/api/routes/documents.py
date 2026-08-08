@@ -241,7 +241,7 @@ async def generate_document_answer(
     )
 
 
-@router.post("/documents/summary", response_model=DocumentSummaryResponse)
+@router.post("/documents/summary", response_model=DocumentSummaryResponse, response_model_exclude_none=True)
 @traced_async(
     "operation.documents.summary",
     attribute_builder=lambda request, payload: {
@@ -249,6 +249,8 @@ async def generate_document_answer(
         "documents.count": len(payload.documentIds or []),
         "retrieval.mode": payload.retrievalMode.value,
         "summary.word_count": payload.summaryWordCount or 0,
+        "summary.has_custom_prompt": bool(payload.summaryPrompt),
+        "summary.include_inline": payload.includeSummary,
     },
 )
 @metered_async("operation.documents", "summary")
@@ -279,7 +281,7 @@ async def create_documents_summary(
             detail=f"Unsupported outputFormat '{payload.outputFormat}'. Supported values: {supported_values}"
         )
 
-    url = await request.app.state.container.summary_service.create_summary(
+    url, summary_text = await request.app.state.container.summary_service.create_summary(
         document_ids=payload.documentIds,
         keywords=payload.keywords,
         keywords_mode=payload.keywordsMode.value,
@@ -289,9 +291,11 @@ async def create_documents_summary(
         hybrid_alpha=payload.retrievalOptions.hybrid.hybridAlpha,
         graph_max_hops=payload.retrievalOptions.graph.maxHops,
         summary_word_count=payload.summaryWordCount,
+        summary_prompt=payload.summaryPrompt,
         output_format=normalized_output,
     )
-    return DocumentSummaryResponse(url=url)
+    inline_summary = summary_text if payload.includeSummary else None
+    return DocumentSummaryResponse(url=url, summaryText=inline_summary)
 
 
 @router.post("/chat/sessions", response_model=ChatSessionCreateResponse)

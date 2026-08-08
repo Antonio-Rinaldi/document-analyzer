@@ -94,7 +94,7 @@ def test_create_summary_uses_retrieval_and_generation() -> None:
         document_creator=creator,
     )
 
-    url = asyncio.run(
+    url, summary_text = asyncio.run(
         service.create_summary(
             document_ids=None,
             keywords=["plot summary", "main characters"],
@@ -105,6 +105,7 @@ def test_create_summary_uses_retrieval_and_generation() -> None:
             hybrid_alpha=0.4,
             graph_max_hops=3,
             summary_word_count=220,
+            summary_prompt="Write in Wikipedia style with neutral tone.",
             output_format="md",
         )
     )
@@ -116,6 +117,8 @@ def test_create_summary_uses_retrieval_and_generation() -> None:
     assert generator.last_context == ["hero enters castle", "dragon battle"]
     assert "Focus on: plot summary, main characters." in generator.last_question
     assert "Target length: approximately 220 words." in generator.last_question
+    assert "Additional instruction: Write in Wikipedia style with neutral tone." in generator.last_question
+    assert summary_text == "Generated summary from retrieval evidence"
     assert output.last_content.decode("utf-8") == "Generated summary from retrieval evidence"
 
 
@@ -132,7 +135,7 @@ def test_create_summary_returns_insufficient_evidence_when_no_hits() -> None:
         document_creator=creator,
     )
 
-    asyncio.run(
+    _, summary_text = asyncio.run(
         service.create_summary(
             document_ids=["doc-404"],
             keywords=[],
@@ -143,12 +146,16 @@ def test_create_summary_returns_insufficient_evidence_when_no_hits() -> None:
             hybrid_alpha=0.5,
             graph_max_hops=2,
             summary_word_count=None,
+            summary_prompt=None,
             output_format="txt",
         )
     )
 
     assert generator.last_context == []
+    assert summary_text == INSUFFICIENT_EVIDENCE_MESSAGE
     assert output.last_content.decode("utf-8") == INSUFFICIENT_EVIDENCE_MESSAGE
+
+
 
 
 

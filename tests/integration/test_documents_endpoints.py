@@ -476,6 +476,7 @@ def test_documents_summary_accepts_retrieval_controls(tmp_path: Path) -> None:
                     "hybrid": {"hybridAlpha": 0.6},
                 },
                 "summaryWordCount": 180,
+                "summaryPrompt": "Produce a concise Wikipedia-style recap.",
                 "outputFormat": "md",
             },
         )
@@ -512,6 +513,37 @@ def test_documents_summary_accepts_large_word_count(tmp_path: Path) -> None:
     assert ingest.status_code == 200
     assert response.status_code == 200
     assert response.json()["url"].startswith("local://output/")
+
+
+def test_documents_summary_can_include_inline_summary_text(tmp_path: Path) -> None:
+    """Validate includeSummary=true returns summary text in the response payload."""
+    app = _make_app(tmp_path)
+    files = [(
+        "files",
+        ("book.txt", b"The hero enters the castle and defeats the dragon.", "text/plain"),
+    )]
+
+    with TestClient(app) as client:
+        ingest = client.post("/api/v1/documents", files=files)
+        response = client.post(
+            "/api/v1/documents/summary",
+            json={
+                "keywords": ["hero", "dragon"],
+                "retrievalMode": "vector",
+                "retrievalOptions": {
+                    "common": {"topK": 8, "minScore": 0.0},
+                },
+                "includeSummary": True,
+                "outputFormat": "md",
+            },
+        )
+
+    assert ingest.status_code == 200
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["url"].startswith("local://output/")
+    assert "summaryText" in payload
+    assert "Based on selected documents:" in payload["summaryText"]
 
 
 def test_documents_generate_non_stream_returns_answer_and_citations(tmp_path: Path) -> None:

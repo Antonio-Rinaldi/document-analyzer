@@ -161,7 +161,7 @@ class DocumentSummaryRequest(BaseModel):
     It is intended to be composed through dependency injection and exercised by
     unit/integration tests with stable behavioral contracts.
     
-    Notable attributes: documentIds, keywords, keywordsMode, retrievalMode, retrievalOptions, summaryWordCount, outputFormat, generationOptions.
+    Notable attributes: documentIds, keywords, keywordsMode, retrievalMode, retrievalOptions, summaryWordCount, summaryPrompt, includeSummary, outputFormat, generationOptions.
     """
     documentIds: list[str] | None = None
     keywords: list[str] = Field(default_factory=list)
@@ -169,6 +169,8 @@ class DocumentSummaryRequest(BaseModel):
     retrievalMode: RetrievalMode = RetrievalMode.vector
     retrievalOptions: RetrievalOptions = Field(default_factory=_default_summary_retrieval_options)
     summaryWordCount: int | None = Field(default=None, ge=1)
+    summaryPrompt: str | None = Field(default=None, min_length=1)
+    includeSummary: bool = False
     outputFormat: str = Field(default="md")
     generationOptions: dict = Field(default_factory=dict)
 
@@ -180,9 +182,10 @@ class DocumentSummaryResponse(BaseModel):
     It is intended to be composed through dependency injection and exercised by
     unit/integration tests with stable behavioral contracts.
     
-    Notable attributes: url.
+    Notable attributes: url, summaryText.
     """
     url: str
+    summaryText: str | None = None
 
 
 class ChatSessionCreateResponse(BaseModel):

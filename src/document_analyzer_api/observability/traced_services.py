@@ -470,7 +470,7 @@ class TracedDocumentSummaryService(DocumentSummaryService):
 
     @traced_async(
         "document.summary.create",
-        attribute_builder=lambda self, document_ids, keywords, keywords_mode, retrieval_mode, top_k, min_score, hybrid_alpha, graph_max_hops, summary_word_count, output_format: {
+        attribute_builder=lambda self, document_ids, keywords, keywords_mode, retrieval_mode, top_k, min_score, hybrid_alpha, graph_max_hops, summary_word_count, summary_prompt, output_format: {
             "documents.count": len(document_ids or []),
             "keywords.count": len(keywords),
             "retrieval.mode": retrieval_mode,
@@ -479,6 +479,7 @@ class TracedDocumentSummaryService(DocumentSummaryService):
             "retrieval.hybrid_alpha": hybrid_alpha,
             "retrieval.graph_max_hops": graph_max_hops,
             "summary.word_count": summary_word_count or 0,
+            "summary.has_custom_prompt": bool(summary_prompt),
             "output.format": output_format,
         },
     )
@@ -495,8 +496,9 @@ class TracedDocumentSummaryService(DocumentSummaryService):
         hybrid_alpha: float,
         graph_max_hops: int,
         summary_word_count: int | None,
+        summary_prompt: str | None,
         output_format: str,
-    ) -> str:
+    ) -> tuple[str, str]:
         return await self._inner.create_summary(
             document_ids=document_ids,
             keywords=keywords,
@@ -507,6 +509,7 @@ class TracedDocumentSummaryService(DocumentSummaryService):
             hybrid_alpha=hybrid_alpha,
             graph_max_hops=graph_max_hops,
             summary_word_count=summary_word_count,
+            summary_prompt=summary_prompt,
             output_format=output_format,
         )
 

@@ -76,26 +76,50 @@ Accept: application/json
 ### Summary endpoint
 ### ------------------------------------------------------------
 
+### Create a markdown summary for all documents in Wikipedia-style story narrative and save response metadata
+POST {{baseUrl}}/api/v1/documents/summary
+Content-Type: application/json
+Accept: application/json
+
+{
+  "keywords": ["plot", "timeline"],
+  "keywordsMode": "metadata_only",
+  "retrievalMode": "vector",
+  "retrievalOptions": {
+    "common": {"topK": 8, "minScore": 0.0},
+    "graph": {"maxHops": 2},
+    "hybrid": {"hybridAlpha": 0.5}
+  },
+  "summaryWordCount": 300,
+  "summaryPrompt": "Write a neutral chronological summary.",
+  "includeSummary": true,
+  "outputFormat": "md",
+  "generationOptions": {}
+}
+
+
+### ------------------------------------------------------------
+### Summary endpoint
+### ------------------------------------------------------------
+
 ### Create markdown summary for all documents in Wikipedia-style story narrative and save response metadata
 POST {{baseUrl}}/api/v1/documents/summary
 Content-Type: application/json
 Accept: application/json
 
 {
-  "keywords": [
-    "wikipedia style",
-    "plot summary",
-    "story arc",
-    "main characters",
-    "chronological events"
-  ],
-  "keywordsMode": "rank_boost",
-  "retrievalMode": "hybrid",
+  "documentIds": [],
+  "keywords": [],
+  "keywordsMode": "metadata_only",
+  "retrievalMode": "vector",
   "retrievalOptions": {
     "common": {"topK": 8, "minScore": 0.0},
-    "hybrid": {"hybridAlpha": 0.6}
+    "graph": {"maxHops": 2},
+    "hybrid": {"hybridAlpha": 0.5}
   },
-  "summaryWordCount": 350,
+  "summaryWordCount": 2000,
+  "summaryPrompt": "Write an encyclopedic summary with neutral tone and clear chronology.",
+  "includeSummary": false,
   "outputFormat": "md",
   "generationOptions": {}
 }
@@ -120,9 +144,12 @@ Accept: application/json
   "retrievalMode": "graph",
   "retrievalOptions": {
     "common": {"topK": 8, "minScore": 0.0},
-    "graph": {"maxHops": 3}
+    "graph": {"maxHops": 3},
+    "hybrid": {"hybridAlpha": 0.5}
   },
   "summaryWordCount": 180,
+  "summaryPrompt": "Focus on plot progression, protagonists, antagonists, and ending outcome.",
+  "includeSummary": true,
   "outputFormat": "txt",
   "generationOptions": {}
 }
@@ -140,11 +167,13 @@ Accept: application/json
 
 {
   "question": "Talk me about vampire hunter D",
+  "documentIds": ["{{documentId}}"],
   "keywords": ["vampire", "hunter"],
   "keywordsMode": "rank_boost",
   "retrievalMode": "vector",
   "retrievalOptions": {
     "common": {"topK": 8, "minScore": 0.0},
+    "graph": {"maxHops": 2},
     "hybrid": {"hybridAlpha": 0.5}
   },
   "outputFormat": "text",
@@ -160,9 +189,13 @@ Accept: application/x-ndjson
 
 {
   "question": "Tell me the key events.",
+  "documentIds": ["{{documentId}}"],
+  "keywords": ["key events", "timeline"],
+  "keywordsMode": "metadata_only",
   "retrievalMode": "hybrid",
   "retrievalOptions": {
     "common": {"topK": 6, "minScore": 0.0},
+    "graph": {"maxHops": 2},
     "hybrid": {"hybridAlpha": 0.6}
   },
   "outputFormat": "text",
@@ -178,9 +211,13 @@ Accept: audio/wav
 
 {
   "question": "Read the main outcome.",
+  "documentIds": ["{{documentId}}"],
+  "keywords": ["main outcome", "ending"],
+  "keywordsMode": "metadata_only",
   "retrievalMode": "vector",
   "retrievalOptions": {
     "common": {"topK": 8, "minScore": 0.0},
+    "graph": {"maxHops": 2},
     "hybrid": {"hybridAlpha": 0.5}
   },
   "outputFormat": "audio",
@@ -196,9 +233,13 @@ Accept: application/json
 
 {
   "question": "Talk me about vampire hunter D, who is D? Why is he always killing vampires?",
+  "documentIds": ["{{documentId}}"],
+  "keywords": ["vampire hunter d", "character motivation"],
+  "keywordsMode": "rank_boost",
   "retrievalMode": "graph",
   "retrievalOptions": {
     "common": {"topK": 8, "minScore": 0.0},
+    "graph": {"maxHops": 3},
     "hybrid": {"hybridAlpha": 0.5}
   },
   "outputFormat": "text+image",
@@ -229,9 +270,13 @@ Accept: application/json
 {
   "sessionId": "{{sessionId}}",
   "question": "What happened after the hero entered the castle?",
+  "documentIds": ["{{documentId}}"],
+  "keywords": ["castle", "hero", "consequences"],
+  "keywordsMode": "metadata_only",
   "retrievalMode": "vector",
   "retrievalOptions": {
     "common": {"topK": 8, "minScore": 0.0},
+    "graph": {"maxHops": 2},
     "hybrid": {"hybridAlpha": 0.5}
   },
   "outputFormat": "text",
@@ -249,9 +294,13 @@ Accept: application/x-ndjson
 {
   "sessionId": "{{sessionId}}",
   "question": "Continue with the consequences.",
+  "documentIds": ["{{documentId}}"],
+  "keywords": ["consequences", "timeline"],
+  "keywordsMode": "metadata_only",
   "retrievalMode": "hybrid",
   "retrievalOptions": {
     "common": {"topK": 6, "minScore": 0.0},
+    "graph": {"maxHops": 2},
     "hybrid": {"hybridAlpha": 0.5}
   },
   "outputFormat": "text",
@@ -269,9 +318,13 @@ Accept: audio/wav
 {
   "sessionId": "{{sessionId}}",
   "question": "Read a short recap.",
+  "documentIds": ["{{documentId}}"],
+  "keywords": ["recap", "summary"],
+  "keywordsMode": "metadata_only",
   "retrievalMode": "vector",
   "retrievalOptions": {
     "common": {"topK": 8, "minScore": 0.0},
+    "graph": {"maxHops": 2},
     "hybrid": {"hybridAlpha": 0.5}
   },
   "outputFormat": "audio",

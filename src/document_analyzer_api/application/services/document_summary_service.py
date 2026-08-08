@@ -95,8 +95,9 @@ class DocumentSummaryService:
         hybrid_alpha: float,
         graph_max_hops: int,
         summary_word_count: int | None,
+        summary_prompt: str | None,
         output_format: str,
-    ) -> str:
+    ) -> tuple[str, str]:
         """Asynchronous execution path for `create_summary`.
         
         This callable is implemented in `src/document_analyzer_api/application/services/document_summary_service.py` and contributes to module-level behavior
@@ -115,10 +116,11 @@ class DocumentSummaryService:
                 hybrid_alpha: Fusion weight for hybrid retrieval blending.
                 graph_max_hops: Maximum traversal depth used by graph retrieval mode.
                 summary_word_count: Optional target length guidance (in words) for summary generation.
+                summary_prompt: Optional caller-defined instruction to guide style/content of the final summary.
                 output_format: Input parameter accepted by `create_summary`.
         
             Returns:
-                A value compatible with `str`.
+                A value compatible with `tuple[str, str]`.
         """
         summary_query = self._build_summary_query(keywords)
         retrieval_request = RetrievalRequest(
@@ -136,9 +138,9 @@ class DocumentSummaryService:
         result = await self._retrieval_service.retrieve(retrieval_request)
         summary_text = INSUFFICIENT_EVIDENCE_MESSAGE
         if result.hits:
-            summary_prompt = self._build_summary_prompt(keywords, summary_word_count)
+            summary_prompt_text = self._build_summary_prompt(keywords, summary_word_count, summary_prompt)
             summary_text = await self._text_generation_client.generate_answer(
-                question=summary_prompt,
+                question=summary_prompt_text,
                 context_chunks=[hit.content for hit in result.hits],
             )
 
@@ -149,11 +151,12 @@ class DocumentSummaryService:
             filename_stem=stem,
         )
         content_type = "text/plain" if created.filename.endswith(".txt") else "text/markdown"
-        return await self._output_storage.write_output(
+        output_url = await self._output_storage.write_output(
             filename=created.filename,
             content=created.content,
             content_type=content_type,
         )
+        return output_url, summary_text
 
     @staticmethod
     def _build_summary_query(keywords: list[str]) -> str:
@@ -163,17 +166,22 @@ class DocumentSummaryService:
         return "Provide a complete factual summary of the selected documents."
 
     @staticmethod
-    def _build_summary_prompt(keywords: list[str], summary_word_count: int | None) -> str:
-        """Build a neutral summary instruction consumed by text-generation adapters."""
+    def _build_summary_prompt(
+        keywords: list[str],
+        summary_word_count: int | None,
+        summary_prompt: str | None,
+    ) -> str:
+        """Build summary instruction consumed by text-generation adapters."""
         focus = f" Focus on: {', '.join(keywords)}." if keywords else ""
         length_instruction = (
             f" Target length: approximately {summary_word_count} words."
             if summary_word_count is not None
             else ""
         )
+        custom_instruction = f" Additional instruction: {summary_prompt}" if summary_prompt else ""
         return (
             "Create an encyclopedic summary of the selected documents. "
             "Cover major plot beats, character roles, and chronological progression with neutral tone."
-            f"{focus}{length_instruction}"
+            f"{focus}{length_instruction}{custom_instruction}"
         )
 
